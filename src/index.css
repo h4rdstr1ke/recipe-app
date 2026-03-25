@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*базовые стили для HTML-элементов (сбросы, типографика)*/
+@layer base {
+
+    /* Сбросы */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.5;
+    }
+
+    /* Убираем стандартные отступы у списков */
+    ul,
+    ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Убираем подчеркивание у ссылок */
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Делаем кнопки и инпуты одинаковыми в разных браузерах */
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+        color: inherit;
+        background: none;
+        /*border: none;*/
+        padding: 0;
+    }
+
+    button {
+        cursor: pointer;
+    }
+
+    /* Убираем стандартные стили у изображений */
+    img,
+    picture,
+    svg,
+    video {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/*переиспользуемые компоненты (кнопки, карточки) */
+@layer components {}
+
+/* утилиты (flex, padding, margin и т.д.) */
+@layer utilities {}
+
+/*================== ШРИФТЫ ======================*/
+/* Regular (400) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('./assets/fonts/Montserrat-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Medium (500) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('./assets/fonts/Montserrat-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* SemiBold (600) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('./assets/fonts/Montserrat-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Bold (700) */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('./assets/fonts/Montserrat-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
