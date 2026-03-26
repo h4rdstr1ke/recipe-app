@@ -1,16 +1,12 @@
-import { useState } from 'react'
-import './index.css'
-import Header from './components/header/Header'
-import Home from './pages/Home';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes/AppRoutes';
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState('');
   return (
-    <>
-      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <Home searchQuery={searchQuery} />
-    </>
-  )
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
