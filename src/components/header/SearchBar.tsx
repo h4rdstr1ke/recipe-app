@@ -15,8 +15,8 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    placeholder="Search"
-                    className='w-[75%] h-[100%] border-none focus:outline-none focus:border-none placeholder:text-[#23A6F0] font-montserrat text-[14px] tracking-[0.2px]'
+                    placeholder="Поиск"
+                    className='w-[75%] h-[100%] border-none focus:outline-none focus:border-none placeholder:text-[#000000] font-montserrat text-[14px] tracking-[0.2px]'
                 />
                 <SettingsIcon className='w-[26px] h-[25px]' />
             </form>

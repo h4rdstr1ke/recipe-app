@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout.tsx';
 import Home from '../pages/Home';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
+import Login from '../pages/Login.tsx';
+import Register from '../pages/Register.tsx';
 
 export default function AppRoutes() {
     return (
