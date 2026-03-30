@@ -1,7 +1,7 @@
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/Logo.svg';
-import ArrowIcon from '../../assets/arrow.svg?react';
+// import ArrowIcon from '../../assets/arrow.svg?react';
 import Add from '../../assets/icons/add.svg?react';
 import Favorites from '../../assets/icons/favorites.svg?react';
 import Ai from '../../assets/icons/AI.svg?react';
@@ -14,6 +14,7 @@ type HeaderProps = {
 };
 
 export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
+    {/*
     const [isPressed, setIsPressed] = useState(false); // Для анимации bg у кнопки
 
     const handleMouseDown = () => {
@@ -21,7 +22,7 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
         setTimeout(() => {
             setIsPressed(false);
         }, 150);
-    };
+    }; */}
 
     return (
         <header className=''>
