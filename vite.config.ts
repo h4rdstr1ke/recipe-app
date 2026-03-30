@@ -33,5 +33,9 @@ export default defineConfig({
       }
     }),
     svgr()
-  ]
+  ],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: true   // Временно
+  }
 })

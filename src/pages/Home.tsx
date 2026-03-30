@@ -11,6 +11,8 @@ export default function Home({ searchQuery }: HomeProps) {
             <Link to="/login">Логин страница</Link>
             <p></p>
             <Link to="/register">Регистрация страница</Link>
+            <p></p>
+            <Link to="/profile">Профиль страница</Link>
         </div>
     );
 }
