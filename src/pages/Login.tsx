@@ -18,7 +18,7 @@ export default function Register() {
                 Войти
             </h1>
             <form className="max-w-[250px] flex items-center justify-center flex-col gap-2 text-[#252B42] font-montserrat font-semibold text-[14px] tracking-[0.2px]">
-                <div>
+                <div className='w-[100%]'>
                     <div className="flex gap-1">
                         <h2>Email</h2>
                         <span className="text-[#E0232E]">*</span>
@@ -26,7 +26,7 @@ export default function Register() {
                     <InputField placeholder="example@gmail.com" />
                 </div>
 
-                <div>
+                <div className='w-[100%]'>
                     <div className="flex gap-1">
                         <h2>Пароль</h2>
                         <span className="text-[#E0232E]">*</span>

@@ -63,8 +63,8 @@ export default function Login() {
                 Регистрация
             </h1>
             {!showCodeInput ? (
-                <form onSubmit={handleSendCode} className="max-w-[250px] flex items-center justify-center flex-col gap-2 text-[#252B42] font-montserrat font-semibold text-[14px] tracking-[0.2px]">
-                    <div>
+                <form onSubmit={handleSendCode} className="max-w-[250px] w-[100%] flex items-center justify-center flex-col gap-2 text-[#252B42] font-montserrat font-semibold text-[14px] tracking-[0.2px]">
+                    <div className='w-[100%]'>
                         <div className="flex gap-1">
                             <h2>Никнейм</h2>
                             <span className="text-[#E0232E]">*</span>
@@ -72,7 +72,7 @@ export default function Login() {
                         <InputField placeholder="Придумайте никнейм" />
                     </div>
 
-                    <div>
+                    <div className='w-[100%]'>
                         <div className="flex gap-1">
                             <h2>Email</h2>
                             <span className="text-[#E0232E]">*</span>
@@ -80,7 +80,7 @@ export default function Login() {
                         <InputField placeholder="example@gmail.com" />
                     </div>
 
-                    <div>
+                    <div className='w-[100%]'>
                         <div className="flex gap-1">
                             <h2>Пароль</h2>
                             <span className="text-[#E0232E]">*</span>
@@ -88,7 +88,7 @@ export default function Login() {
                         <InputField type="password" placeholder="Придумайте пароль" />
                     </div>
 
-                    <div>
+                    <div className='w-[100%]'>
                         <div className="flex gap-1">
                             <h2>Повторите пароль</h2>
                             <span className="text-[#E0232E]">*</span>

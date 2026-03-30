@@ -9,7 +9,7 @@ export default function ProfileEdit() {
                         <img src={avatar} className='w-[50px]' />
                         <span className='font-montserrat text-[36px] tracking-[0.2px] leading-7'>vlad228</span>
                     </div>
-                    <button className='w-[130px] h-[30px] rounded-[5px] bg-[#23A6F0]'><span className='font-montserrat text-[14px] font-bold text-[#FFFFFF] tracking-[0.2px] leading-7'>Новое фото</span></button>
+                    <button className='w-[130px] h-[30px] flex items-center justify-center rounded-[5px] bg-[#23A6F0]'><span className='font-montserrat text-[14px] font-bold text-[#FFFFFF] tracking-[0.2px] leading-7'>Новое фото</span></button>
                 </div>
                 <div className="flex flex-col w-[960px]">
                     <div className='flex gap-1'>
