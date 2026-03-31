@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import Avatar from '../../assets/avatar.svg?react';
 import ArrowIcon from '../../assets/icons/arrowDown.svg?react';
