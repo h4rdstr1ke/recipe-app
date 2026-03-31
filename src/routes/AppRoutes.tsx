@@ -1,25 +1,31 @@
 import { Routes, Route } from 'react-router-dom';
-import Layout from '../components/layout/Layout.tsx';
+import Layout from '../components/layout/Layout';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 import Home from '../pages/Home';
-import Login from '../pages/Login.tsx';
-import Register from '../pages/Register.tsx';
-import Profile from '../pages/Profile.tsx';
-import ProfileEdit from '../pages/ProfileEdit.tsx'; {/* Временно */ }
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Profile from '../pages/Profile';
+import ProfileEdit from '../pages/ProfileEdit';
 
 export default function AppRoutes() {
     return (
         <Routes>
-            {/* Страницы с Layout (с Header) */}
-            <Route element={<Layout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path='/profileEdit' element={<ProfileEdit />} />
-                {/* другие страницы с хедером */}
-            </Route>
-
-            {/* Страницы без Layout (без Header) */}
+            {/* Публичные страницы (доступны всем) */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Главная — доступна всем, но с Layout */}
+            <Route element={<Layout />}>
+                <Route path="/" element={<Home />} />
+            </Route>
+
+            {/* Защищенные страницы (только для авторизованных) */}
+            <Route element={<ProtectedRoute />}>
+                <Route element={<Layout />}>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profileEdit" element={<ProfileEdit />} />
+                </Route>
+            </Route>
         </Routes>
     );
 }

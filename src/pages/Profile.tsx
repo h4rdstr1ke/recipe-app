@@ -4,8 +4,10 @@ import avatar from '../assets/avatar.svg';
 import PublicationsIcon from '../assets/icons/profile/publications.svg?react';
 import SavedIcon from '../assets/icons/profile/saved.svg?react';
 import testPost from '../assets/testPost.png';
+import { useAuthStore } from '../stores/authStore';
 
 export default function Profile() {
+    const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState<'publications' | 'saved'>('publications');
     return (
         <div className='flex items-center flex-col h-[100vh]'>
@@ -20,8 +22,8 @@ export default function Profile() {
                     />
                     <div className='w-[100%] flex flex-col gap-3'>
                         <div className=''>
-                            <h1 className='leading-7 font-montserrat text-[36px] tracking-[0.2px] font-bold'>vlad228</h1>
-                            <p className='pt-2 font-montserrat text-[20px] tracking-[0.2px]'>Владислав</p>
+                            <h1 className='leading-7 font-montserrat text-[36px] tracking-[0.2px] font-bold'>{user?.nickname}</h1>
+                            <p className='pt-2 font-montserrat text-[20px] tracking-[0.2px]'>{user?.name}</p>
                         </div>
                         <div className='flex w-[100%] justify-between'>
                             <span className='font-montserrat text-[20px] tracking-[0.2px]'><span className='font-semibold'>4 </span>Публикации</span>
