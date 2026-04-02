@@ -81,7 +81,7 @@
     src: url('./assets/fonts/Montserrat-Thin.ttf') format('truetype');
     font-weight: 100;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 /* Regular (400) */
@@ -90,7 +90,7 @@
     src: url('./assets/fonts/Montserrat-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 /* Medium (500) */
@@ -99,7 +99,7 @@
     src: url('./assets/fonts/Montserrat-Medium.ttf') format('truetype');
     font-weight: 500;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 /* SemiBold (600) */
@@ -108,7 +108,7 @@
     src: url('./assets/fonts/Montserrat-SemiBold.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 /* Bold (700) */
@@ -117,5 +117,5 @@
     src: url('./assets/fonts/Montserrat-Bold.ttf') format('truetype');
     font-weight: 700;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
