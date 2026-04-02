@@ -16,7 +16,10 @@ export interface Post {
     likesCount: number;
     favoritesCount: number;
     commentsCount: number;
+    ingredients: string[];
 }
+
+
 
 interface PostStore {
     posts: Post[];
@@ -63,13 +66,14 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     title: 'Картошка по деревенски',
                     description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
                     date: '27.01.2025',
-                    rating: 5,
+                    rating: 1,
                     timeAgo: '50 минут',
                     isLiked: false,
                     isFavorited: false,
                     likesCount: 0,
                     favoritesCount: 0,
-                    commentsCount: 0
+                    commentsCount: 0,
+                    ingredients: ['чеснок ', 'молоко', 'острое']
                 },
                 {
                     id: '2',
@@ -79,14 +83,15 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     image: '/src/assets/testPost2.png',
                     title: 'Картошка по деревенски',
                     description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-                    date: '27.01.2025',
+                    date: '26.01.2025',
                     rating: 5,
                     timeAgo: '50 минут',
                     isLiked: false,
                     isFavorited: false,
                     likesCount: 0,
                     favoritesCount: 0,
-                    commentsCount: 0
+                    commentsCount: 0,
+                    ingredients: ['чеснок'],
                 },
                 {
                     id: '3',
@@ -96,14 +101,15 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     image: '/src/assets/testPost2.png',
                     title: 'Картошка по деревенски',
                     description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-                    date: '27.01.2025',
-                    rating: 5,
+                    date: '28.01.2025',
+                    rating: 3,
                     timeAgo: '50 минут',
                     isLiked: false,
                     isFavorited: false,
                     likesCount: 0,
                     favoritesCount: 0,
-                    commentsCount: 0
+                    commentsCount: 0,
+                    ingredients: ['говядина', 'соль', 'перец', 'розмарин']
                 },
                 {
                     id: '4',
@@ -113,14 +119,15 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     image: '/src/assets/testPost2.png',
                     title: 'Картошка по деревенски',
                     description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-                    date: '27.01.2025',
-                    rating: 5,
+                    date: '15.02.2025',
+                    rating: 2,
                     timeAgo: '50 минут',
                     isLiked: false,
                     isFavorited: false,
                     likesCount: 0,
                     favoritesCount: 0,
-                    commentsCount: 0
+                    commentsCount: 0,
+                    ingredients: ['говядина', 'соль', 'перец', 'розмарин']
                 },
                 {
                     id: '5',
@@ -130,14 +137,15 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     image: '/src/assets/testPost2.png',
                     title: 'Картошка по деревенски',
                     description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-                    date: '27.01.2025',
-                    rating: 5,
+                    date: '14.01.2025',
+                    rating: 4,
                     timeAgo: '50 минут',
                     isLiked: false,
                     isFavorited: false,
                     likesCount: 0,
                     favoritesCount: 0,
-                    commentsCount: 0
+                    commentsCount: 0,
+                    ingredients: ['говядина', 'соль', 'перец', 'розмарин']
                 }
             ];
 

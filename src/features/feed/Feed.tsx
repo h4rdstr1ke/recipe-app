@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
 import { usePostStore } from '../../stores/postStore';
 import Publication from './Publication';
+import { useUserSettingsStore } from '../../stores/userSettingsStore';
+import { useAuthStore } from '../../stores/authStore';
 
 export default function Feed() {
+    const { isAuthenticated } = useAuthStore();
+    const { fetchSettings } = useUserSettingsStore();
     const { posts, isLoading, fetchPosts, hasMore } = usePostStore();
+
 
     useEffect(() => {
         fetchPosts(true); // Загружаем первую страницу
-    }, []);
+        // Если пользователь авторизован, загружаем его настройки
+        if (isAuthenticated) {
+            fetchSettings();
+        }
+    }, [isAuthenticated]);
 
     // Логика бесконечного скролла
     useEffect(() => {

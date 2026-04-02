@@ -9,10 +9,35 @@ import UnwnantedIcon from '../../assets/icons/feed/unwanted.svg?react';
 import AllergenIcon from '../../assets/icons/feed/allergen.svg?react';
 import { usePostStore, type Post } from '../../stores/postStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useUserSettingsStore } from '../../stores/userSettingsStore';
 
 export default function Publication({ post }: { post: Post }) {
     const { likePost, unlikePost, favoritePost, unfavoritePost, subscribeToAuthor } = usePostStore();
     const { isAuthenticated } = useAuthStore();
+    const { settings } = useUserSettingsStore();
+
+    {/* 
+    // Находим совпадения для подсказки по аллергенам/нежелательным продуктам
+    const allergenMatches = settings?.allergens.filter(a =>
+        post.ingredients.some(i => i === a)
+    ) || [];
+
+    const unwantedMatches = settings?.unwanted.filter(u =>
+        post.ingredients.some(i => i === u)
+    ) || [];
+     */}
+
+    // Проверяем, есть ли аллергены/нежелательные продукты в посте
+    const hasAllergen = settings && post.ingredients.some(
+        ingredient => settings.allergens.includes(ingredient)
+    );
+
+    const hasUnwanted = settings && post.ingredients.some(
+        ingredient => settings.unwanted.includes(ingredient)
+    );
+
+    // Показываем иконки только если есть предупреждения и пользователь авторизован
+    const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
 
     const handleLike = () => {
         if (!isAuthenticated) {
@@ -59,7 +84,7 @@ export default function Publication({ post }: { post: Post }) {
                 {/* Фиксированный элемент сверху справа */}
                 <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                     <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>5</span>
+                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{post?.rating}</span>
                         <StarIcon className='w-[20px] h-[20px]' />
                     </div>
                 </div>
@@ -82,17 +107,34 @@ export default function Publication({ post }: { post: Post }) {
                     <CommentIcon />
                     <BanIcon />
                 </div>
-                <div className='flex gap-2 mr-1'>
-                    <AllergenIcon className='w-[30px] h-[30px]' />
-                    <UnwnantedIcon className='w-[30px] h-[30px]' />
-                </div>
+                {/* Динамическое отображение иконок */}
+                {showWarnings && (
+                    <div className='flex gap-2 mr-1'>
+                        {hasAllergen && (
+                            <div className="relative group">
+                                <AllergenIcon className='w-[30px] h-[30px] cursor-help' />
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Содержит аллергены
+                                </div>
+                            </div>
+                        )}
+                        {hasUnwanted && (
+                            <div className="relative group">
+                                <UnwnantedIcon className='w-[30px] h-[30px] cursor-help' />
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Содержит нежелательные ингредиенты
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
             <div className='flex mt-[6px] flex-col pl-[7px] gap-[6px] '>
                 <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold leading-7'>Картошка по деревенски</span>
                 <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] leading-4'>Вкусная картошка с домашним майонезом и кетчупом, специями</span>
             </div>
             <div className='flex w-[100%] pr-[10px] pb-[5px] justify-end items-center'>
-                <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>27.01.2025</span>
+                <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>{post?.date}</span>
             </div>
         </div>
     )
