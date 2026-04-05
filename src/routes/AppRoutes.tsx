@@ -6,6 +6,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Profile from '../pages/Profile';
 import ProfileEdit from '../pages/ProfileEdit';
+import PublicationPage from '../pages/PublicationPage'
 
 export default function AppRoutes() {
     return (
@@ -14,9 +15,10 @@ export default function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Главная — доступна всем, но с Layout */}
+            {/* Страница с Layout(шапкой) */}
             <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/publication" element={<PublicationPage />} />
             </Route>
 
             {/* Защищенные страницы (только для авторизованных) */}
