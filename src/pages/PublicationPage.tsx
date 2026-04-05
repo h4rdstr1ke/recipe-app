@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+/*import { useParams } from 'react-router-dom';*/
 import PublicationFull from '../features/publication/PublicationFull';
 
 export default function PublicationPage() {
