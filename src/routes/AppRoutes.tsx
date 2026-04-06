@@ -18,7 +18,7 @@ export default function AppRoutes() {
             {/* Страница с Layout(шапкой) */}
             <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/publication" element={<PublicationPage />} />
+                <Route path="/publication/:id" element={<PublicationPage />} />
             </Route>
 
             {/* Защищенные страницы (только для авторизованных) */}
