@@ -128,3 +128,13 @@
     font-style: normal;
     font-display: block;
 }
+
+.border-dashed-2-2 {
+    border-style: dashed;
+    border-width: 2px;
+    border-image: none;
+    /* Для более точного контроля можно использовать: */
+    border-style: dashed;
+    border-width: 2px;
+    /* В Tailwind по умолчанию dashed имеет паттерн 2,2 */
+}
