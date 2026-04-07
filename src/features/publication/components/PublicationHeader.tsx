@@ -1,0 +1,151 @@
+import StarIcon from '../../../assets/icons/feed/star.svg?react';
+import LikeIcon from '../../../assets/icons/feed/like.svg?react';
+import FavoritesIcon from '../../../assets/icons/feed/favorites.svg?react';
+import CommentIcon from '../../../assets/icons/feed/comment.svg?react';
+import BanIcon from '../../../assets/icons/feed/ban.svg?react';
+import AllergenIcon from '../../../assets/icons/feed/allergen.svg?react';
+import UnwnantedIcon from '../../../assets/icons/feed/unwanted.svg?react';
+
+type PublicationHeaderProps = {
+    // Данные автора
+    avatar: string;
+    username: string;
+    authorName: string;
+    onSubscribe: () => void;
+
+    // Данные поста
+    image: string;
+    time: string;
+    title: string;
+    rating?: {
+        rating: number;
+        quantity: number;
+    };
+    description: string;
+    likesCount: number;
+    favoritesCount: number;
+    commentsCount: number;
+
+    // Действия
+    isLiked: boolean;
+    isFavorited: boolean;
+    onLike: () => void;
+    onFavorite: () => void;
+    onComment: () => void;
+    onBan: () => void;
+
+    // Предупреждения
+    hasAllergen: boolean | null;
+    hasUnwanted: boolean | null;
+};
+
+export default function PublicationHeader({
+    avatar,
+    username,
+    authorName,
+    onSubscribe,
+    image,
+    time,
+    title,
+    rating,
+    description,
+    likesCount,
+    favoritesCount,
+    commentsCount,
+    isLiked,
+    isFavorited,
+    onLike,
+    onFavorite,
+    onComment,
+    onBan,
+    hasAllergen,
+    hasUnwanted,
+}: PublicationHeaderProps) {
+    return (
+        <div className="w-[100%] flex flex-col">
+            {/* Верхний блок - автор */}
+            <div className="flex py-[5px] justify-between items-center">
+                <div className='flex gap-4 items-center '>
+                    <img src={avatar} className='w-[50px] h-[50px]' alt="avatar" />
+                    <div className='flex flex-col items-start'>
+                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{username}</span>
+                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
+                    </div>
+                </div>
+                <button className='w-[150px] h-[30px] bg-[#23A6F0] rounded-[5px]' onClick={onSubscribe}>
+                    <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
+                </button>
+            </div>
+
+            {/* Фото блок */}
+            <div className="relative mt-2">
+                <img src={image} className='h-[344px] w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
+                <div className='absolute bottom-4 right-2'>
+                    <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>{time}</span>
+                </div>
+            </div>
+
+            {/* Блок взаимодействия */}
+            <div className='flex mt-4 items-center justify-between'>
+                <div className='flex max-w-[200px] gap-2'>
+                    <div className='flex items-center gap-1'>
+                        <LikeIcon
+                            className={`w-[25px]
+                            cursor-pointer ${isLiked ? 'fill-red-500' : ''}`}
+                            onClick={onLike}
+                        />
+                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <CommentIcon className='w-[25px]' onClick={onComment} />
+                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{commentsCount}</span>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <FavoritesIcon
+                            className={`w-[25px]
+                            cursor-pointer ${isFavorited ? 'fill-yellow-500' : ''}`}
+                            onClick={onFavorite}
+                        />
+                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>
+                    </div>
+                    <BanIcon className='w-[25px]' onClick={onBan} />
+                </div>
+
+                {/* Предупреждения */}
+                {(hasAllergen || hasUnwanted) && (
+                    <div className='flex gap-2 -mt-1'>
+                        {hasAllergen && (
+                            <div className="relative group">
+                                <AllergenIcon className='w-[30px] h-[30px] cursor-help' />
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Содержит аллергены
+                                </div>
+                            </div>
+                        )}
+                        {hasUnwanted && (
+                            <div className="relative group">
+                                <UnwnantedIcon className='w-[30px] h-[30px] cursor-help' />
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Содержит нежелательные ингредиенты
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Заголовок и описание */}
+            <div className='flex mt-4 flex-col gap-[14px]'>
+                <div className='flex justify-between items-center'>
+                    <span className='font-montserrat text-[28px] text-[#000000] tracking-[0.2px] font-bold leading-7'>{title}</span>
+                    <div className='w-[100px] h-[30px] flex items-center justify-end gap-1'>
+                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{rating?.rating}</span>
+                        <StarIcon className='w-[20px] h-[20px]' />
+                        <span className='font-montserrat text-[16px] text-[#000000] tracking-[0.2px] font-light'>({rating?.quantity})</span>
+                    </div>
+                </div>
+                <span className='font-montserrat text-[22px] text-[#737373] tracking-[0.2px] leading-6'>{description}</span>
+            </div>
+        </div>
+    );
+}

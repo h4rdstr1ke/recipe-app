@@ -5,13 +5,17 @@ const MOCK_POSTS: Post[] = [
     {
         id: '1',
         authorId: 'user1',
-        authorNickname: 'vlad228',
+        username: 'vlad228',
+        firstName: 'Владислав',
         authorAvatar: '/src/assets/avatar.svg',
         image: '/src/assets/testPost2.png',
         title: 'Картошка по деревенски',
         description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
         date: '27.01.2025',
-        rating: 4,
+        rating: {
+            rating: 4,
+            quantity: 3
+        },
         timeAgo: '50 минут',
         isLiked: false,
         isFavorited: false,
@@ -43,49 +47,73 @@ const MOCK_POSTS: Post[] = [
     {
         id: '2',
         authorId: 'user2',
-        authorNickname: 'ira000',
+        username: 'ira000',
+        firstName: 'Ирина',
         authorAvatar: '/src/assets/avatar.svg',
         image: '/src/assets/testPost2.png',
         title: 'Паста карбонара',
         description: 'Классическая итальянская паста с беконом и пармезаном',
         date: '26.01.2025',
-        rating: 5,
+        rating: {
+            rating: 5,
+            quantity: 3
+        },
         timeAgo: '35 минут',
         isLiked: false,
         isFavorited: false,
         likesCount: 128,
         favoritesCount: 45,
         commentsCount: 23,
-        ingredients: ['паста', 'бекон', 'пармезан', 'яйца', 'черный перец']
+        ingredients: ['паста', 'бекон', 'пармезан', 'яйца', 'черный перец'],
+        nutrition: {
+            calories: 420,
+            protein: 2,
+            fat: 4,
+            carbs: 234
+        },
     },
     {
         id: '3',
         authorId: 'user3',
-        authorNickname: 'Da$ha',
+        username: 'Da$ha',
+        firstName: 'Дарья',
         authorAvatar: '/src/assets/avatar.svg',
         image: '/src/assets/testPost2.png',
         title: 'Салат Цезарь',
         description: 'Свежий салат с курицей, сухариками и соусом Цезарь',
         date: '28.01.2025',
-        rating: 5,
+        rating: {
+            rating: 5,
+            quantity: 3
+        },
         timeAgo: '20 минут',
         isLiked: false,
         isFavorited: false,
         likesCount: 89,
         favoritesCount: 32,
         commentsCount: 12,
-        ingredients: ['курица', 'салат романо', 'сухарики', 'пармезан', 'соус цезарь']
+        ingredients: ['курица', 'салат романо', 'сухарики', 'пармезан', 'соус цезарь'],
+        nutrition: {
+            calories: 120,
+            protein: 75,
+            fat: 2,
+            carbs: 43
+        },
     },
     {
         id: '4',
         authorId: 'user4',
-        authorNickname: 'm4ks',
+        username: 'm4ks',
+        firstName: 'Максим',
         authorAvatar: '/src/assets/avatar.svg',
         image: '/src/assets/testPost2.png',
         title: 'Борщ',
         description: 'Наваристый украинский борщ со свеклой и сметаной',
         date: '15.02.2025',
-        rating: 3,
+        rating: {
+            rating: 3,
+            quantity: 3
+        },
         timeAgo: '120 минут',
         isLiked: false,
         isFavorited: false,
@@ -97,13 +125,17 @@ const MOCK_POSTS: Post[] = [
     {
         id: '5',
         authorId: 'user5',
-        authorNickname: 'kirYA',
+        username: 'kirYA',
+        firstName: 'Кирилл',
         authorAvatar: '/src/assets/avatar.svg',
         image: '/src/assets/testPost2.png',
         title: 'Блины',
         description: 'Тонкие блины на молоке с дырочками',
         date: '14.01.2025',
-        rating: 4,
+        rating: {
+            rating: 4,
+            quantity: 3
+        },
         timeAgo: '30 минут',
         isLiked: false,
         isFavorited: false,
@@ -117,13 +149,17 @@ const MOCK_POSTS: Post[] = [
 export interface Post {
     id: string;
     authorId: string;
-    authorNickname: string;
+    username: string;
+    firstName: string;
     authorAvatar: string;
     image: string;
     title: string;
     description: string;
     date: string;
-    rating: number;
+    rating?: {
+        rating: number;
+        quantity: number;
+    };
     timeAgo: string;
     isLiked: boolean;
     isFavorited: boolean;

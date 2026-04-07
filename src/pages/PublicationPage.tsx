@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { usePostStore, type Post } from '../stores/postStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useAuthStore } from '../stores/authStore';
+import { Link } from 'react-router-dom';
+
+import Arrow from '../assets/arrow.svg?react'
 
 import PublicationFull from '../features/publication/PublicationFull';
 
@@ -14,6 +17,7 @@ export default function PublicationPage() {
     const { isAuthenticated } = useAuthStore();
     const { fetchSettings } = useUserSettingsStore();
 
+    const handleMouseDown = () => { }
     useEffect(() => {
         if (isAuthenticated) {
             fetchSettings();
@@ -45,5 +49,16 @@ export default function PublicationPage() {
         return <div>Публикация не найдена</div>;
     }
 
-    return <PublicationFull post={post} />;
+    return (
+        <div className='flex justify-center'>
+            <div className='flex flex-col w-[900px] mt-4 gap-2'>
+                <Link to="/">
+                    <button className='flex items-center justify-center gap-2 border-[1px] rounded-[37px] w-[152px] h-[28px] border-[#23A6F0]' onMouseDown={handleMouseDown}>
+                        <Arrow className='rotate-180' />
+                        <span className='font-montserrat text-[14px] text-[#23A6F0] tracking-[0.2px] leading-7 font-bold'>К рецептам</span>
+                    </button>
+                </Link>
+                <PublicationFull post={post} />
+            </div>
+        </div >);
 }

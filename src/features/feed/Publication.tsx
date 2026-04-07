@@ -73,7 +73,7 @@ export default function Publication({ post }: { post: Post }) {
                 <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                     <div className='flex ml-[22px] gap-2 items-center'>
                         <img src={avatar} className='w-[35px]' />
-                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{post?.authorNickname}</span>
+                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{post?.username}</span>
                     </div>
                     <button className='w-[150px] h-[30px] mr-[9px] bg-[#23A6F0] rounded-[5px]' onClick={handleSubscribe}>
                         <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
@@ -86,7 +86,7 @@ export default function Publication({ post }: { post: Post }) {
                     {/* Фиксированный элемент сверху справа */}
                     <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                         <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{post?.rating}</span>
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{post?.rating?.rating}</span>
                             <StarIcon className='w-[20px] h-[20px]' />
                         </div>
                     </div>
