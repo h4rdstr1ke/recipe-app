@@ -13,10 +13,19 @@ import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { Link } from 'react-router-dom';
 
 export default function Publication({ post }: { post: Post }) {
-    const { likePost, unlikePost, favoritePost, unfavoritePost, subscribeToAuthor } = usePostStore();
+    const { likePost, unlikePost, favoritePost, unfavoritePost } = usePostStore();
     const { isAuthenticated } = useAuthStore();
-    const { settings } = useUserSettingsStore();
+    const { settings, subscribeToAuthor, unsubscribeFromAuthor, isSubscribed } = useUserSettingsStore();
 
+    const subscribed = isSubscribed(post.authorId);
+
+    const handleSubscribe = () => {
+        if (subscribed) {
+            unsubscribeFromAuthor(post.authorId);
+        } else {
+            subscribeToAuthor(post.authorId);
+        }
+    };
     {/* 
     // Находим совпадения для подсказки по аллергенам/нежелательным продуктам
     const allergenMatches = settings?.allergens.filter(a =>
@@ -63,23 +72,29 @@ export default function Publication({ post }: { post: Post }) {
         }
     };
 
-    const handleSubscribe = () => {
-        if (!isAuthenticated) return;
-        subscribeToAuthor(post.authorId);
-    };
     return (
-        <Link to={`/publication/${post.id}`}>
-            <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
-                <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
-                    <div className='flex ml-[22px] gap-2 items-center'>
-                        <img src={avatar} className='w-[35px]' />
-                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{post?.username}</span>
-                    </div>
-                    <button className='w-[150px] h-[30px] mr-[9px] bg-[#23A6F0] rounded-[5px]' onClick={handleSubscribe}>
-                        <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
-                    </button>
+        <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
+            <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
+                <div className='flex ml-[22px] gap-2 items-center'>
+                    <img src={avatar} className='w-[35px]' />
+                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{post?.username}</span>
                 </div>
-
+                <button
+                    className={`w-[150px] h-[30px] mr-[9px] rounded-[5px] transition-all duration-300 transform hover:scale-100 active:scale-95 ${subscribed
+                        ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
+                        : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
+                        }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        handleSubscribe();
+                    }}
+                >
+                    <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>
+                        {subscribed ? 'Вы подписаны' : 'Подписаться'}
+                    </span>
+                </button>
+            </div>
+            <Link to={`/publication/${post.id}`}>
                 <div className="relative ">
                     <img src={testPost} className='h-[344px] w-[100%]' />
 
@@ -96,17 +111,28 @@ export default function Publication({ post }: { post: Post }) {
                 </div>
 
                 <div className='flex border-t-[2px] items-center justify-between'>
-                    <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-4 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px] max-w-[170px]'>
-                        <LikeIcon
-                            className={`cursor-pointer ${post.isLiked ? 'fill-red-500' : ''}`}
-                            onClick={handleLike}
-                        />
-                        {/*<span>{post.likesCount}</span>*/}
-                        <FavoritesIcon
-                            className={`cursor-pointer ${post.isFavorited ? 'fill-yellow-500' : ''}`}
-                            onClick={handleFavorite}
-                        />
-                        <CommentIcon />
+                    <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-2 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px]'
+                        onClick={(e) => {
+                            e.preventDefault();
+                        }}>
+                        <div className='flex items-center gap-[4px]'>
+                            <LikeIcon
+                                className={`cursor-pointer ${post.isLiked ? 'fill-red-500' : ''}`}
+                                onClick={handleLike}
+                            />
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.likesCount}</span>
+                        </div>
+                        <div className='flex items-center gap-[4px]'>
+                            <FavoritesIcon
+                                className={`cursor-pointer ${post.isFavorited ? 'fill-yellow-500' : ''}`}
+                                onClick={handleFavorite}
+                            />
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.favoritesCount}</span>
+                        </div>
+                        <div className='flex items-center gap-[4px]'>
+                            <CommentIcon />
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
+                        </div>
                         <BanIcon />
                     </div>
                     {/* Динамическое отображение иконок */}
@@ -138,7 +164,7 @@ export default function Publication({ post }: { post: Post }) {
                 <div className='flex w-[100%] pr-[10px] pb-[5px] justify-end items-center'>
                     <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>{post?.date}</span>
                 </div>
-            </div>
-        </Link>
+            </Link>
+        </div>
     )
 }

@@ -3,7 +3,6 @@ import { useAuthStore } from '../../stores/authStore';
 import logo from '../../assets/Logo.svg';
 import Add from '../../assets/icons/add.svg?react';
 import Favorites from '../../assets/icons/favorites.svg?react';
-import Ai from '../../assets/icons/AI.svg?react';
 import ArrowIcon from '../../assets/arrow.svg?react';
 import SearchBar from './SearchBar';
 import ProfileMenu from './ProfileMenu';
@@ -44,7 +43,6 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                     <div className='gap-8 flex items-center justify-center'>
                         <Add className='w-[34px] ' />
                         <Favorites className='w-[35px] h-[32px]' />
-                        <Ai className='w-[41px] h-[40px]' />
                     </div>
 
                     {/* Условный рендеринг: если авторизован — меню, если нет — кнопка "Войти" */}
