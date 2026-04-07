@@ -5,7 +5,7 @@ import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useNavigate } from 'react-router-dom';
 export default function ProfileEdit() {
     const navigate = useNavigate();
-    const { settings, updateSettings, fetchSettings } = useUserSettingsStore();
+    const { settings, fetchSettings } = useUserSettingsStore(); {/* updateSettings */ }
 
     const [allergens, setAllergens] = useState<string[]>([]);
     const [unwanted, setUnwanted] = useState<string[]>([]);
@@ -23,7 +23,7 @@ export default function ProfileEdit() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await updateSettings({ allergens, unwanted });
+        /* await updateSettings({allergens, unwanted }); */
         navigate('/profile'); // Перенаправляем на профиль после сохранения
     };
 
