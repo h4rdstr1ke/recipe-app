@@ -6,6 +6,7 @@ import Favorites from '../../assets/icons/favorites.svg?react';
 import ArrowIcon from '../../assets/arrow.svg?react';
 import SearchBar from './SearchBar';
 import ProfileMenu from './ProfileMenu';
+import StarTopAuthot from '../../assets/icons/starTopAuthor.svg?react'
 import { useState } from 'react';
 
 type HeaderProps = {
@@ -41,7 +42,10 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                 </div>
                 <div className='flex gap-12 items-end mr-[80px]'>
                     <div className='gap-8 flex items-center justify-center'>
-                        <Add className='w-[34px] ' />
+                        <StarTopAuthot className='w-[40px]' />
+                        <Link to="/PostCreate">
+                            <Add className='w-[34px] ' />
+                        </Link>
                         <Favorites className='w-[35px] h-[32px]' />
                     </div>
 

@@ -6,6 +6,9 @@ import BanIcon from '../../../assets/icons/feed/ban.svg?react';
 import AllergenIcon from '../../../assets/icons/feed/allergen.svg?react';
 import UnwnantedIcon from '../../../assets/icons/feed/unwanted.svg?react';
 
+import Button from '../../../components/button/Button';
+import { Link } from 'react-router-dom';
+
 type PublicationHeaderProps = {
     // Данные автора
     avatar: string;
@@ -61,22 +64,29 @@ export default function PublicationHeader({
     hasAllergen,
     hasUnwanted,
 }: PublicationHeaderProps) {
+    const isMyPost = username === "vlad228";
     return (
         <div className="w-[100%] flex flex-col">
             {/* Верхний блок - автор */}
-            <div className="flex py-[5px] justify-between items-center">
-                <div className='flex gap-4 items-center '>
-                    <img src={avatar} className='w-[50px] h-[50px]' alt="avatar" />
-                    <div className='flex flex-col items-start'>
-                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{username}</span>
-                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
+            {isMyPost ? (
+                <Link to="/PostEdit" className='flex'>
+                    <Button className='w-[220px] h-[30px] text-[14px] ml-auto'>Редактировать рецепт</Button>
+                </Link>
+            ) : (
+                <div className="flex py-[5px] justify-between items-center">
+                    <div className='flex gap-4 items-center '>
+                        <img src={avatar} className='w-[50px] h-[50px]' alt="avatar" />
+                        <div className='flex flex-col items-start'>
+                            <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{username}</span>
+                            <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
+                        </div>
                     </div>
+                    <button className='w-[150px] h-[30px] bg-[#23A6F0] rounded-[5px]' onClick={onSubscribe}>
+                        <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
+                    </button>
                 </div>
-                <button className='w-[150px] h-[30px] bg-[#23A6F0] rounded-[5px]' onClick={onSubscribe}>
-                    <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
-                </button>
-            </div>
-
+            )
+            }
             {/* Фото блок */}
             <div className="relative mt-2">
                 <img src={image} className='h-[344px] w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
@@ -146,6 +156,6 @@ export default function PublicationHeader({
                 </div>
                 <span className='font-montserrat text-[22px] text-[#737373] tracking-[0.2px] leading-6'>{description}</span>
             </div>
-        </div>
+        </div >
     );
 }

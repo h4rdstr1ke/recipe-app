@@ -29,7 +29,7 @@ export default function Comments({ username }: Comments) {
                 font-montserrat text-[14px] tracking-[0.2px] leading-7
                    focus:outline-none resize-none placeholder:font-montserrat placeholder:text-[14px] placeholder:leading-7 placeholder:tracking-[0.2px] placeholder:text-[#737373]
                     py-[7px] px-[21px]`} />
-                    <ImageAdd className='absolute top-[11px] right-[7px]' />
+                    <ImageAdd className='absolute top-[11px] right-[7px] text-[#737373]' />
                 </div>
                 <div className='w-[100%] flex justify-end mt-4'>
                     <button className='w-[135px] h-[30px] bg-[#23A6F0] rounded-[5px]'><span className='font-montserrat text-[14px] text-[#FFFFFF] font-bold tracking-[0.2px] leading-7'>Опубликовать</span></button>
