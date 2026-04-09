@@ -7,6 +7,7 @@ import Register from '../pages/Register';
 import Profile from '../pages/Profile';
 import ProfileEdit from '../pages/ProfileEdit';
 import PublicationPage from '../pages/PublicationPage'
+import TopAuthorsPage from '../pages/TopAuthorsPage';
 
 import PostEditPage from '../pages/PostEditPage';
 import PostCreatePage from '../pages/PostCreatePage';
@@ -22,6 +23,7 @@ export default function AppRoutes() {
             <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/publication/:id" element={<PublicationPage />} />
+                <Route path="/topAuthors" element={<TopAuthorsPage />} />
             </Route>
 
             {/* Защищенные страницы (только для авторизованных) */}

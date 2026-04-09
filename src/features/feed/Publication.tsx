@@ -11,6 +11,8 @@ import { usePostStore, type Post } from '../../stores/postStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { Link } from 'react-router-dom';
+import Complaint from '../complaint/Сomplaint';
+import { useState } from 'react';
 
 export default function Publication({ post }: { post: Post }) {
     const { likePost, unlikePost, favoritePost, unfavoritePost } = usePostStore();
@@ -18,6 +20,19 @@ export default function Publication({ post }: { post: Post }) {
     const { settings, subscribeToAuthor, unsubscribeFromAuthor, isSubscribed } = useUserSettingsStore();
 
     const subscribed = isSubscribed(post.authorId);
+
+    /* Модалка */
+    const [isComplaintOpen, setIsComplaintOpen] = useState(false);
+
+    const handleBanClick = () => {
+        setIsComplaintOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsComplaintOpen(false);
+    };
+
+
 
     const handleSubscribe = () => {
         if (subscribed) {
@@ -133,8 +148,11 @@ export default function Publication({ post }: { post: Post }) {
                             <CommentIcon />
                             <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
                         </div>
-                        <BanIcon />
+                        <BanIcon className="cursor-pointer"
+                            onClick={handleBanClick}
+                        />
                     </div>
+
                     {/* Динамическое отображение иконок */}
                     {showWarnings && (
                         <div className='flex gap-2 mr-1'>
@@ -165,6 +183,11 @@ export default function Publication({ post }: { post: Post }) {
                     <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>{post?.date}</span>
                 </div>
             </Link>
+
+            {/* Модалка */}
+            {isComplaintOpen && (
+                <Complaint onClose={handleCloseModal} />
+            )}
         </div>
     )
 }

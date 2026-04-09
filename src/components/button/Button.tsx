@@ -13,7 +13,7 @@ export default function Button({ children, className, onClick }: {
                 ${className}
             `}
         >
-            <span className='font-montserrat text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>
+            <span className={`font-montserrat text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold text-[14px] ${className}`}>
                 {children}
             </span>
         </button>
