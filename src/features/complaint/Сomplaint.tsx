@@ -13,7 +13,7 @@ export default function Complaint({ onClose }: { onClose: () => void }) {
     };
 
     const handleSendComplaint = () => {
-        // Здесь логика отправки жалобы
+        // логика отправки жалобы
         setScreen('success');
     };
 

@@ -1,8 +1,32 @@
+import { useEffect } from 'react';
+import { useTopAuthorStore } from '../stores/topAuthorStore';
+
 import Button from "../components/button/Button"
 import Avatar from "../assets/avatar.svg"
 import Medal from "../assets/medal.svg?react"
 
 export default function TopAuthorsPage() {
+
+    const { authors, isLoading, error, fetchTopAuthors } = useTopAuthorStore();
+
+    useEffect(() => {
+        fetchTopAuthors();
+    }, [fetchTopAuthors]);
+
+    // Медали
+    const getMedalClass = (index: number) => {
+        if (index === 0) return "text-[#FFEF3F]";
+        if (index === 1) return "text-[#E7E7E7]";
+        if (index === 2) return "text-[#D0B078]";
+        return "invisible";
+    };
+
+    if (isLoading) {
+        return <div className="text-center mt-20 text-2xl font-montserrat">Загрузка топа...</div>;
+    }
+    if (error) {
+        return <div className="text-center mt-20 text-red-500 font-montserrat">Ошибка: {error}</div>;
+    }
     return (
         <div className="flex justify-center">
             <div className="flex flex-col w-[900px]">
@@ -21,87 +45,49 @@ export default function TopAuthorsPage() {
 
                 {/* Строка с данными - та же сетка */}
                 <div className="flex flex-col gap-[30px]">
-                    <div className="grid grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[65px] px-[35px]">
-                        {/* Топ */}
-                        <div className="flex items-center gap-2">
-                            <span className="font-montserrat font-semibold text-[24px]">1</span>
-                            <Medal className="w-[26px] text-[#FFEF3F]" />
+                    {authors.map((author, index) => (
+                        <div
+                            key={author.id}
+                            className="grid grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[65px] px-[35px]"
+                        >
+                            {/* Топ и Медаль */}
+                            <div className="flex items-center gap-2">
+                                <span className="font-montserrat font-semibold text-[24px]">
+                                    {index + 1} {/* index начинается с 0, поэтому +1 */}
+                                </span>
+                                <Medal className={`w-[26px] ${getMedalClass(index)}`} />
+                            </div>
+
+                            {/* Аватарка (если у автора нет аватарки, ставим дефолтную) */}
+                            <img alt="avatar" src={author.avatarUrl || Avatar} className="w-[50px] rounded-full" />
+
+                            {/* Никнейм */}
+                            <span className="font-montserrat font-semibold text-[24px] text-[#23A6F0] underline">
+                                {author.username}
+                            </span>
+
+                            {/* Посты */}
+                            <span className="font-montserrat font-semibold text-[24px]">
+                                {author.postsCount}
+                            </span>
+
+                            {/* Подписчики */}
+                            <span className="font-montserrat font-semibold text-[24px]">
+                                {author.subscribersCount}
+                            </span>
+
+                            {/* Рейтинг */}
+                            <span className="font-montserrat font-semibold text-[24px]">
+                                {author.ratingScore}
+                            </span>
+
+                            {/* Подписка */}
+                            <Button className="text-[14px] w-[134px] h-[28px]">Подписаться</Button>
                         </div>
-
-                        {/* Аватарка */}
-                        <img alt="avatar" src={Avatar} className="w-[50px]" />
-
-                        {/* Никнейм */}
-                        <span className="font-montserrat font-semibold text-[24px] text-[#23A6F0] underline">vlad228</span>
-
-                        {/* Посты */}
-                        <span className="font-montserrat font-semibold text-[24px]">29</span>
-
-                        {/* Подписчики */}
-                        <span className="font-montserrat font-semibold text-[24px]">323</span>
-
-                        {/* Рейтинг */}
-                        <span className="font-montserrat font-semibold text-[24px]">4333</span>
-
-                        {/* Подписка */}
-                        <Button className="text-[14px] w-[134px] h-[28px]">Подписаться</Button>
-                    </div>
-
-                    {/* Строка с данными - та же сетка */}
-                    <div className="grid grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[65px] px-[35px]">
-                        {/* Топ */}
-                        <div className="flex items-center gap-2">
-                            <span className="font-montserrat font-semibold text-[24px]">2</span>
-                            <Medal className="w-[26px] text-[#E7E7E7]" />
-                        </div>
-
-                        {/* Аватарка */}
-                        <img alt="avatar" src={Avatar} className="w-[50px]" />
-
-                        {/* Никнейм */}
-                        <span className="font-montserrat font-semibold text-[24px] text-[#23A6F0] underline">keiraaaa</span>
-
-                        {/* Посты */}
-                        <span className="font-montserrat font-semibold text-[24px]">32</span>
-
-                        {/* Подписчики */}
-                        <span className="font-montserrat font-semibold text-[24px]">3423</span>
-
-                        {/* Рейтинг */}
-                        <span className="font-montserrat font-semibold text-[24px]">4223</span>
-
-                        {/* Подписка */}
-                        <Button className="text-[14px] w-[134px] h-[28px]">Подписаться</Button>
-                    </div>
-
-                    {/* Строка с данными - та же сетка */}
-                    <div className="grid grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[65px] px-[35px]">
-                        {/* Топ */}
-                        <div className="flex items-center gap-2">
-                            <span className="font-montserrat font-semibold text-[24px]">3</span>
-                            <Medal className="w-[26px] text-[#D0B078]" />
-                        </div>
-
-                        {/* Аватарка */}
-                        <img alt="avatar" src={Avatar} className="w-[50px]" />
-
-                        {/* Никнейм */}
-                        <span className="font-montserrat font-semibold text-[24px] text-[#23A6F0] underline">rrffrrfff</span>
-
-                        {/* Посты */}
-                        <span className="font-montserrat font-semibold text-[24px]">21</span>
-
-                        {/* Подписчики */}
-                        <span className="font-montserrat font-semibold text-[24px]">334</span>
-
-                        {/* Рейтинг */}
-                        <span className="font-montserrat font-semibold text-[24px]">3100</span>
-
-                        {/* Подписка */}
-                        <Button className="text-[14px] w-[134px] h-[28px]">Подписаться</Button>
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>
+
     )
 }

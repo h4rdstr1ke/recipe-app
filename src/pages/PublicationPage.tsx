@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { usePostStore, type Post } from '../stores/postStore';
+import type { Post } from '../types';
+import { usePostStore } from '../stores/postStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useAuthStore } from '../stores/authStore';
 
@@ -15,12 +16,12 @@ export default function PublicationPage() {
     const { isAuthenticated } = useAuthStore();
     const { fetchSettings } = useUserSettingsStore();
 
-    //    const handleMouseDown = () => { }
     useEffect(() => {
         if (isAuthenticated) {
             fetchSettings();
         }
     }, [isAuthenticated, fetchSettings]);
+
     useEffect(() => {
         if (!id) {
             setLoading(false);
@@ -38,9 +39,11 @@ export default function PublicationPage() {
     }, [id, fetchPostById]);
 
     if (loading || storeLoading) {
-        return (<div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
-        </div>);
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
+            </div>
+        );
     }
 
     if (!post) {
@@ -53,5 +56,6 @@ export default function PublicationPage() {
                 <ButtonBackRecipes />
                 <PublicationFull post={post} />
             </div>
-        </div >);
+        </div >
+    );
 }

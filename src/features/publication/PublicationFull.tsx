@@ -1,8 +1,9 @@
-import { type Post } from '../../stores/postStore';
-import avatar from '../../assets/avatar.svg';
+import type { Post } from '../../types/index';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { usePostStore } from '../../stores/postStore';
+
+import avatar from '../../assets/avatar.svg';
 import testPost from '../../assets/testPost2.png';
 
 import NutritionalValue from './components/NutritionalValue';
@@ -18,9 +19,12 @@ type PublicationFullProps = {
 };
 
 export default function PublicationFull({ post }: PublicationFullProps) {
-    const { likePost, unlikePost, favoritePost, unfavoritePost, subscribeToAuthor } = usePostStore();
+    // Достаем новые тогглы из postStore
+    const { toggleLike, toggleFavorite } = usePostStore();
     const { isAuthenticated } = useAuthStore();
-    const { settings } = useUserSettingsStore();
+
+    // Достаем тоггл подписки из userSettingsStore
+    const { settings, toggleSubscription } = useUserSettingsStore();
 
     const hasAllergen = settings && post.ingredients.some(
         ingredient => settings.allergens.includes(ingredient)
@@ -28,40 +32,36 @@ export default function PublicationFull({ post }: PublicationFullProps) {
     const hasUnwanted = settings && post.ingredients.some(
         ingredient => settings.unwanted.includes(ingredient)
     );
+
+    // Обработчики
     const handleLike = () => {
-        if (!isAuthenticated) return;
-        if (post.isLiked) {
-            unlikePost(post.id);
-        } else {
-            likePost(post.id);
-        }
+        if (!isAuthenticated) return; // TODO: Показать модалку входа
+        toggleLike(post.id);
     };
 
     const handleFavorite = () => {
         if (!isAuthenticated) return;
-        if (post.isFavorited) {
-            unfavoritePost(post.id);
-        } else {
-            favoritePost(post.id);
-        }
+        toggleFavorite(post.id);
     };
+
     const handleSubscribe = () => {
         if (!isAuthenticated) return;
-        subscribeToAuthor(post.authorId);
+        toggleSubscription(post.authorId);
     };
 
     return (
         <div className="max-w-[640px] mx-auto flex flex-col items-center justify-center">
             <PublicationHeader
-                avatar={avatar}
+                // динамические данные 
+                avatar={post.authorAvatar || avatar}
                 username={post.username}
                 authorName={post.firstName}
                 onSubscribe={handleSubscribe}
-                image={testPost}
-                time="50 минут"
-                title="Картошка по деревенски"
+                image={post.image || testPost}
+                time={post.timeAgo}
+                title={post.title}
                 rating={post.rating}
-                description="Вкусная картошка с домашним майонезом и кетчупом, специями"
+                description={post.description}
                 likesCount={post.likesCount}
                 favoritesCount={post.favoritesCount}
                 commentsCount={post.commentsCount}
@@ -75,18 +75,12 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 hasUnwanted={hasUnwanted}
             />
 
-            {/* Блок кбжу */}
             <NutritionalValue nutrition={post.nutrition} />
-            {/* Продукты для приготовления */}
             <ProductsForCooking products={post.products} />
-            {/* Негаснущий экран */}
             <SwitchDisplay />
-            {/* Пошаговый Фоторецепт */}
             <PhotoRecipe steps={post.steps} />
-            {/* Оценка рецепта */}
             <RecipeRating rating={post.rating} />
-            {/* Комментарии */}
-            <Comments username={post.username} />
+            <Comments postId={post.id} />
         </div >
     );
 }

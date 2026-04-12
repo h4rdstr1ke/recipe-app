@@ -1,177 +1,90 @@
-// Для персональных настроек в личном кабинете
 import { create } from 'zustand';
-
-export interface UserSettings {
-    allergens: string[];    // ['молоко', 'глютен', 'орехи']
-    unwanted: string[];     // ['мясо', 'чеснок', 'сахар']
-    subscriptions: string[]; // ID авторов, на которых подписан пользователь
-}
+import { persist } from 'zustand/middleware';
+import type { UserSettings } from '../types/index';
+import { MOCK_USER_SETTINGS } from '../mocks/mocks';
 
 interface UserSettingsStore {
     settings: UserSettings | null;
     isLoading: boolean;
     error: string | null;
+
+    // Действия
     fetchSettings: () => Promise<void>;
     updateSettings: (settings: UserSettings) => Promise<void>;
-
-    // Действия для подписок
-    subscribeToAuthor: (authorId: string) => Promise<void>;
-    unsubscribeFromAuthor: (authorId: string) => Promise<void>;
+    toggleSubscription: (authorId: string) => Promise<void>;
     isSubscribed: (authorId: string) => boolean;
-
     clearError: () => void;
 }
 
-// Ключ для localStorage
-const STORAGE_KEY = 'user_settings';
+export const useUserSettingsStore = create<UserSettingsStore>()(
+    persist(
+        (set, get) => ({
+            settings: null,
+            isLoading: false,
+            error: null,
 
-// Загрузка настроек из localStorage
-/*
-const loadFromStorage = (): UserSettings | null => {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            return JSON.parse(saved);
+            fetchSettings: async () => {
+                // Если настройки уже загружены из кэша (благодаря persist), не делаем лишний запрос
+                if (get().settings) return;
+
+                set({ isLoading: true, error: null });
+
+                try {
+                    // Имитация API
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    set({ settings: MOCK_USER_SETTINGS, isLoading: false });
+                } catch (error: unknown) {
+                    set({
+                        error: error instanceof Error ? error.message : 'Ошибка загрузки настроек',
+                        isLoading: false
+                    });
+                }
+            },
+
+            updateSettings: async (settings) => {
+                set({ isLoading: true, error: null });
+                try {
+                    // TODO: API запрос await api.put('/user/settings', settings);
+                    set({ settings, isLoading: false });
+                } catch (error: unknown) {
+                    set({ error: 'Ошибка сохранения настроек', isLoading: false });
+                }
+            },
+
+            toggleSubscription: async (authorId) => {
+                const { settings } = get();
+                if (!settings || !authorId) return;
+
+                const isSubbed = settings.subscriptions.includes(authorId);
+                const newSubs = isSubbed
+                    ? settings.subscriptions.filter(id => id !== authorId)
+                    : [...settings.subscriptions, authorId];
+
+                // Оптимистичное обновление UI (persist сам сохранит в localStorage)
+                set({ settings: { ...settings, subscriptions: newSubs } });
+
+                try {
+                    // API запрос:
+                    // if (isSubbed) await api.delete(`/users/${authorId}/subscribe`);
+                    // else await api.post(`/users/${authorId}/subscribe`);
+                    console.log(isSubbed ? 'Отписался от:' : 'Подписался на:', authorId);
+                } catch (error) {
+                    // Откат при ошибке сети
+                    set({ settings, error: 'Ошибка изменения подписки' });
+                }
+            },
+
+            isSubscribed: (authorId) => {
+                const { settings } = get();
+                return settings?.subscriptions.includes(authorId) || false;
+            },
+
+            clearError: () => set({ error: null })
+        }),
+        {
+            name: 'user_settings', // Ключ в localStorage
+            // Указываем, что сохранять нужно только сами настройки, а статус загрузки и ошибки сбрасывать
+            partialize: (state) => ({ settings: state.settings }),
         }
-    } catch (error) {
-        console.error('Ошибка загрузки из localStorage:', error);
-    }
-    return null;
-};*/
-
-// Сохранение в localStorage
-const saveToStorage = (settings: UserSettings) => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch (error) {
-        console.error('Ошибка сохранения в localStorage:', error);
-    }
-};
-
-export const useUserSettingsStore = create<UserSettingsStore>((set, get) => ({
-    settings: null,
-    isLoading: false,
-    error: null,
-
-    fetchSettings: async () => {
-        set({ isLoading: true });
-
-        try {
-            /*
-            // Пробуем загрузить из localStorage
-            const savedSettings = loadFromStorage();
-                    if (savedSettings) {
-                        set({ settings: savedSettings, isLoading: false });
-                        return;
-                    } */
-
-            // Если в localStorage пусто - используем моковые данные
-            const mockSettings: UserSettings = {
-                allergens: ['молоко', 'орехи'],
-                unwanted: ['чеснок', 'острое'],
-                subscriptions: ['user1', 'user3'] // Начальные подписки
-            };
-
-            // Имитация задержки
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            set({ settings: mockSettings, isLoading: false });
-
-            saveToStorage(mockSettings);
-        } catch (error: any) {
-            set({ error: error.message || 'Ошибка загрузки настроек', isLoading: false });
-        }
-    },
-
-    updateSettings: async (settings) => {
-        set({ isLoading: true });
-
-        try {
-            // API запрос 
-            // await api.put('/user/settings', settings);
-
-            console.log('Сохранены настройки:', settings);
-            set({ settings, isLoading: false });
-            saveToStorage(settings);
-        } catch (error: any) {
-            set({ error: error.message || 'Ошибка сохранения настроек', isLoading: false });
-        }
-    },
-
-    // Подписаться на автора
-    subscribeToAuthor: async (authorId: string) => {
-        const { settings } = get();
-
-        // Минимальная валидация
-        if (!authorId) {
-            console.log('Нет ID автора');
-            return;
-        }
-
-        if (!settings) {
-            console.log('Настройки не загружены');
-            return;
-        }
-
-        // Проверка, не подписан ли уже
-        if (settings.subscriptions.includes(authorId)) {
-            console.log('Уже подписан на этого автора');
-            return;
-        }
-
-        // Оптимистичное обновление
-        const newSubscriptions = [...settings.subscriptions, authorId];
-        const newSettings = { ...settings, subscriptions: newSubscriptions };
-
-        set({ settings: newSettings });
-        saveToStorage(newSettings);
-
-        try {
-            // API запрос 
-            // await api.post(`/users/${authorId}/subscribe`);
-            console.log('Подписался на автора:', authorId);
-        } catch (error: any) {
-            // Откат при ошибке
-            set({ settings, error: error.message });
-            saveToStorage(settings);
-        }
-    },
-
-    // Отписаться от автора
-    unsubscribeFromAuthor: async (authorId: string) => {
-        const { settings } = get();
-
-        if (!settings) return;
-
-        // Проверка, подписан ли вообще
-        if (!settings.subscriptions.includes(authorId)) {
-            console.log('Не подписан на этого автора');
-            return;
-        }
-
-        // Оптимистичное обновление
-        const newSubscriptions = settings.subscriptions.filter(id => id !== authorId);
-        const newSettings = { ...settings, subscriptions: newSubscriptions };
-
-        set({ settings: newSettings });
-        saveToStorage(newSettings);
-
-        try {
-            // API запрос
-            // await api.delete(`/users/${authorId}/subscribe`);
-            console.log('Отписался от автора:', authorId);
-        } catch (error: any) {
-            // Откат при ошибке
-            set({ settings, error: error.message });
-            saveToStorage(settings);
-        }
-    },
-
-    // Проверка, подписан ли на автора
-    isSubscribed: (authorId: string) => {
-        const { settings } = get();
-        return settings?.subscriptions.includes(authorId) || false;
-    },
-
-    clearError: () => set({ error: null })
-}));
+    )
+);

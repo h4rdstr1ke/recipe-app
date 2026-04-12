@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
 import avatar from '../../assets/avatar.svg';
 import testPost from '../../assets/testPost2.png';
 import BanIcon from '../../assets/icons/feed/ban.svg?react';
@@ -7,17 +10,20 @@ import LikeIcon from '../../assets/icons/feed/like.svg?react';
 import StarIcon from '../../assets/icons/feed/star.svg?react';
 import UnwnantedIcon from '../../assets/icons/feed/unwanted.svg?react';
 import AllergenIcon from '../../assets/icons/feed/allergen.svg?react';
-import { usePostStore, type Post } from '../../stores/postStore';
+
+import Complaint from '../complaint/Сomplaint';
+
+// 1. Обновляем импорты сторов и типов
+import { usePostStore } from '../../stores/postStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
-import { Link } from 'react-router-dom';
-import Complaint from '../complaint/Сomplaint';
-import { useState } from 'react';
+import type { Post } from '../../types';
 
 export default function Publication({ post }: { post: Post }) {
-    const { likePost, unlikePost, favoritePost, unfavoritePost } = usePostStore();
+    // 2. Достаем новые объединенные экшены (toggle)
+    const { toggleLike, toggleFavorite } = usePostStore();
     const { isAuthenticated } = useAuthStore();
-    const { settings, subscribeToAuthor, unsubscribeFromAuthor, isSubscribed } = useUserSettingsStore();
+    const { settings, toggleSubscription, isSubscribed } = useUserSettingsStore();
 
     const subscribed = isSubscribed(post.authorId);
 
@@ -32,27 +38,24 @@ export default function Publication({ post }: { post: Post }) {
         setIsComplaintOpen(false);
     };
 
-
-
+    // 3. Обработчики стали в два раза короче!
     const handleSubscribe = () => {
-        if (subscribed) {
-            unsubscribeFromAuthor(post.authorId);
-        } else {
-            subscribeToAuthor(post.authorId);
-        }
+        toggleSubscription(post.authorId);
     };
-    {/* 
-    // Находим совпадения для подсказки по аллергенам/нежелательным продуктам
-    const allergenMatches = settings?.allergens.filter(a =>
-        post.ingredients.some(i => i === a)
-    ) || [];
 
-    const unwantedMatches = settings?.unwanted.filter(u =>
-        post.ingredients.some(i => i === u)
-    ) || [];
-     */}
+    const handleLike = () => {
+        if (!isAuthenticated) {
+            // TODO: Уведомление о необходимости входа
+            return;
+        }
+        toggleLike(post.id);
+    };
 
-    // Проверяем, есть ли аллергены/нежелательные продукты в посте
+    const handleFavorite = () => {
+        if (!isAuthenticated) return;
+        toggleFavorite(post.id);
+    };
+
     const hasAllergen = settings && post.ingredients.some(
         ingredient => settings.allergens.includes(ingredient)
     );
@@ -61,38 +64,17 @@ export default function Publication({ post }: { post: Post }) {
         ingredient => settings.unwanted.includes(ingredient)
     );
 
-    // Показываем иконки только если есть предупреждения и пользователь авторизован
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
-
-    const handleLike = () => {
-        if (!isAuthenticated) {
-            //Уведолмение о необходимости входа
-            return;
-        }
-
-        if (post.isLiked) {
-            unlikePost(post.id);
-        } else {
-            likePost(post.id);
-        }
-    };
-
-    const handleFavorite = () => {
-        if (!isAuthenticated) return;
-
-        if (post.isFavorited) {
-            unfavoritePost(post.id);
-        } else {
-            favoritePost(post.id);
-        }
-    };
 
     return (
         <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                 <div className='flex ml-[22px] gap-2 items-center'>
-                    <img src={avatar} className='w-[35px]' />
-                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{post?.username}</span>
+                    {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
+                    <img src={avatar} className='w-[35px]' alt="avatar" />
+                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
+                        {post?.username}
+                    </span>
                 </div>
                 <button
                     className={`w-[150px] h-[30px] mr-[9px] rounded-[5px] transition-all duration-300 transform hover:scale-100 active:scale-95 ${subscribed
@@ -111,17 +93,21 @@ export default function Publication({ post }: { post: Post }) {
             </div>
             <Link to={`/publication/${post.id}`}>
                 <div className="relative ">
-                    <img src={testPost} className='h-[344px] w-[100%]' />
+                    {/* Картинку поста тоже меняем на динамическую */}
+                    <img src={post.image || testPost} className='h-[344px] w-[100%] object-cover' alt="post" />
 
-                    {/* Фиксированный элемент сверху справа */}
                     <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                         <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{post?.rating?.rating}</span>
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>
+                                {post?.rating?.rating || 0}
+                            </span>
                             <StarIcon className='w-[20px] h-[20px]' />
                         </div>
                     </div>
-                    <div className='absolute bottom-0 right-0 mx-1 mb-2' >
-                        <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>50 минут</span>
+                    <div className='absolute bottom-0 right-0 mx-1 mb-2'>
+                        <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
+                            {post.timeAgo} {/* Было захардкожено "50 минут" */}
+                        </span>
                     </div>
                 </div>
 
@@ -132,28 +118,31 @@ export default function Publication({ post }: { post: Post }) {
                         }}>
                         <div className='flex items-center gap-[4px]'>
                             <LikeIcon
-                                className={`cursor-pointer ${post.isLiked ? 'fill-red-500' : ''}`}
+                                className={`cursor-pointer ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`}
                                 onClick={handleLike}
                             />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.likesCount}</span>
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
+                                {post.likesCount}
+                            </span>
                         </div>
                         <div className='flex items-center gap-[4px]'>
                             <FavoritesIcon
-                                className={`cursor-pointer ${post.isFavorited ? 'fill-yellow-500' : ''}`}
+                                className={`cursor-pointer ${post.isFavorited ? 'fill-yellow-500 text-yellow-500' : ''}`}
                                 onClick={handleFavorite}
                             />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.favoritesCount}</span>
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
+                                {post.favoritesCount}
+                            </span>
                         </div>
                         <div className='flex items-center gap-[4px]'>
                             <CommentIcon />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
+                                {post.commentsCount}
+                            </span>
                         </div>
-                        <BanIcon className="cursor-pointer"
-                            onClick={handleBanClick}
-                        />
+                        <BanIcon className="cursor-pointer" onClick={handleBanClick} />
                     </div>
 
-                    {/* Динамическое отображение иконок */}
                     {showWarnings && (
                         <div className='flex gap-2 mr-1'>
                             {hasAllergen && (
@@ -175,16 +164,23 @@ export default function Publication({ post }: { post: Post }) {
                         </div>
                     )}
                 </div>
+
+                {/* Динамические Title и Description */}
                 <div className='flex mt-[6px] flex-col pl-[7px] gap-[6px] '>
-                    <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold leading-7'>Картошка по деревенски</span>
-                    <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] leading-4'>Вкусная картошка с домашним майонезом и кетчупом, специями</span>
+                    <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold leading-7'>
+                        {post.title}
+                    </span>
+                    <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] leading-4 line-clamp-2'>
+                        {post.description}
+                    </span>
                 </div>
                 <div className='flex w-[100%] pr-[10px] pb-[5px] justify-end items-center'>
-                    <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>{post?.date}</span>
+                    <span className='font-montserrat text-[16px] text-[#737373] tracking-[0.2px] font-medium leading-7'>
+                        {post?.date}
+                    </span>
                 </div>
             </Link>
 
-            {/* Модалка */}
             {isComplaintOpen && (
                 <Complaint onClose={handleCloseModal} />
             )}
