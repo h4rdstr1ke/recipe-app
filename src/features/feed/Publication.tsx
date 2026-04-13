@@ -67,7 +67,7 @@ export default function Publication({ post }: { post: Post }) {
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
 
     return (
-        <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
+        <div className="w-[540px] flex flex-col border-[2px] border-[#E6E6E6]">
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
@@ -111,7 +111,7 @@ export default function Publication({ post }: { post: Post }) {
                     </div>
                 </div>
 
-                <div className='flex border-t-[2px] items-center justify-between'>
+                <div className='flex border-t-[2px] items-center justify-between '>
                     <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-2 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px]'
                         onClick={(e) => {
                             e.preventDefault();
@@ -144,11 +144,11 @@ export default function Publication({ post }: { post: Post }) {
                     </div>
 
                     {showWarnings && (
-                        <div className='flex gap-2 mr-1'>
+                        <div className='flex gap-2 mr-1 '>
                             {hasAllergen && (
                                 <div className="relative group">
                                     <AllergenIcon className='w-[30px] h-[30px] cursor-help' />
-                                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                         Содержит аллергены
                                     </div>
                                 </div>
@@ -156,7 +156,7 @@ export default function Publication({ post }: { post: Post }) {
                             {hasUnwanted && (
                                 <div className="relative group">
                                     <UnwnantedIcon className='w-[30px] h-[30px] cursor-help' />
-                                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                         Содержит нежелательные ингредиенты
                                     </div>
                                 </div>

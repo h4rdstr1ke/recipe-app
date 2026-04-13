@@ -1,17 +1,55 @@
 import type { Comment, Post, TopAuthor, UserSettings } from '../types';
+import testPostImage from '../assets/testPost2.png';
+import testBowlImage from '../assets/test/bowl.jpg'
+import testBurgerImage from '../assets/test/burger.jpg'
+import testFoundanImage from '../assets/test/fondan.png'
+import testPastaImage from '../assets/test/pasta_karbonara.png'
+import testRamenImage from '../assets/test/ramen.jpg'
+import testSteikImage from '../assets/test/steik.png'
+import testAvatar from '../assets/avatar.svg'
 
 export const MOCK_USERS = {
     'user1': {
         id: 'user1',
         username: 'vlad228',
         firstName: 'Владислав',
-        authorAvatar: '/src/assets/avatar.svg',
+        authorAvatar: testAvatar,
     },
     'user2': {
         id: 'user2',
         username: 'ira000',
         firstName: 'Ирина',
-        authorAvatar: '/src/assets/avatar.svg',
+        authorAvatar: testAvatar,
+    },
+    'user3': {
+        id: 'user3',
+        username: 'da$ha',
+        firstName: 'Дарья',
+        authorAvatar: testAvatar,
+    },
+    'user4': {
+        id: 'user4',
+        username: 'm4ks',
+        firstName: 'Максим',
+        authorAvatar: testAvatar,
+    },
+    'user5': {
+        id: 'user5',
+        username: 'kirya',
+        firstName: 'Кирилл',
+        authorAvatar: testAvatar,
+    },
+    'user6': {
+        id: 'user6',
+        username: 'moto',
+        firstName: 'Николай',
+        authorAvatar: testAvatar,
+    },
+    'user7': {
+        id: 'user7',
+        username: 'wisow',
+        firstName: 'Софья',
+        authorAvatar: testAvatar,
     }
 } as const;
 
@@ -22,10 +60,10 @@ export const MOCK_POSTS: Post[] = [
         username: MOCK_USERS['user1'].username,
         firstName: MOCK_USERS['user1'].firstName,
         authorAvatar: MOCK_USERS['user1'].authorAvatar,
-        image: '/src/assets/testPost2.png',
+        image: testPostImage,
         title: 'Картошка по-деревенски',
         description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-        date: '27.01.2025',
+        date: '21.01.2025',
         rating: { rating: 4, quantity: 3 },
         timeAgo: '50 минут',
         isLiked: false,
@@ -49,29 +87,163 @@ export const MOCK_POSTS: Post[] = [
         username: MOCK_USERS['user2'].username,
         firstName: MOCK_USERS['user2'].firstName,
         authorAvatar: MOCK_USERS['user2'].authorAvatar,
-        image: '/src/assets/testPost2.png',
-        title: 'Картошка по-деревенски',
-        description: 'Вкусная картошка с домашним майонезом и кетчупом, специями',
-        date: '27.01.2025',
-        rating: { rating: 4, quantity: 3 },
-        timeAgo: '50 минут',
-        isLiked: false,
-        isFavorited: false,
-        likesCount: 42,
-        favoritesCount: 15,
-        commentsCount: 7,
-        ingredients: ['чеснок', 'молоко', 'острое', 'картофель', 'майонез'],
-        nutrition: { calories: 320, protein: 8, fat: 12, carbs: 45 },
+        image: testPastaImage,
+        title: 'Классическая паста Карбонара',
+        description: 'Настоящая итальянская классика без сливок. Только желтки, пармезан и гуанчиале.',
+        date: '28.01.2025',
+        rating: { rating: 5, quantity: 12 },
+        timeAgo: '2 часа',
+        isLiked: true,
+        isFavorited: true,
+        likesCount: 128,
+        favoritesCount: 45,
+        commentsCount: 22,
+        ingredients: ['паста', 'сыр', 'яйца', 'бекон', 'чеснок', 'молоко', 'острое', 'картофель', 'майонез'],
+        nutrition: { calories: 550, protein: 22, fat: 30, carbs: 60 },
         products: [
-            { name: 'Картофель', quantity: 500, unit: 'г' },
-            { name: 'Чеснок', quantity: 3, unit: 'г' }
+            { name: 'Спагетти', quantity: 200, unit: 'г' },
+            { name: 'Яичный желток', quantity: 3, unit: 'шт' },
+            { name: 'Пармезан', quantity: 50, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Картофель вымыть и почистить', image: '/steps/potato1.png' }
+            { stepNumber: 1, description: 'Отварить пасту до состояния аль-денте', image: '/steps/pasta1.png' }
         ]
     },
-
-    // остальные посты
+    {
+        id: '3',
+        authorId: MOCK_USERS['user3'].id,
+        username: MOCK_USERS['user3'].username,
+        firstName: MOCK_USERS['user3'].firstName,
+        authorAvatar: MOCK_USERS['user3'].authorAvatar,
+        image: testBowlImage,
+        title: 'Зеленый смузи боул',
+        description: 'Идеальный полезный завтрак для заряда энергией на весь день.',
+        date: '29.01.2025',
+        rating: { rating: 4, quantity: 8 },
+        timeAgo: '3 часа',
+        isLiked: false,
+        isFavorited: false,
+        likesCount: 89,
+        favoritesCount: 30,
+        commentsCount: 5,
+        ingredients: ['шпинат', 'банан', 'семена чиа', 'яблоко'],
+        nutrition: { calories: 210, protein: 5, fat: 4, carbs: 38 },
+        products: [
+            { name: 'Шпинат', quantity: 100, unit: 'г' },
+            { name: 'Банан', quantity: 1, unit: 'шт' }
+        ],
+        steps: [
+            { stepNumber: 1, description: 'Взбить все ингредиенты в блендере до однородности', image: '/steps/smoothie1.png' }
+        ]
+    },
+    {
+        id: '4',
+        authorId: MOCK_USERS['user4'].id,
+        username: MOCK_USERS['user4'].username,
+        firstName: MOCK_USERS['user4'].firstName,
+        authorAvatar: MOCK_USERS['user4'].authorAvatar,
+        image: testSteikImage,
+        title: 'Стейк Рибай с маслом',
+        description: 'Сочный стейк средней прожарки с ароматным чесночным маслом.',
+        date: '29.01.2025',
+        rating: { rating: 5, quantity: 25 },
+        timeAgo: '6 часов',
+        isLiked: false,
+        isFavorited: true,
+        likesCount: 210,
+        favoritesCount: 67,
+        commentsCount: 18,
+        ingredients: ['говядина', 'тимьян', 'сливочное масло', 'чеснок'],
+        nutrition: { calories: 600, protein: 45, fat: 48, carbs: 0 },
+        products: [
+            { name: 'Говяжий стейк', quantity: 350, unit: 'г' },
+            { name: 'Сливочное масло', quantity: 30, unit: 'г' }
+        ],
+        steps: [
+            { stepNumber: 1, description: 'Обжарить мясо на раскаленной сковороде по 3 минуты с каждой стороны', image: '/steps/steak1.png' }
+        ]
+    },
+    {
+        id: '5',
+        authorId: MOCK_USERS['user5'].id,
+        username: MOCK_USERS['user5'].username,
+        firstName: MOCK_USERS['user5'].firstName,
+        authorAvatar: MOCK_USERS['user5'].authorAvatar,
+        image: testRamenImage,
+        title: 'Домашний Рамен',
+        description: 'Наваристый бульон, который варился 12 часов. Тот самый вкус из аниме.',
+        date: '30.01.2025',
+        rating: { rating: 4, quantity: 15 },
+        timeAgo: '1 день',
+        isLiked: true,
+        isFavorited: false,
+        likesCount: 156,
+        favoritesCount: 82,
+        commentsCount: 31,
+        ingredients: ['нори', 'яйцо', 'свинина', 'лапша', 'соевый соус'],
+        nutrition: { calories: 480, protein: 28, fat: 18, carbs: 52 },
+        products: [
+            { name: 'Пшеничная лапша', quantity: 150, unit: 'г' },
+            { name: 'Свиная грудинка', quantity: 100, unit: 'г' }
+        ],
+        steps: [
+            { stepNumber: 1, description: 'Залить лапшу готовым горячим бульоном и добавить топпинги', image: '/steps/ramen1.png' }
+        ]
+    },
+    {
+        id: '6',
+        authorId: MOCK_USERS['user6'].id,
+        username: MOCK_USERS['user6'].username,
+        firstName: MOCK_USERS['user6'].firstName,
+        authorAvatar: MOCK_USERS['user6'].authorAvatar,
+        image: testBurgerImage,
+        title: 'Бургер "Черная Мамба"',
+        description: 'Бургер с карамелизированным луком, беконом и сыром дорблю.',
+        date: '30.01.2025',
+        rating: { rating: 5, quantity: 40 },
+        timeAgo: '1 день',
+        isLiked: false,
+        isFavorited: false,
+        likesCount: 320,
+        favoritesCount: 110,
+        commentsCount: 45,
+        ingredients: ['булочка', 'говядина', 'лук', 'дорблю', 'бекон'],
+        nutrition: { calories: 850, protein: 35, fat: 55, carbs: 40 },
+        products: [
+            { name: 'Булочка бриошь', quantity: 1, unit: 'шт' },
+            { name: 'Фарш говяжий', quantity: 180, unit: 'г' }
+        ],
+        steps: [
+            { stepNumber: 1, description: 'Сформировать котлету и обжарить до Medium Rare', image: '/steps/burger1.png' }
+        ]
+    },
+    {
+        id: '7',
+        authorId: MOCK_USERS['user7'].id,
+        username: MOCK_USERS['user7'].username,
+        firstName: MOCK_USERS['user7'].firstName,
+        authorAvatar: MOCK_USERS['user7'].authorAvatar,
+        image: testFoundanImage,
+        title: 'Шоколадный Фондан',
+        description: 'Десерт с жидким центром. Подавать строго с шариком ванильного мороженого.',
+        date: '31.01.2025',
+        rating: { rating: 5, quantity: 50 },
+        timeAgo: '2 дня',
+        isLiked: true,
+        isFavorited: true,
+        likesCount: 540,
+        favoritesCount: 230,
+        commentsCount: 12,
+        ingredients: ['шоколад', 'мука', 'сливочное масло', 'сахар'],
+        nutrition: { calories: 420, protein: 6, fat: 28, carbs: 36 },
+        products: [
+            { name: 'Темный шоколад', quantity: 100, unit: 'г' },
+            { name: 'Мука', quantity: 40, unit: 'г' }
+        ],
+        steps: [
+            { stepNumber: 1, description: 'Выпекать при 200°C ровно 8 минут', image: '/steps/fondant1.png' }
+        ]
+    }
 ];
 
 export const MOCK_TOP_AUTHORS: TopAuthor[] = [
@@ -79,17 +251,57 @@ export const MOCK_TOP_AUTHORS: TopAuthor[] = [
         id: MOCK_USERS['user1'].id,
         username: MOCK_USERS['user1'].username,
         avatarUrl: MOCK_USERS['user1'].authorAvatar,
-        postsCount: 29,
-        subscribersCount: 323,
-        ratingScore: 4333,
+        postsCount: 2,
+        subscribersCount: 16,
+        ratingScore: 121,
     },
     {
         id: MOCK_USERS['user2'].id,
         username: MOCK_USERS['user2'].username,
         avatarUrl: MOCK_USERS['user2'].authorAvatar,
         postsCount: 29,
-        subscribersCount: 323,
+        subscribersCount: 423,
         ratingScore: 4533,
+    },
+    {
+        id: MOCK_USERS['user3'].id,
+        username: MOCK_USERS['user3'].username,
+        avatarUrl: MOCK_USERS['user3'].authorAvatar,
+        postsCount: 14,
+        subscribersCount: 254,
+        ratingScore: 4100,
+    },
+    {
+        id: MOCK_USERS['user4'].id,
+        username: MOCK_USERS['user4'].username,
+        avatarUrl: MOCK_USERS['user4'].authorAvatar,
+        postsCount: 45,
+        subscribersCount: 123,
+        ratingScore: 3200,
+    },
+    {
+        id: MOCK_USERS['user5'].id,
+        username: MOCK_USERS['user5'].username,
+        avatarUrl: MOCK_USERS['user5'].authorAvatar,
+        postsCount: 75,
+        subscribersCount: 571,
+        ratingScore: 3133,
+    },
+    {
+        id: MOCK_USERS['user6'].id,
+        username: MOCK_USERS['user6'].username,
+        avatarUrl: MOCK_USERS['user6'].authorAvatar,
+        postsCount: 5,
+        subscribersCount: 23,
+        ratingScore: 970,
+    },
+    {
+        id: MOCK_USERS['user7'].id,
+        username: MOCK_USERS['user7'].username,
+        avatarUrl: MOCK_USERS['user7'].authorAvatar,
+        postsCount: 19,
+        subscribersCount: 21,
+        ratingScore: 653,
     }
 ];
 
