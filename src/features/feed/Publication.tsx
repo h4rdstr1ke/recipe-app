@@ -56,15 +56,15 @@ export default function Publication({ post }: { post: Post }) {
         toggleFavorite(post.id);
     };
 
-    // Пове
-    const hasAllergen = settings && post.ingredients.some(
-        ingredient => settings.allergens.includes(ingredient)
+    // проходимся по массиву объектов products, берем у каждого product.name 
+    // и проверяем, есть ли это имя в списке аллергенов
+    const hasAllergen = settings && post.products?.some(
+        product => settings.allergens.includes(product.name)
     );
 
-    const hasUnwanted = settings && post.ingredients.some(
-        ingredient => settings.unwanted.includes(ingredient)
+    const hasUnwanted = settings && post.products?.some(
+        product => settings.unwanted.includes(product.name)
     );
-
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
 
     return (
@@ -119,7 +119,7 @@ export default function Publication({ post }: { post: Post }) {
                         }}>
                         <div className='flex items-center gap-[4px]'>
                             <LikeIcon
-                                className={`cursor-pointer ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`}
+                                className={`cursor-pointer ${post.isLiked ? ' text-red-500' : 'text-black-500'}`}
                                 onClick={handleLike}
                             />
                             <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>

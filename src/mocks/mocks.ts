@@ -71,7 +71,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 42,
         favoritesCount: 15,
         commentsCount: 7,
-        ingredients: ['чеснок', 'молоко', 'острое', 'картофель', 'майонез'],
+        portions: 1,
         nutrition: { calories: 320, protein: 8, fat: 12, carbs: 45 },
         products: [
             { name: 'Картофель', quantity: 500, unit: 'г' },
@@ -98,7 +98,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 128,
         favoritesCount: 45,
         commentsCount: 22,
-        ingredients: ['паста', 'сыр', 'яйца', 'бекон', 'чеснок', 'молоко', 'острое', 'картофель', 'майонез'],
+        portions: 2,
         nutrition: { calories: 550, protein: 22, fat: 30, carbs: 60 },
         products: [
             { name: 'Спагетти', quantity: 200, unit: 'г' },
@@ -126,7 +126,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 89,
         favoritesCount: 30,
         commentsCount: 5,
-        ingredients: ['шпинат', 'банан', 'семена чиа', 'яблоко'],
+        portions: 1,
         nutrition: { calories: 210, protein: 5, fat: 4, carbs: 38 },
         products: [
             { name: 'Шпинат', quantity: 100, unit: 'г' },
@@ -153,7 +153,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 210,
         favoritesCount: 67,
         commentsCount: 18,
-        ingredients: ['говядина', 'тимьян', 'сливочное масло', 'чеснок'],
+        portions: 1,
         nutrition: { calories: 600, protein: 45, fat: 48, carbs: 0 },
         products: [
             { name: 'Говяжий стейк', quantity: 350, unit: 'г' },
@@ -180,7 +180,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 156,
         favoritesCount: 82,
         commentsCount: 31,
-        ingredients: ['нори', 'яйцо', 'свинина', 'лапша', 'соевый соус'],
+        portions: 2,
         nutrition: { calories: 480, protein: 28, fat: 18, carbs: 52 },
         products: [
             { name: 'Пшеничная лапша', quantity: 150, unit: 'г' },
@@ -207,7 +207,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 320,
         favoritesCount: 110,
         commentsCount: 45,
-        ingredients: ['булочка', 'говядина', 'лук', 'дорблю', 'бекон'],
+        portions: 1,
         nutrition: { calories: 850, protein: 35, fat: 55, carbs: 40 },
         products: [
             { name: 'Булочка бриошь', quantity: 1, unit: 'шт' },
@@ -234,7 +234,7 @@ export const MOCK_POSTS: Post[] = [
         likesCount: 540,
         favoritesCount: 230,
         commentsCount: 12,
-        ingredients: ['шоколад', 'мука', 'сливочное масло', 'сахар'],
+        portions: 1,
         nutrition: { calories: 420, protein: 6, fat: 28, carbs: 36 },
         products: [
             { name: 'Темный шоколад', quantity: 100, unit: 'г' },
@@ -306,8 +306,8 @@ export const MOCK_TOP_AUTHORS: TopAuthor[] = [
 ];
 
 export const MOCK_USER_SETTINGS: UserSettings = {
-    allergens: ['молоко', 'орехи'],
-    unwanted: ['чеснок', 'острое'],
+    allergens: ['Картофель', 'Орехи'],
+    unwanted: ['Чеснок', 'Мука'],
     subscriptions: [MOCK_USERS['user1'].id] // id авторов, на которых подписан
 };
 

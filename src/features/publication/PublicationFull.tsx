@@ -24,20 +24,23 @@ export default function PublicationFull({ post }: PublicationFullProps) {
     const { isAuthenticated } = useAuthStore();
 
     // Достаем тоггл подписки из userSettingsStore
-    const { settings, toggleSubscription } = useUserSettingsStore();
+    const { settings, toggleSubscription, isSubscribed } = useUserSettingsStore();
 
-    const hasAllergen = settings && post.ingredients.some(
-        ingredient => settings.allergens.includes(ingredient)
-    );
-    const hasUnwanted = settings && post.ingredients.some(
-        ingredient => settings.unwanted.includes(ingredient)
-    );
+    const hasAllergen = (settings && post.products?.some(
+        product => settings.allergens.includes(product.name)
+    )) ?? null;
+
+    const hasUnwanted = (settings && post.products?.some(
+        product => settings.unwanted.includes(product.name)
+    )) ?? null;
 
     // Обработчики
     const handleLike = () => {
         if (!isAuthenticated) return; // TODO: Показать модалку входа
         toggleLike(post.id);
     };
+
+    const subscribed = isSubscribed(post.authorId);
 
     const handleFavorite = () => {
         if (!isAuthenticated) return;
@@ -69,6 +72,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 isFavorited={post.isFavorited}
                 onLike={handleLike}
                 onFavorite={handleFavorite}
+                isSubscribed={subscribed}
                 onComment={() => { }}
                 onBan={() => { }}
                 hasAllergen={hasAllergen}
@@ -76,7 +80,9 @@ export default function PublicationFull({ post }: PublicationFullProps) {
             />
 
             <NutritionalValue nutrition={post.nutrition} />
-            <ProductsForCooking products={post.products} />
+            <ProductsForCooking
+                products={post.products}
+                portions={post.portions || 0} />
             <SwitchDisplay />
             <PhotoRecipe steps={post.steps} />
             <RecipeRating rating={post.rating} />

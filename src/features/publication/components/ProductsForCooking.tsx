@@ -4,14 +4,15 @@ type ProductsForCookingProps = {
         quantity: number;
         unit: 'шт' | 'г' | 'мл' | 'ст.л' | 'ч.л' | 'ст';
     }[];
+    portions?: number
 };
 
-export default function ProductsForCooking({ products }: ProductsForCookingProps) {
+export default function ProductsForCooking({ products, portions }: ProductsForCookingProps) {
     return (
         <div className="w-[100%] mt-7"> {/* Продукты для приготовления */}
             <div className="flex flex-col gap-3">
                 <h3 className='font-montserrat text-[28px] font-bold tracking-[0.2px] leading-7'>ПРОДУКТЫ ДЛЯ ПРИГОТОВЛЕНИЯ</h3>
-                <span className='font-montserrat text-[20px] text-[#000000] font-semibold tracking-[0.2px] leading-7'>Порций: 2</span>
+                <span className='font-montserrat text-[20px] text-[#000000] font-semibold tracking-[0.2px] leading-7'>Порций: {portions}</span>
             </div>
             <div className="">
                 {products?.map((product, idx) => (

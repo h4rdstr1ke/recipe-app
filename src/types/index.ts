@@ -41,13 +41,13 @@ export interface Post {
     likesCount: number;
     favoritesCount: number;
     commentsCount: number;
-    ingredients: string[];
     nutrition?: {
         calories: number;
         protein: number;
         fat: number;
         carbs: number;
     };
+    portions?: number;
     products?: {
         name: string;
         quantity: number;

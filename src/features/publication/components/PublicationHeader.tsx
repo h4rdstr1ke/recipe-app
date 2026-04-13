@@ -32,6 +32,7 @@ type PublicationHeaderProps = {
     // Действия
     isLiked: boolean;
     isFavorited: boolean;
+    isSubscribed: boolean;
     onLike: () => void;
     onFavorite: () => void;
     onComment: () => void;
@@ -57,6 +58,7 @@ export default function PublicationHeader({
     commentsCount,
     isLiked,
     isFavorited,
+    isSubscribed,
     onLike,
     onFavorite,
     onComment,
@@ -81,9 +83,17 @@ export default function PublicationHeader({
                             <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
                         </div>
                     </div>
-                    <button className='w-[150px] h-[30px] bg-[#23A6F0] rounded-[5px]' onClick={onSubscribe}>
-                        <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>Подписаться</span>
-                    </button>
+                    {!isMyPost && (
+                        <button
+                            className={`w-[150px] h-[30px] rounded-[5px] transition-colors ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
+                                }`}
+                            onClick={onSubscribe}
+                        >
+                            <span className='font-montserrat text-[14px] text-[#FFFFFF] font-bold leading-7'>
+                                {isSubscribed ? 'Вы подписаны' : 'Подписаться'}
+                            </span>
+                        </button>
+                    )}
                 </div>
             )
             }
@@ -101,7 +111,7 @@ export default function PublicationHeader({
                     <div className='flex items-center gap-1'>
                         <LikeIcon
                             className={`w-[25px]
-                            cursor-pointer ${isLiked ? 'fill-red-500' : ''}`}
+                            cursor-pointer ${isLiked ? ' text-red-500' : 'text-black-500'}`}
                             onClick={onLike}
                         />
                         <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
