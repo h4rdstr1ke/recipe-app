@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import type { Post } from '../types';
+import { useEffect } from 'react';
 import { usePostStore } from '../stores/postStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useAuthStore } from '../stores/authStore';
@@ -10,9 +9,10 @@ import PublicationFull from '../features/publication/PublicationFull';
 
 export default function PublicationPage() {
     const { id } = useParams<{ id: string }>();
-    const { fetchPostById, isLoading: storeLoading } = usePostStore();
-    const [post, setPost] = useState<Post | null>(null);
-    const [loading, setLoading] = useState(true);
+
+    // дмостаем currentPost из стора
+    const { currentPost, fetchPostById, isLoading, clearCurrentPost } = usePostStore();
+
     const { isAuthenticated } = useAuthStore();
     const { fetchSettings } = useUserSettingsStore();
 
@@ -23,22 +23,18 @@ export default function PublicationPage() {
     }, [isAuthenticated, fetchSettings]);
 
     useEffect(() => {
-        if (!id) {
-            setLoading(false);
-            return;
+        if (id) {
+            fetchPostById(id);
         }
 
-        const loadPost = async () => {
-            setLoading(true);
-            const foundPost = await fetchPostById(id);
-            setPost(foundPost);
-            setLoading(false);
+        // Очищаем пост при уходе со страницы, чтобы при открытии следующего 
+        // не мелькнул старый контент на долю секунды
+        return () => {
+            clearCurrentPost();
         };
+    }, [id, fetchPostById, clearCurrentPost]);
 
-        loadPost();
-    }, [id, fetchPostById]);
-
-    if (loading || storeLoading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
@@ -46,16 +42,16 @@ export default function PublicationPage() {
         );
     }
 
-    if (!post) {
-        return <div>Публикация не найдена</div>;
+    if (!currentPost) {
+        return <div className="text-center mt-10">Публикация не найдена</div>;
     }
 
     return (
         <div className='flex justify-center'>
             <div className='flex flex-col w-[900px] mt-4 gap-2'>
                 <ButtonBackRecipes />
-                <PublicationFull post={post} />
+                <PublicationFull post={currentPost} />
             </div>
-        </div >
+        </div>
     );
 }

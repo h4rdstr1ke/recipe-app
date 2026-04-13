@@ -4,6 +4,7 @@ import { MOCK_POSTS } from '../mocks/mocks';
 
 interface PostStore {
     posts: Post[];
+    currentPost: Post | null;
     isLoading: boolean;
     error: string | null;
     hasMore: boolean;
@@ -14,11 +15,13 @@ interface PostStore {
     toggleLike: (postId: string) => Promise<void>;
     toggleFavorite: (postId: string) => Promise<void>;
     fetchPostById: (id: string) => Promise<Post | null>;
+    clearCurrentPost: () => void; // Чтобы чистить при уходе со страницы
     clearError: () => void;
 }
 
 export const usePostStore = create<PostStore>((set, get) => ({
     posts: [],
+    currentPost: null,
     isLoading: false,
     error: null,
     hasMore: true,
@@ -49,52 +52,78 @@ export const usePostStore = create<PostStore>((set, get) => ({
     },
 
     toggleLike: async (postId: string) => {
-        const { posts } = get();
-        const postIndex = posts.findIndex(p => p.id === postId);
-        if (postIndex === -1) return;
+        // Сохраняем текущее состояние для отката в случае ошибки API
+        const { posts, currentPost } = get();
 
-        const isCurrentlyLiked = posts[postIndex].isLiked;
+        // Определяем, был ли лайк (ищем либо в ленте, либо в открытом посте)
+        const postInList = posts.find(p => p.id === postId);
+        const isCurrentlyLiked = postInList ? postInList.isLiked : currentPost?.id === postId ? currentPost.isLiked : null;
 
-        // Оптимистичное обновление UI
-        set(state => ({
-            posts: state.posts.map(p => p.id === postId ? {
+        if (isCurrentlyLiked === null) return; // Пост не найден нигде
+
+        // Оптимистичное обновление UI (сразу обновляем и ленту, и текущий пост)
+        set(state => {
+            const updatedPosts = state.posts.map(p => p.id === postId ? {
                 ...p,
-                isLiked: !isCurrentlyLiked,
-                likesCount: p.likesCount + (isCurrentlyLiked ? -1 : 1)
-            } : p)
-        }));
+                isLiked: !p.isLiked,
+                likesCount: p.likesCount + (p.isLiked ? -1 : 1)
+            } : p);
 
+            let updatedCurrentPost = state.currentPost;
+            if (state.currentPost?.id === postId) {
+                updatedCurrentPost = {
+                    ...state.currentPost,
+                    isLiked: !state.currentPost.isLiked,
+                    likesCount: state.currentPost.likesCount + (state.currentPost.isLiked ? -1 : 1)
+                };
+            }
+
+            return { posts: updatedPosts, currentPost: updatedCurrentPost };
+        });
+
+        // API запрос
         try {
-            // API запрос: 
             // if (isCurrentlyLiked) await api.delete(`/posts/${postId}/like`);
             // else await api.post(`/posts/${postId}/like`);
             console.log(isCurrentlyLiked ? 'Убран лайк:' : 'Лайкнут пост:', postId);
         } catch (error) {
-            // Откат при ошибке
-            set({ posts, error: 'Не удалось изменить лайк' });
+            // Откат при ошибке (возвращаем старый список и старый currentPost)
+            set({ posts, currentPost, error: 'Не удалось изменить лайк' });
         }
     },
 
     toggleFavorite: async (postId: string) => {
-        const { posts } = get();
-        const postIndex = posts.findIndex(p => p.id === postId);
-        if (postIndex === -1) return;
+        const { posts, currentPost } = get();
 
-        const isCurrentlyFavorited = posts[postIndex].isFavorited;
+        const postInList = posts.find(p => p.id === postId);
+        const isCurrentlyFavorited = postInList ? postInList.isFavorited : currentPost?.id === postId ? currentPost.isFavorited : null;
 
-        set(state => ({
-            posts: state.posts.map(p => p.id === postId ? {
+        if (isCurrentlyFavorited === null) return;
+
+        set(state => {
+            const updatedPosts = state.posts.map(p => p.id === postId ? {
                 ...p,
-                isFavorited: !isCurrentlyFavorited,
-                favoritesCount: p.favoritesCount + (isCurrentlyFavorited ? -1 : 1)
-            } : p)
-        }));
+                isFavorited: !p.isFavorited,
+                favoritesCount: p.favoritesCount + (p.isFavorited ? -1 : 1)
+            } : p);
+
+            let updatedCurrentPost = state.currentPost;
+            if (state.currentPost?.id === postId) {
+                updatedCurrentPost = {
+                    ...state.currentPost,
+                    isFavorited: !state.currentPost.isFavorited,
+                    favoritesCount: state.currentPost.favoritesCount + (state.currentPost.isFavorited ? -1 : 1)
+                };
+            }
+
+            return { posts: updatedPosts, currentPost: updatedCurrentPost };
+        });
 
         try {
             // API запрос
             console.log(isCurrentlyFavorited ? 'Убрано из избранного:' : 'Добавлено в избранное:', postId);
         } catch (error) {
-            set({ posts, error: 'Не удалось изменить избранное' });
+            set({ posts, currentPost, error: 'Не удалось изменить избранное' });
         }
     },
 
@@ -102,23 +131,34 @@ export const usePostStore = create<PostStore>((set, get) => ({
         set({ isLoading: true, error: null });
 
         try {
-            const existingPost = get().posts.find(p => p.id === id);
-            if (existingPost) {
-                set({ isLoading: false });
-                return existingPost;
+            // Ищем в уже загруженных постах (из ленты)
+            let post = get().posts.find(p => p.id === id);
+
+            // Если в ленте нет (зашли по прямой ссылке), запрашиваем (в нашем случае берем из моков)
+            if (!post) {
+                post = MOCK_POSTS.find(p => p.id === id);
+                // В будущем: post = await api.get(`/posts/${id}`);
             }
 
-            const mockPost = MOCK_POSTS.find(p => p.id === id);
-            set({ isLoading: false });
-            return mockPost || null;
+            if (post) {
+                // Обязательно сохраняем в currentPost
+                set({ currentPost: post, isLoading: false });
+                return post;
+            } else {
+                set({ currentPost: null, isLoading: false, error: 'Пост не найден' });
+                return null;
+            }
         } catch (error: unknown) {
             set({
                 error: error instanceof Error ? error.message : 'Ошибка загрузки поста',
-                isLoading: false
+                isLoading: false,
+                currentPost: null
             });
             return null;
         }
     },
+
+    clearCurrentPost: () => set({ currentPost: null }),
 
     clearError: () => set({ error: null })
 }));

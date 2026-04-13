@@ -56,6 +56,7 @@ export default function Publication({ post }: { post: Post }) {
         toggleFavorite(post.id);
     };
 
+    // Пове
     const hasAllergen = settings && post.ingredients.some(
         ingredient => settings.allergens.includes(ingredient)
     );
@@ -67,7 +68,7 @@ export default function Publication({ post }: { post: Post }) {
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
 
     return (
-        <div className="w-[540px] flex flex-col border-[2px] border-[#E6E6E6]">
+        <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
