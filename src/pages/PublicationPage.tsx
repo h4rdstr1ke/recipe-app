@@ -11,7 +11,7 @@ export default function PublicationPage() {
     const { id } = useParams<{ id: string }>();
 
     // дмостаем currentPost из стора
-    const { currentPost, fetchPostById, isLoading, clearCurrentPost } = usePostStore();
+    const { currentPost, fetchPostById, isLoading, clearCurrentPost, error } = usePostStore();
 
     const { isAuthenticated } = useAuthStore();
     const { fetchSettings } = useUserSettingsStore();
@@ -34,18 +34,22 @@ export default function PublicationPage() {
         };
     }, [id, fetchPostById, clearCurrentPost]);
 
-    if (isLoading) {
+    // ОШИБКА: Показываем "не найдено", только если стор сказа что произошла ошибка
+    if (error) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#23A6F0]"></div>
+            <div className="h-screen flex flex-col items-center justify-center font-montserrat">
+                <h2 className="text-2xl font-bold mb-4">Упс!</h2>
+                <p className="text-gray-500 text-lg">{error || 'Публикация не найдена'}</p>
             </div>
         );
     }
 
-    if (!currentPost) {
-        return <div className="text-center mt-10">Публикация не найдена</div>;
+    // ЗАГРУЗКА: Если крутится спиннер ИЛИ поста просто ЕЩЕ НЕТ 
+    if (isLoading || !currentPost) {
+        return <div className="h-screen flex items-center justify-center font-montserrat">Загрузка...</div>;
     }
 
+    // УСПЕХ: Пост загружен
     return (
         <div className='flex justify-center'>
             <div className='flex flex-col w-[900px] mt-4 gap-2'>

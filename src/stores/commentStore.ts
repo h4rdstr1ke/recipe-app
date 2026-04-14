@@ -13,6 +13,7 @@ interface CommentsStore {
     addComment: (postId: string, text: string, image?: string) => Promise<void>; // написать новый коммент
     addReply: (commentId: string, text: string) => Promise<void>; // ответить на чужой коммент
     toggleCommentLike: (commentId: string) => Promise<void>; // лайкнуть коммент
+    editReply: (commentId: string, replyId: string, newText: string) => Promise<void>; // редактирование ответа
 }
 
 export const useCommentsStore = create<CommentsStore>((set, get) => ({
@@ -113,6 +114,35 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
             console.log('Ответ успешно отправлен');
         } catch (error) {
             set({ comments, error: 'Ошибка отправки ответа' }); // Откат при ошибке
+        }
+    },
+
+    // Функция редактирование ответа
+    editReply: async (commentId, replyId, newText) => {
+        const { comments } = get();
+
+        // Ищем нужный коммент и внутри него нужный ответ, чтобы заменить текст
+        const updatedComments = comments.map(comment => {
+            if (comment.id === commentId) {
+                return {
+                    ...comment,
+                    replies: comment.replies.map(reply =>
+                        reply.id === replyId ? { ...reply, text: newText } : reply
+                    )
+                };
+            }
+            return comment;
+        });
+
+        // Мгновенно обновляем интерфейс
+        set({ comments: updatedComments });
+
+        try {
+            // API запрос в будущем
+            // await api.put(`/comments/${commentId}/reply/${replyId}`, { text: newText });
+            console.log('Ответ успешно отредактирован');
+        } catch (error) {
+            set({ comments, error: 'Ошибка редактирования ответа' }); // Откат при ошибке
         }
     },
 
