@@ -229,7 +229,7 @@ export default function Comments({ postId }: CommentsProps) {
     }, 0);
 
     return (
-        <div className='w-[100%] flex flex-col mt-5'>
+        <div id="comments-section" className='w-[100%] flex flex-col mt-5'>
             {/* ПОЛЕ ВВОДА */}
             <div>
                 <div className='flex gap-1 mb-6'>

@@ -13,6 +13,8 @@ import PhotoRecipe from './components/PhotoRecipe';
 import RecipeRating from './components/RecipeRating';
 import Comments from './components/Comments';
 import PublicationHeader from './components/PublicationHeader';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 type PublicationFullProps = {
     post: Post;
@@ -31,6 +33,8 @@ export default function PublicationFull({ post }: PublicationFullProps) {
         toggleLike,
         toggleFavorite
     } = useUserSettingsStore();
+
+    const { hash } = useLocation();
 
     const hasAllergen = (settings && post.products?.some(
         product => settings.allergens.includes(product.name)
@@ -62,7 +66,29 @@ export default function PublicationFull({ post }: PublicationFullProps) {
         if (!isAuthenticated) return;
         toggleSubscription(post.authorId);
     };
+    // Для перехода к коментариям =======================
+    // СКРОЛЛ ПРИ ЗАГРУЗКЕ
+    useEffect(() => {
+        if (hash === '#comments-section') {
+            const element = document.getElementById('comments-section');
+            if (element) {
+                // Небольшая задержка, чтобы компоненты успели отрисоваться
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        }
+    }, [hash]);
 
+    // Функция скролла до комментариев
+    const handleScrollToComments = () => {
+        const commentsSection = document.getElementById('comments-section');
+        if (commentsSection) {
+            // Браузер плавно прокрутит страницу до этого элемента
+            commentsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+    // =======================
     return (
         <div className="max-w-[640px] mx-auto flex flex-col items-center justify-center">
             <PublicationHeader
@@ -84,7 +110,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 isSubscribed={subscribed}
                 onLike={handleLike}
                 onFavorite={handleFavorite}
-                onComment={() => { }}
+                onComment={handleScrollToComments}
                 onBan={() => { }}
                 hasAllergen={hasAllergen}
                 hasUnwanted={hasUnwanted}

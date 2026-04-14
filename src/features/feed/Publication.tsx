@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import avatar from '../../assets/avatar.svg';
 import testPost from '../../assets/testPost2.png';
@@ -61,6 +61,14 @@ export default function Publication({ post }: { post: Post }) {
         updateFavoriteCount(post.id, !isFavorited); // Меняем счетчик
     };
 
+    // Для перехода к коментариям =============
+    const navigate = useNavigate();
+    // Функция перехода к комментарию
+    const handleCommentClick = (e: React.MouseEvent) => {
+        e.preventDefault(); // Останавливаем переход по основной ссылке карточки
+        navigate(`/publication/${post.id}#comments-section`); // Переходим сразу к якорю
+    };
+    // ====================
     // Проверка на лайк
     const isLiked = settings?.likedPosts.includes(post.id) || false;
 
@@ -148,11 +156,9 @@ export default function Publication({ post }: { post: Post }) {
                                 {post.favoritesCount}
                             </span>
                         </div>
-                        <div className='flex items-center gap-[4px]'>
-                            <CommentIcon />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
-                                {post.commentsCount}
-                            </span>
+                        <div className='flex items-center gap-1 cursor-pointer'>
+                            <CommentIcon onClick={handleCommentClick} />
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
                         </div>
                         <BanIcon className="cursor-pointer" onClick={handleBanClick} />
                     </div>
