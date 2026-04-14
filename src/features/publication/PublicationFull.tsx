@@ -20,11 +20,17 @@ type PublicationFullProps = {
 
 export default function PublicationFull({ post }: PublicationFullProps) {
     // Достаем новые тогглы из postStore
-    const { toggleLike, toggleFavorite } = usePostStore();
+    const { updateLikeCount, updateFavoriteCount } = usePostStore();
     const { isAuthenticated } = useAuthStore();
 
     // Достаем тоггл подписки из userSettingsStore
-    const { settings, toggleSubscription, isSubscribed } = useUserSettingsStore();
+    const {
+        settings,
+        toggleSubscription,
+        isSubscribed,
+        toggleLike,
+        toggleFavorite
+    } = useUserSettingsStore();
 
     const hasAllergen = (settings && post.products?.some(
         product => settings.allergens.includes(product.name)
@@ -34,17 +40,22 @@ export default function PublicationFull({ post }: PublicationFullProps) {
         product => settings.unwanted.includes(product.name)
     )) ?? null;
 
+    // Вычисляем статусы на лету (вместо post.isLiked)
+    const isLiked = settings?.likedPosts.includes(post.id) || false;
+    const isFavorited = settings?.favoritePosts.includes(post.id) || false;
+    const subscribed = isSubscribed(post.authorId);
+
     // Обработчики
     const handleLike = () => {
-        if (!isAuthenticated) return; // TODO: Показать модалку входа
+        if (!isAuthenticated) return;
         toggleLike(post.id);
+        updateLikeCount(post.id, !isLiked);
     };
-
-    const subscribed = isSubscribed(post.authorId);
 
     const handleFavorite = () => {
         if (!isAuthenticated) return;
         toggleFavorite(post.id);
+        updateFavoriteCount(post.id, !isFavorited);
     };
 
     const handleSubscribe = () => {
@@ -68,11 +79,11 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 likesCount={post.likesCount}
                 favoritesCount={post.favoritesCount}
                 commentsCount={post.commentsCount}
-                isLiked={post.isLiked}
-                isFavorited={post.isFavorited}
+                isLiked={isLiked}
+                isFavorited={isFavorited}
+                isSubscribed={subscribed}
                 onLike={handleLike}
                 onFavorite={handleFavorite}
-                isSubscribed={subscribed}
                 onComment={() => { }}
                 onBan={() => { }}
                 hasAllergen={hasAllergen}

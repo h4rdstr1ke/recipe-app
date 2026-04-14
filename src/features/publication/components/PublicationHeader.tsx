@@ -9,6 +9,8 @@ import UnwnantedIcon from '../../../assets/icons/feed/unwanted.svg?react';
 import Button from '../../../components/button/Button';
 import { Link } from 'react-router-dom';
 
+import { useAuthStore } from '../../../stores/authStore';
+
 type PublicationHeaderProps = {
     // Данные автора
     avatar: string;
@@ -66,7 +68,9 @@ export default function PublicationHeader({
     hasAllergen,
     hasUnwanted,
 }: PublicationHeaderProps) {
-    const isMyPost = username === "vlad228";
+    // ИСП проверяем реального пользователя 
+    const { user } = useAuthStore();
+    const isMyPost = username === user?.nickname;
     return (
         <div className="w-[100%] flex flex-col">
             {/* Верхний блок - автор */}

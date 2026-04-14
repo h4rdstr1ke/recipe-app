@@ -4,12 +4,15 @@ export interface User {
     nickname: string;
     name: string;
     avatarUrl?: string | null;
+    bio?: string; // Добавлено поле bio
 }
 
 export interface UserSettings {
     allergens: string[];
     unwanted: string[];
     subscriptions: string[];
+    likedPosts: string[];    // ID лайкнутых постов
+    favoritePosts: string[]; // ID постов в закладках
 }
 
 export interface TopAuthor {
@@ -36,8 +39,6 @@ export interface Post {
         quantity: number;
     };
     timeAgo: string;
-    isLiked: boolean;
-    isFavorited: boolean;
     likesCount: number;
     favoritesCount: number;
     commentsCount: number;
@@ -81,4 +82,9 @@ export interface Comment {
     isLiked: boolean;
     createdAt: string;
     replies: Reply[];   // массив ответов
+}
+
+export interface UserProfile extends User {
+    subscribersCount: number;    // Подписчики
+    subscriptionsCount: number;  // Подписки
 }

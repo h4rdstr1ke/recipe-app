@@ -14,42 +14,50 @@ export const MOCK_USERS = {
         username: 'vlad228',
         firstName: 'Владислав',
         authorAvatar: testAvatar,
+        bio: 'Привет! Я Влад, люблю готовить стейки и делиться рецептами!',
     },
     'user2': {
         id: 'user2',
         username: 'ira000',
         firstName: 'Ирина',
         authorAvatar: testAvatar,
+        bio: 'Фанатка итальянской кухни и пасты Карбонара'
     },
     'user3': {
         id: 'user3',
         username: 'da$ha',
         firstName: 'Дарья',
         authorAvatar: testAvatar,
+        bio: 'Начинающий кулинар, обожаю печь тортики'
+
     },
     'user4': {
         id: 'user4',
         username: 'm4ks',
         firstName: 'Максим',
         authorAvatar: testAvatar,
+        bio: 'Ем, чтобы жить. Готовлю, чтобы есть вкусно'
     },
     'user5': {
         id: 'user5',
         username: 'kirya',
         firstName: 'Кирилл',
         authorAvatar: testAvatar,
+        bio: 'Спортсмен, составляю рацион из полезных продукто'
     },
     'user6': {
         id: 'user6',
         username: 'moto',
         firstName: 'Николай',
         authorAvatar: testAvatar,
+        bio: 'Гриль-мастер, любитель барбекю и острых соусов'
     },
     'user7': {
         id: 'user7',
         username: 'wisow',
         firstName: 'Софья',
         authorAvatar: testAvatar,
+        bio: 'Ищу идеальный рецепт круассанов'
     }
 } as const;
 
@@ -66,8 +74,6 @@ export const MOCK_POSTS: Post[] = [
         date: '21.01.2025',
         rating: { rating: 4, quantity: 3 },
         timeAgo: '50 минут',
-        isLiked: false,
-        isFavorited: false,
         likesCount: 42,
         favoritesCount: 15,
         commentsCount: 7,
@@ -93,8 +99,6 @@ export const MOCK_POSTS: Post[] = [
         date: '28.01.2025',
         rating: { rating: 5, quantity: 12 },
         timeAgo: '2 часа',
-        isLiked: true,
-        isFavorited: true,
         likesCount: 128,
         favoritesCount: 45,
         commentsCount: 22,
@@ -121,8 +125,6 @@ export const MOCK_POSTS: Post[] = [
         date: '29.01.2025',
         rating: { rating: 4, quantity: 8 },
         timeAgo: '3 часа',
-        isLiked: false,
-        isFavorited: false,
         likesCount: 89,
         favoritesCount: 30,
         commentsCount: 5,
@@ -148,8 +150,6 @@ export const MOCK_POSTS: Post[] = [
         date: '29.01.2025',
         rating: { rating: 5, quantity: 25 },
         timeAgo: '6 часов',
-        isLiked: false,
-        isFavorited: true,
         likesCount: 210,
         favoritesCount: 67,
         commentsCount: 18,
@@ -175,8 +175,6 @@ export const MOCK_POSTS: Post[] = [
         date: '30.01.2025',
         rating: { rating: 4, quantity: 15 },
         timeAgo: '1 день',
-        isLiked: true,
-        isFavorited: false,
         likesCount: 156,
         favoritesCount: 82,
         commentsCount: 31,
@@ -202,8 +200,6 @@ export const MOCK_POSTS: Post[] = [
         date: '30.01.2025',
         rating: { rating: 5, quantity: 40 },
         timeAgo: '1 день',
-        isLiked: false,
-        isFavorited: false,
         likesCount: 320,
         favoritesCount: 110,
         commentsCount: 45,
@@ -229,8 +225,6 @@ export const MOCK_POSTS: Post[] = [
         date: '31.01.2025',
         rating: { rating: 5, quantity: 50 },
         timeAgo: '2 дня',
-        isLiked: true,
-        isFavorited: true,
         likesCount: 540,
         favoritesCount: 230,
         commentsCount: 12,
@@ -308,7 +302,9 @@ export const MOCK_TOP_AUTHORS: TopAuthor[] = [
 export const MOCK_USER_SETTINGS: UserSettings = {
     allergens: ['Картофель', 'Орехи'],
     unwanted: ['Чеснок', 'Мука'],
-    subscriptions: [MOCK_USERS['user1'].id] // id авторов, на которых подписан
+    subscriptions: [MOCK_USERS['user1'].id], // id авторов, на которых подписан
+    likedPosts: ['2', '5', '7'],
+    favoritePosts: ['2', '4', '7'],
 };
 
 export const MOCK_COMMENTS: Comment[] = [

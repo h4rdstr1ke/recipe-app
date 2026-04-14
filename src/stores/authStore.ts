@@ -22,6 +22,8 @@ interface AuthStore {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     clearError: () => void;
+    // НОВАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ПРОФИЛЯ
+    updateProfile: (updatedData: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -90,10 +92,10 @@ export const useAuthStore = create<AuthStore>()(
                     if (!email || !password) throw new Error('Заполните все поля');
 
                     const fakeUser: User = {
-                        id: Date.now().toString(),
-                        email: email,
+                        id: "user1", // <-- СТАВИМ ЖЕСТКО user1 (это vlad228 из моков)
+                        email: "admin@example.com",
                         nickname: "vlad228",
-                        name: "Пользователь"
+                        name: "Владислав"
                     };
                     const fakeToken = 'fake-token-' + Date.now();
 
@@ -114,11 +116,18 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             logout: () => {
-
                 set({ user: null, token: null, isAuthenticated: false, error: null, tempData: null });
             },
 
-            clearError: () => set({ error: null })
+            clearError: () => set({ error: null }),
+
+            // НОВАЯ ФУНКЦИЯ
+            updateProfile: (updatedData) => {
+                const { user } = get();
+                if (user) {
+                    set({ user: { ...user, ...updatedData } });
+                }
+            },
         }),
         {
             name: 'auth_storage',

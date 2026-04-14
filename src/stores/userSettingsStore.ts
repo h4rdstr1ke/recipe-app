@@ -13,6 +13,8 @@ interface UserSettingsStore {
     updateSettings: (settings: UserSettings) => Promise<void>;
     toggleSubscription: (authorId: string) => Promise<void>;
     isSubscribed: (authorId: string) => boolean;
+    toggleLike: (postId: string) => Promise<void>;
+    toggleFavorite: (postId: string) => Promise<void>;
     clearError: () => void;
 }
 
@@ -77,6 +79,44 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
             isSubscribed: (authorId) => {
                 const { settings } = get();
                 return settings?.subscriptions.includes(authorId) || false;
+            },
+
+            toggleLike: async (postId) => {
+                const { settings } = get();
+                if (!settings || !postId) return;
+
+                const isLiked = settings.likedPosts.includes(postId);
+                const newLiked = isLiked
+                    ? settings.likedPosts.filter(id => id !== postId)
+                    : [...settings.likedPosts, postId];
+
+                set({ settings: { ...settings, likedPosts: newLiked } });
+
+                try {
+                    // API запрос
+                    console.log(isLiked ? 'Убран лайк:' : 'Лайкнут пост:', postId);
+                } catch (error) {
+                    set({ settings, error: 'Ошибка изменения лайка' });
+                }
+            },
+
+            toggleFavorite: async (postId) => {
+                const { settings } = get();
+                if (!settings || !postId) return;
+
+                const isFavorited = settings.favoritePosts.includes(postId);
+                const newFavs = isFavorited
+                    ? settings.favoritePosts.filter(id => id !== postId)
+                    : [...settings.favoritePosts, postId];
+
+                set({ settings: { ...settings, favoritePosts: newFavs } });
+
+                try {
+                    // API запрос
+                    console.log(isFavorited ? 'Убрано из избранного:' : 'Добавлено в избранное:', postId);
+                } catch (error) {
+                    set({ settings, error: 'Ошибка изменения избранного' });
+                }
             },
 
             clearError: () => set({ error: null })

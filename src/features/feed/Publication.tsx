@@ -21,9 +21,9 @@ import type { Post } from '../../types';
 
 export default function Publication({ post }: { post: Post }) {
     // 2. Достаем новые объединенные экшены (toggle)
-    const { toggleLike, toggleFavorite } = usePostStore();
     const { isAuthenticated } = useAuthStore();
-    const { settings, toggleSubscription, isSubscribed } = useUserSettingsStore();
+    const { settings, toggleSubscription, isSubscribed, toggleLike, toggleFavorite } = useUserSettingsStore();
+    const { updateLikeCount, updateFavoriteCount } = usePostStore();
 
     const subscribed = isSubscribed(post.authorId);
 
@@ -48,13 +48,24 @@ export default function Publication({ post }: { post: Post }) {
             // TODO: Уведомление о необходимости входа
             return;
         }
+        // Меняем в профиле (красим сердечко)
         toggleLike(post.id);
+        // Меняем счетчик в посте (передаем true, если СЕЙЧАС не лайкнут, чтобы сделать +1)
+        updateLikeCount(post.id, !isLiked);;
     };
 
     const handleFavorite = () => {
         if (!isAuthenticated) return;
-        toggleFavorite(post.id);
+
+        toggleFavorite(post.id); // Красим флажок
+        updateFavoriteCount(post.id, !isFavorited); // Меняем счетчик
     };
+
+    // Проверка на лайк
+    const isLiked = settings?.likedPosts.includes(post.id) || false;
+
+    // Проверка на сохранненон
+    const isFavorited = settings?.favoritePosts.includes(post.id) || false;
 
     // проходимся по массиву объектов products, берем у каждого product.name 
     // и проверяем, есть ли это имя в списке аллергенов
@@ -72,7 +83,9 @@ export default function Publication({ post }: { post: Post }) {
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
-                    <img src={avatar} className='w-[35px]' alt="avatar" />
+                    <Link to={`/profile/${post.authorId}`}>
+                        <img src={avatar} className='w-[35px]' alt="avatar" />
+                    </Link>
                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                         {post?.username}
                     </span>
@@ -119,7 +132,7 @@ export default function Publication({ post }: { post: Post }) {
                         }}>
                         <div className='flex items-center gap-[4px]'>
                             <LikeIcon
-                                className={`cursor-pointer ${post.isLiked ? ' text-red-500' : 'text-black-500'}`}
+                                className={`cursor-pointer ${isLiked ? ' text-red-500' : 'text-black'}`}
                                 onClick={handleLike}
                             />
                             <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
@@ -128,7 +141,7 @@ export default function Publication({ post }: { post: Post }) {
                         </div>
                         <div className='flex items-center gap-[4px]'>
                             <FavoritesIcon
-                                className={`cursor-pointer ${post.isFavorited ? 'fill-yellow-500 text-yellow-500' : ''}`}
+                                className={`cursor-pointer ${isFavorited ? 'fill-yellow-500 text-yellow-500' : ''}`}
                                 onClick={handleFavorite}
                             />
                             <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>

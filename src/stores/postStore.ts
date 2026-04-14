@@ -12,8 +12,8 @@ interface PostStore {
 
     // Действия
     fetchPosts: (reset?: boolean) => Promise<void>;
-    toggleLike: (postId: string) => Promise<void>;
-    toggleFavorite: (postId: string) => Promise<void>;
+    updateLikeCount: (postId: string, increment: boolean) => Promise<void>;
+    updateFavoriteCount: (postId: string, increment: boolean) => Promise<void>;
     fetchPostById: (id: string) => Promise<Post | null>;
     clearCurrentPost: () => void; // Чтобы чистить при уходе со страницы
     clearError: () => void;
@@ -51,80 +51,42 @@ export const usePostStore = create<PostStore>((set, get) => ({
         }
     },
 
-    toggleLike: async (postId: string) => {
-        // Сохраняем текущее состояние для отката в случае ошибки API
-        const { posts, currentPost } = get();
-
-        // Определяем, был ли лайк (ищем либо в ленте, либо в открытом посте)
-        const postInList = posts.find(p => p.id === postId);
-        const isCurrentlyLiked = postInList ? postInList.isLiked : currentPost?.id === postId ? currentPost.isLiked : null;
-
-        if (isCurrentlyLiked === null) return; // Пост не найден нигде
-
-        // Оптимистичное обновление UI (сразу обновляем и ленту, и текущий пост)
+    updateLikeCount: async (postId: string, increment: boolean) => {
         set(state => {
             const updatedPosts = state.posts.map(p => p.id === postId ? {
                 ...p,
-                isLiked: !p.isLiked,
-                likesCount: p.likesCount + (p.isLiked ? -1 : 1)
+                likesCount: p.likesCount + (increment ? 1 : -1)
             } : p);
 
             let updatedCurrentPost = state.currentPost;
             if (state.currentPost?.id === postId) {
                 updatedCurrentPost = {
                     ...state.currentPost,
-                    isLiked: !state.currentPost.isLiked,
-                    likesCount: state.currentPost.likesCount + (state.currentPost.isLiked ? -1 : 1)
+                    likesCount: state.currentPost.likesCount + (increment ? 1 : -1)
                 };
             }
 
             return { posts: updatedPosts, currentPost: updatedCurrentPost };
         });
-
-        // API запрос
-        try {
-            // if (isCurrentlyLiked) await api.delete(`/posts/${postId}/like`);
-            // else await api.post(`/posts/${postId}/like`);
-            console.log(isCurrentlyLiked ? 'Убран лайк:' : 'Лайкнут пост:', postId);
-        } catch (error) {
-            // Откат при ошибке (возвращаем старый список и старый currentPost)
-            set({ posts, currentPost, error: 'Не удалось изменить лайк' });
-        }
     },
 
-    toggleFavorite: async (postId: string) => {
-        const { posts, currentPost } = get();
-
-        const postInList = posts.find(p => p.id === postId);
-        const isCurrentlyFavorited = postInList ? postInList.isFavorited : currentPost?.id === postId ? currentPost.isFavorited : null;
-
-        if (isCurrentlyFavorited === null) return;
-
+    updateFavoriteCount: async (postId: string, increment: boolean) => {
         set(state => {
             const updatedPosts = state.posts.map(p => p.id === postId ? {
                 ...p,
-                isFavorited: !p.isFavorited,
-                favoritesCount: p.favoritesCount + (p.isFavorited ? -1 : 1)
+                favoritesCount: p.favoritesCount + (increment ? 1 : -1)
             } : p);
 
             let updatedCurrentPost = state.currentPost;
             if (state.currentPost?.id === postId) {
                 updatedCurrentPost = {
                     ...state.currentPost,
-                    isFavorited: !state.currentPost.isFavorited,
-                    favoritesCount: state.currentPost.favoritesCount + (state.currentPost.isFavorited ? -1 : 1)
+                    favoritesCount: state.currentPost.favoritesCount + (increment ? 1 : -1)
                 };
             }
 
             return { posts: updatedPosts, currentPost: updatedCurrentPost };
         });
-
-        try {
-            // API запрос
-            console.log(isCurrentlyFavorited ? 'Убрано из избранного:' : 'Добавлено в избранное:', postId);
-        } catch (error) {
-            set({ posts, currentPost, error: 'Не удалось изменить избранное' });
-        }
     },
 
     fetchPostById: async (id: string) => {
@@ -134,7 +96,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
             // Ищем в уже загруженных постах (из ленты)
             let post = get().posts.find(p => p.id === id);
 
-            // Если в ленте нет (зашли по прямой ссылке), запрашиваем (в нашем случае берем из моков)
+            // Если в ленте нет (зашли по прямой ссылке), запрашиваем (берем из моков)
             if (!post) {
                 post = MOCK_POSTS.find(p => p.id === id);
                 // В будущем: post = await api.get(`/posts/${id}`);
