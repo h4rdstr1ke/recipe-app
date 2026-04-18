@@ -4,10 +4,11 @@ import logo from '../../assets/Logo.svg';
 import Add from '../../assets/icons/add.svg?react';
 import Favorites from '../../assets/icons/favorites.svg?react';
 import ArrowIcon from '../../assets/arrow.svg?react';
-import SearchBar from './SearchBar';
 import ProfileMenu from './ProfileMenu';
 import StarTopAuthor from '../../assets/icons/starTopAuthor.svg?react'
 import { useState } from 'react';
+
+import SearchBar from '../../features/search/Search'
 
 type HeaderProps = {
     searchQuery: string;
