@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Arrow from "../../assets/arrow.svg?react";
+import Arrow from "../../assets/icons/arrow.svg?react";
 import Button from "../../components/button/Button";
 import Input from "../../components/input/Input";
 

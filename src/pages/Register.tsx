@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import ArrowIcon from '../assets/arrow.svg?react';
+import ArrowIcon from '../assets/icons/arrow.svg?react';
 import { useAuthStore } from '../stores/authStore';
 
 export default function Register() {
@@ -268,8 +268,8 @@ export default function Register() {
                         onClick={handleResendCode}
                         disabled={!canResend}
                         className={`font-montserrat text-[12px] tracking-[0.2px] ${canResend
-                                ? 'text-[#23A6F0] hover:text-[#1a7fb3] cursor-pointer'
-                                : 'text-[#737373] cursor-not-allowed'
+                            ? 'text-[#23A6F0] hover:text-[#1a7fb3] cursor-pointer'
+                            : 'text-[#737373] cursor-not-allowed'
                             }`}
                     >
                         {canResend

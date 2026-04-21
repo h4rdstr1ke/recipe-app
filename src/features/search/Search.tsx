@@ -59,7 +59,7 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         // Вешаем ref на самый внешний div компонента SearchBar
         <div ref={searchContainerRef}>
             <form
-                className='flex justify-center items-center w-[450px] h-[50px] gap-4'
+                className='flex justify-center items-center h-[50px] gap-5'
                 onSubmit={(e) => e.preventDefault()}
             >
                 <div className='w-[340px] h-[50px] gap-8 flex justify-center items-center bg-[#F9F9F9] border border-[#DADADA] rounded-[5px]'>

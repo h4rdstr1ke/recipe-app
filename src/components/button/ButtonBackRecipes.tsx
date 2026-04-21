@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Arrow from '../../assets/arrow.svg?react'
+import Arrow from '../../assets/icons/arrow.svg?react'
 
 export default function ButtonBackRecipes() {
     return (

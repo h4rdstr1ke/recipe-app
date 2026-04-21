@@ -167,12 +167,12 @@ export default function Profile() {
             {/* НАВИГАЦИЯ Скрываем вкладку "Сохраненное" у чужих*/}
             <nav className='pt-[35px] pb-[10px] flex gap-[150px] justify-center border-b-4 border-[#D9D9D9] w-[100%]'>
                 <PublicationsIcon
-                    className={`cursor-pointer ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                    className={`cursor-pointer ${isMyProfile ? 'hover:text-[#9B9B9B]' : 'hover:none'} transition duration-300 ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
                     onClick={() => setActiveTab('publications')}
                 />
                 {isMyProfile && (
                     <SavedIcon
-                        className={`cursor-pointer ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                        className={`cursor-pointer hover:text-[#9B9B9B] transition duration-300 ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
                         onClick={() => setActiveTab('saved')}
                     />
                 )}
