@@ -49,12 +49,6 @@ export default function ProfileMenu() {
                         >
                             Профиль
                         </li>
-                        <li
-                            onClick={() => handleNavigation('/settings')}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
-                        >
-                            Настройки
-                        </li>
                         <hr className="my-1" />
                         <li
                             onClick={handleLogout}

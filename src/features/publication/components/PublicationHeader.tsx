@@ -1,6 +1,6 @@
 import StarIcon from '../../../assets/icons/feed/star.svg?react';
-import LikeIcon from '../../../assets/icons/feed/like.svg?react';
-import FavoritesIcon from '../../../assets/icons/feed/favorites.svg?react';
+import { LikeIcon } from '../../../components/icons/LikeIcon';
+import { FavoritesIcon } from '../../../components/icons/FavoritesIcon';
 import CommentIcon from '../../../assets/icons/feed/comment.svg?react';
 import BanIcon from '../../../assets/icons/feed/ban.svg?react';
 import AllergenIcon from '../../../assets/icons/feed/allergen.svg?react';
@@ -114,8 +114,8 @@ export default function PublicationHeader({
                 <div className='flex max-w-[200px] gap-2'>
                     <div className='flex items-center gap-1'>
                         <LikeIcon
-                            className={`w-[25px]
-                            cursor-pointer ${isLiked ? ' text-red-500' : 'text-black-500'}`}
+                            isLiked={isLiked}
+                            className={`cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
                             onClick={onLike}
                         />
                         <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
@@ -126,8 +126,8 @@ export default function PublicationHeader({
                     </div>
                     <div className='flex items-center gap-1'>
                         <FavoritesIcon
-                            className={`w-[25px]
-                            cursor-pointer ${isFavorited ? 'fill-yellow-500' : ''}`}
+                            isFavorited={isFavorited}
+                            className={`cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
                             onClick={onFavorite}
                         />
                         <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>

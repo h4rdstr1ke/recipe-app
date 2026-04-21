@@ -141,7 +141,7 @@ export default function Profile() {
             </nav>
 
             {/* СЕТКА ПОСТОВ */}
-            <div className='grid grid-cols-3 gap-1 w-[90%] mt-4 pb-10'>
+            <div className='grid grid-cols-3 gap-1 w-[70%] mt-4 pb-10'>
                 {postsToRender.map(post => (
                     <Link key={post.id} to={`/publication/${post.id}`} className="aspect-square">
                         <img src={post.image} alt={post.title} className='w-full h-full object-cover hover:opacity-90' />
