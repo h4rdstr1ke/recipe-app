@@ -98,7 +98,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 authorName={post.firstName}
                 onSubscribe={handleSubscribe}
                 image={post.image || testPost}
-                time={post.timeAgo}
+                time={post.timeCooking}
                 title={post.title}
                 rating={post.rating}
                 description={post.description}

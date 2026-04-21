@@ -2,20 +2,60 @@ import { create } from 'zustand';
 import type { Post } from '../types/index';
 import { MOCK_POSTS } from '../mocks/mocks';
 
+/**
+ * Хранилище для управления лентой публикаций и просмотром конкретного рецепта.
+ */
 interface PostStore {
+    /** Массив постов для отображения в общей ленте */
     posts: Post[];
+    /** Данные поста, открытого в данный момент на отдельной странице (PublicationPage) */
     currentPost: Post | null;
+    /** Индикатор процесса загрузки данных по сети */
     isLoading: boolean;
+    /** Текст ошибки, если запрос завершился неудачно (или null, если всё ок) */
     error: string | null;
+    /** Флаг наличия следующих страниц на сервере (для бесконечной прокрутки) */
     hasMore: boolean;
+    /** Текущая загруженная страница пагинации */
     page: number;
 
-    // Действия
+    /**
+     * Загружает следующую порцию постов для ленты.
+     * Защищена от двойного вызова во время загрузки.
+     * * @param reset - Если true, сбрасывает пагинацию и загружает первую страницу (полезно для Pull-to-Refresh)
+     */
     fetchPosts: (reset?: boolean) => Promise<void>;
+
+    /**
+     * Изменяет счетчик лайков на конкретном посте (оптимистичное обновление UI).
+     * Обновляет пост как в общей ленте (`posts`), так и в открытом посте (`currentPost`).
+     * * @param postId - ID целевого поста
+     * @param increment - `true` (добавить лайк) или `false` (убрать лайк)
+     */
     updateLikeCount: (postId: string, increment: boolean) => Promise<void>;
+
+    /**
+     * Изменяет счетчик добавлений в избранное на посте (оптимистичное обновление UI).
+     * * @param postId - ID целевого поста
+     * @param increment - `true` (добавить) или `false` (убрать)
+     */
     updateFavoriteCount: (postId: string, increment: boolean) => Promise<void>;
+
+    /**
+     * Запрашивает данные конкретного поста для отображения на его странице.
+     * Сначала пытается найти пост в кэше ленты (`posts`), чтобы избежать лишнего запроса.
+     * * @param id - Уникальный ID запрашиваемого поста
+     * @returns Найденный объект поста или null в случае ошибки/отсутствия
+     */
     fetchPostById: (id: string) => Promise<Post | null>;
-    clearCurrentPost: () => void; // Чтобы чистить при уходе со страницы
+
+    /** * Очищает `currentPost`. 
+     * Обязательно вызывать при уходе со страницы (unmount), чтобы при открытии 
+     * следующего рецепта не мелькал старый контент.
+     */
+    clearCurrentPost: () => void;
+
+    /** Сбрасывает состояние ошибки в null */
     clearError: () => void;
 }
 
@@ -93,17 +133,14 @@ export const usePostStore = create<PostStore>((set, get) => ({
         set({ isLoading: true, error: null });
 
         try {
-            // Ищем в уже загруженных постах (из ленты)
             let post = get().posts.find(p => p.id === id);
 
-            // Если в ленте нет (зашли по прямой ссылке), запрашиваем (берем из моков)
             if (!post) {
                 post = MOCK_POSTS.find(p => p.id === id);
                 // В будущем: post = await api.get(`/posts/${id}`);
             }
 
             if (post) {
-                // Обязательно сохраняем в currentPost
                 set({ currentPost: post, isLoading: false });
                 return post;
             } else {

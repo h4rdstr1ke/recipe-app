@@ -3,31 +3,63 @@ import type { Comment } from '../types/index';
 import { MOCK_COMMENTS } from '../mocks/mocks';
 import { useAuthStore } from './authStore';
 
+/**
+ * Хранилище для управления веткой комментариев конкретного (открытого) поста.
+ */
 interface CommentsStore {
+    /** Массив корневых комментариев (ответы лежат внутри каждого комментария в поле replies) */
     comments: Comment[];
+    /** Индикатор процесса отправки или загрузки данных */
     isLoading: boolean;
+    /** Текст ошибки, если запрос завершился неудачно */
     error: string | null;
 
-    // Действия
-    fetchCommentsByPostId: (postId: string) => Promise<void>; // загрузить ветку комментов для открытого поста
-    addComment: (postId: string, text: string, image?: string) => Promise<void>; // написать новый коммент
-    addReply: (commentId: string, text: string) => Promise<void>; // ответить на чужой коммент
-    toggleCommentLike: (commentId: string) => Promise<void>; // лайкнуть коммент
-    editReply: (commentId: string, replyId: string, newText: string) => Promise<void>; // редактирование ответа
+    /**
+     * Загружает ветку комментариев для открытого поста.
+     * @param postId - ID поста, комментарии которого нужно загрузить
+     */
+    fetchCommentsByPostId: (postId: string) => Promise<void>;
+
+    /**
+     * Отправляет новый корневой комментарий к посту (Оптимистичное обновление).
+     * @param postId - ID поста, под которым оставляют комментарий
+     * @param text - Текст комментария
+     * @param image - (Опционально) URL прикрепленного изображения
+     */
+    addComment: (postId: string, text: string, image?: string) => Promise<void>;
+
+    /**
+     * Оставляет ответ на существующий комментарий (Оптимистичное обновление).
+     * @param commentId - ID корневого комментария, на который отвечаем
+     * @param text - Текст ответа
+     */
+    addReply: (commentId: string, text: string) => Promise<void>;
+
+    /**
+     * Ставит или убирает лайк с корневого комментария (Оптимистичное обновление).
+     * @param commentId - ID комментария
+     */
+    toggleCommentLike: (commentId: string) => Promise<void>;
+
+    /**
+     * Редактирует текст существующего ответа.
+     * @param commentId - ID корневого комментария, в котором находится ответ
+     * @param replyId - Уникальный ID самого ответа
+     * @param newText - Новый текст ответа
+     */
+    editReply: (commentId: string, replyId: string, newText: string) => Promise<void>;
 }
 
 export const useCommentsStore = create<CommentsStore>((set, get) => ({
-    comments: [], // Изначально пустой массив
+    comments: [],
     isLoading: false,
     error: null,
 
     fetchCommentsByPostId: async (postId) => {
         set({ isLoading: true, error: null });
         try {
-            // Имитируем задержку сети 
             await new Promise(resolve => setTimeout(resolve, 500));
-            // запрос: const response = await api.get(`/posts/${postId}/comments`);
-            // Временно фильтруем моки
+            // Временно фильтруем моки. В будущем: const response = await api.get(`/posts/${postId}/comments`);
             const postComments = MOCK_COMMENTS.filter(comment => comment.postId === postId);
             set({ comments: postComments, isLoading: false });
         } catch (error: unknown) {
@@ -37,10 +69,8 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
 
     addComment: async (postId, text, image) => {
         const { comments } = get(); // Достаем текущие комменты из стейта
-
         const { user } = useAuthStore.getState();
 
-        //(если вдруг неавторизованный юзер смог нажать кнопку)
         if (!user) {
             console.error("Пользователь не авторизован");
             return;
@@ -48,45 +78,41 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
 
         // Создаем объект нового комментария
         const newComment: Comment = {
-            id: Date.now().toString(), // Генерируем временный ID
+            id: Date.now().toString(), // Временный ID для UI
             postId: postId,
-            author: user.nickname, // TODO: В будущем брать имя из authStore
+            author: user.nickname,
             text: text,
             imageUrl: image,
             likesCount: 0,
             isLiked: false,
-            createdAt: new Date().toLocaleDateString('ru-RU'), // Текущая дата
-            replies: [] // У нового коммента пока нет ответов
+            createdAt: new Date().toLocaleDateString('ru-RU'),
+            replies: []
         };
 
-        // 2. Обновляем стейт оптимистично (добавляем новый коммент в начало массива)
+        // Оптимистичное обновление UI: добавляем новый коммент в начало массива
         set({ comments: [newComment, ...comments] });
 
         try {
-            // API 
-            // await api.post(`/comments`, newComment);
+            // В будущем: await api.post(`/comments`, newComment);
             console.log('Комментарий успешно отправлен на сервер');
         } catch (error) {
-            // 4. Если сервер выдал ошибку - откатываем стейт назад
-            set({ comments });
-            set({ error: 'Не удалось отправить комментарий' });
+            // Если сервер выдал ошибку - откатываем стейт назад
+            set({ comments, error: 'Не удалось отправить комментарий' });
         }
     },
+
     addReply: async (commentId, text) => {
         const { comments } = get();
-
         const { user } = useAuthStore.getState();
 
-        //(если вдруг неавторизованный юзер смог нажать кнопку)
         if (!user) {
             console.error("Пользователь не авторизован");
             return;
         }
 
-        // Создаем объект ответа (Reply)
         const newReply = {
             id: Date.now().toString(),
-            author: user.nickname, // TODO: Брать из авторизации
+            author: user.nickname,
             text: text,
             likesCount: 0,
             isLiked: false,
@@ -96,28 +122,24 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         // Ищем нужный коммент и обновляем только его массив replies
         const updatedComments = comments.map(comment => {
             if (comment.id === commentId) {
-                // Если нашли нужный коммент, возвращаем его копию с новым ответом
                 return {
                     ...comment,
                     replies: [...comment.replies, newReply]
                 };
             }
-            // Остальные комменты возвращаем без изменений
             return comment;
         });
 
-        // Сохраняем обновленный массив в стейт
         set({ comments: updatedComments });
 
         try {
-            //  API await api.post(`/comments/${commentId}/reply`, newReply))
+            // В будущем: await api.post(`/comments/${commentId}/reply`, newReply))
             console.log('Ответ успешно отправлен');
         } catch (error) {
-            set({ comments, error: 'Ошибка отправки ответа' }); // Откат при ошибке
+            set({ comments, error: 'Ошибка отправки ответа' });
         }
     },
 
-    // Функция редактирование ответа
     editReply: async (commentId, replyId, newText) => {
         const { comments } = get();
 
@@ -134,28 +156,24 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
             return comment;
         });
 
-        // Мгновенно обновляем интерфейс
         set({ comments: updatedComments });
 
         try {
-            // API запрос в будущем
-            // await api.put(`/comments/${commentId}/reply/${replyId}`, { text: newText });
+            // В будущем: await api.put(`/comments/${commentId}/reply/${replyId}`, { text: newText });
             console.log('Ответ успешно отредактирован');
         } catch (error) {
-            set({ comments, error: 'Ошибка редактирования ответа' }); // Откат при ошибке
+            set({ comments, error: 'Ошибка редактирования ответа' });
         }
     },
 
     toggleCommentLike: async (commentId) => {
         const { comments } = get();
 
-        // Ищем индекс комментария
         const commentIndex = comments.findIndex(c => c.id === commentId);
-        if (commentIndex === -1) return; // Если не нашли - выходим
+        if (commentIndex === -1) return;
 
         const isCurrentlyLiked = comments[commentIndex].isLiked;
 
-        // Обновляем массив
         const updatedComments = comments.map(comment => {
             if (comment.id === commentId) {
                 return {
@@ -170,9 +188,8 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         set({ comments: updatedComments });
 
         try {
-            // API запрос
+            // В будущем: API запрос на лайк/дизлайк
         } catch (error) {
-            // Откат при ошибке
             set({ comments });
         }
     }

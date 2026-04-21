@@ -5,7 +5,6 @@ import avatar from '../../assets/avatar.svg';
 import testPost from '../../assets/testPost2.png';
 import BanIcon from '../../assets/icons/feed/ban.svg?react';
 import CommentIcon from '../../assets/icons/feed/comment.svg?react';
-//import FavoritesIcon from '../../assets/icons/feed/favorites.svg?react';
 import { LikeIcon } from '../../components/icons/LikeIcon';
 import { FavoritesIcon } from '../../components/icons/FavoritesIcon';
 import StarIcon from '../../assets/icons/feed/star.svg?react';
@@ -129,7 +128,7 @@ export default function Publication({ post }: { post: Post }) {
                     </div>
                     <div className='absolute bottom-0 right-0 mx-1 mb-2'>
                         <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
-                            {post.timeAgo} {/* Было захардкожено "50 минут" */}
+                            {post.timeCooking} {/* Было захардкожено "50 минут" */}
                         </span>
                     </div>
                 </div>

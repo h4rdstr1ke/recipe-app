@@ -5,28 +5,49 @@ import Button from "../components/button/Button"
 import Avatar from "../assets/avatar.svg"
 import Medal from "../assets/medal.svg?react"
 
+/**
+ * Страница "Топ-авторов" (Рейтинг / Leaderboard).
+ * Отображает список пользователей с наивысшим рейтингом.
+ */
 export default function TopAuthorsPage() {
-
+    // ---------------------------------------------------------
+    // 1. ДАННЫЕ ИЗ СТОРА
+    // ---------------------------------------------------------
     const { authors, isLoading, error, fetchTopAuthors } = useTopAuthorStore();
 
+    // Загружаем авторов при первом открытии страницы
     useEffect(() => {
         fetchTopAuthors();
     }, [fetchTopAuthors]);
 
-    // Медали
+    // ---------------------------------------------------------
+    // 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (Хелперы)
+    // ---------------------------------------------------------
+
+    /**
+     * Возвращает Tailwind-класс цвета для медали в зависимости от позиции в топе.
+     * @param index - Позиция в массиве (0 = первое место)
+     */
     const getMedalClass = (index: number) => {
-        if (index === 0) return "text-[#FFEF3F]";
-        if (index === 1) return "text-[#E7E7E7]";
-        if (index === 2) return "text-[#D0B078]";
-        return "invisible";
+        if (index === 0) return "text-[#FFEF3F]"; // Золото
+        if (index === 1) return "text-[#E7E7E7]"; // Серебро
+        if (index === 2) return "text-[#D0B078]"; // Бронза
+        return "invisible";                       // Убираем медаль для остальных
     };
 
+    // ---------------------------------------------------------
+    // 3. СОСТОЯНИЯ ЗАГРУЗКИ / ОШИБКИ
+    // ---------------------------------------------------------
     if (isLoading) {
         return <div className="text-center mt-20 text-2xl font-montserrat">Загрузка топа...</div>;
     }
     if (error) {
         return <div className="text-center mt-20 text-red-500 font-montserrat">Ошибка: {error}</div>;
     }
+
+    // ---------------------------------------------------------
+    // 4. ОСНОВНОЙ РЕНДЕР
+    // ---------------------------------------------------------
     return (
         <div className="flex justify-center">
             <div className="flex flex-col w-[900px]">

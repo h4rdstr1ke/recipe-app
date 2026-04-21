@@ -5,28 +5,52 @@ import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Страница редактирования личного профиля.
+ * Позволяет изменить базовую информацию (имя, никнейм, био) и пищевые предпочтения (аллергены, нежелательное).
+ */
 export default function ProfileEdit() {
+    // ---------------------------------------------------------
+    // 1. ИНИЦИАЛИЗАЦИЯ И ГЛОБАЛЬНЫЕ СТОРЫ
+    // ---------------------------------------------------------
     const navigate = useNavigate();
-    const { settings, fetchSettings, updateSettings } = useUserSettingsStore(); {/* updateSettings */ }
-    const { user, updateProfile } = useAuthStore(); // Достаем нашего юзера и функцию обновления
 
+    // Стор настроек (для аллергенов и нежелательных продуктов)
+    const { settings, fetchSettings, updateSettings } = useUserSettingsStore();
+
+    // Стор авторизации (для имени, никнейма, био)
+    const { user, updateProfile } = useAuthStore();
+
+    // ---------------------------------------------------------
+    // 2. ЛОКАЛЬНЫЙ СТЕЙТ ФОРМЫ
+    // Мы копируем данные из стора сюда, чтобы пользователь мог 
+    // редактировать текст, не изменяя глобальные данные до нажатия "Сохранить".
+    // ---------------------------------------------------------
     const [name, setName] = useState('');
     const [bio, setBio] = useState('');
+    const [nickname, setNickName] = useState('');
     const [allergens, setAllergens] = useState<string[]>([]);
     const [unwanted, setUnwanted] = useState<string[]>([]);
 
+    // ---------------------------------------------------------
+    // 3. ЭФФЕКТЫ (Синхронизация Стор -> Локальный стейт)
+    // ---------------------------------------------------------
+
+    // При первом рендере просим стор настроек подтянуть актуальные данные
     useEffect(() => {
         fetchSettings();
-    }, []);
+    }, [fetchSettings]);
 
-    // При загрузке страницы подставляем текущие имя и описание юзера
+    // Как только данные юзера загрузились, подставляем их в инпуты
     useEffect(() => {
         if (user) {
             setName(user.name || '');
             setBio(user.bio || '');
+            setNickName(user.nickname);
         }
     }, [user]);
 
+    // Как только настройки юзера загрузились, отмечаем нужные чекбоксы
     useEffect(() => {
         if (settings) {
             setAllergens(settings.allergens);
@@ -34,21 +58,33 @@ export default function ProfileEdit() {
         }
     }, [settings]);
 
+    // ---------------------------------------------------------
+    // 4. ОБРАБОТЧИКИ СОБЫТИЙ (Handlers)
+    // ---------------------------------------------------------
+
+    /**
+     * Обработчик отправки формы.
+     * Собирает все локальные стейты и пушит их обратно в глобальные сторы/на бэкенд.
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Сохраняем имя и описание в стейт юзера
-        updateProfile({ name, bio });
+        // 1. Сохраняем базовые данные в стор авторизации
+        updateProfile({ name, bio, nickname });
 
-        // Раскомментировано и работает: сохраняем настройки
+        // 2. Сохраняем пищевые предпочтения в стор настроек
         if (settings) {
             await updateSettings({ ...settings, allergens, unwanted });
         }
-        /* await updateSettings({allergens, unwanted }); */
 
-        navigate('/profile'); // Перенаправляем на профиль после сохранения
+        // 3. Возвращаем пользователя на страницу его профиля
+        navigate('/profile');
     };
 
+    /**
+     * Универсальный переключатель для массивов строк (чекбоксов).
+     * Если элемент есть в массиве — удаляет его, если нет — добавляет.
+     */
     const handleCheckboxChange = (value: string, list: string[], setList: (list: string[]) => void) => {
         if (list.includes(value)) {
             setList(list.filter(item => item !== value));
@@ -57,19 +93,34 @@ export default function ProfileEdit() {
         }
     };
 
+    // ---------------------------------------------------------
+    // 5. РЕНДЕР UI
+    // ---------------------------------------------------------
+
     return (
         <div className='flex w-[100%] justify-center pb-20'>
             <form onSubmit={handleSubmit} className='flex flex-col items-center'>
                 <div className="flex w-[640px] h-[60px] mt-[34px] mb-[34px] px-[20px] items-center justify-between rounded-[20px] bg-[#F9F9F9] border-[1px] border-[#E6E6E6]">
                     <div className='flex items-center gap-4 '>
                         <img src={user?.avatarUrl || avatar} className='w-[50px] rounded-full' alt="avatar" />
-                        <span className='font-montserrat text-[36px] tracking-[0.2px] leading-7 font-bold'>{user?.nickname || 'vlad228'}</span>
+                        <span className='font-montserrat text-[36px] tracking-[0.2px] leading-7'>{user?.nickname || 'vlad228'}</span>
                     </div>
                     <button type="button" className='w-[130px] h-[30px] flex items-center justify-center rounded-[5px] bg-[#23A6F0] hover:bg-[#1E90D6] transition-colors'>
                         <span className='font-montserrat text-[14px] font-bold text-[#FFFFFF] tracking-[0.2px] leading-7'>Новое фото</span>
                     </button>
                 </div>
                 <div className="flex flex-col w-[960px] gap-2">
+
+                    <label className='font-montserrat text-[20px] tracking-[0.2px] leading-6 font-semibold flex gap-1'>
+                        Поменять никнейм <span className="text-[#E0232E] font-bold">*</span>
+                    </label>
+                    <input
+                        value={nickname}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        placeholder='Например: Иван'
+                        className='py-[10px] px-[20px] leading-6 focus:outline-none font-montserrat tracking-[0.2px] placeholder:text-[14px] placeholder:text-[#737373] rounded-[5px] bg-[#F9F9F9] border-[1px] border-[#E6E6E6]'
+                    />
 
                     <label className='font-montserrat text-[20px] tracking-[0.2px] leading-6 font-semibold flex gap-1'>
                         Введите свое имя <span className="text-[#E0232E] font-bold">*</span>

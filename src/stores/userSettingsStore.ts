@@ -3,18 +3,61 @@ import { persist } from 'zustand/middleware';
 import type { UserSettings } from '../types/index';
 import { MOCK_USER_SETTINGS } from '../mocks/mocks';
 
+/**
+ * Хранилище личных настроек текущего пользователя (аллергены, подписки, закладки).
+ * Автоматически синхронизирует состояние `settings` с localStorage браузера.
+ */
 interface UserSettingsStore {
+    /** * Текущие настройки пользователя. 
+     * Может быть null, пока данные не загружены с сервера или из кэша. 
+     */
     settings: UserSettings | null;
+    /** Индикатор загрузки данных по сети */
     isLoading: boolean;
+    /** Текст ошибки, если запрос завершился неудачно */
     error: string | null;
 
-    // Действия
+    /**
+     * Загружает настройки пользователя с сервера.
+     * Если данные уже восстановлены из localStorage, повторный сетевой запрос не делается.
+     */
     fetchSettings: () => Promise<void>;
+
+    /**
+     * Перезаписывает настройки пользователя (например, при редактировании профиля).
+     * @param settings - Полный объект новых настроек
+     */
     updateSettings: (settings: UserSettings) => Promise<void>;
+
+    /**
+     * Подписывает текущего пользователя на автора или отписывает от него.
+     * Выполняется оптимистично: UI обновляется мгновенно, до ответа сервера.
+     * @param authorId - ID целевого автора (пользователя)
+     */
     toggleSubscription: (authorId: string) => Promise<void>;
+
+    /**
+     * Вспомогательная функция для UI: проверяет, есть ли подписка на автора.
+     * @param authorId - ID проверяемого автора
+     * @returns `true`, если подписка есть, иначе `false`
+     */
     isSubscribed: (authorId: string) => boolean;
+
+    /**
+     * Добавляет или удаляет публикацию из списка оцененных (лайкнутых) постов.
+     * Выполняется оптимистично.
+     * @param postId - ID оцениваемой публикации
+     */
     toggleLike: (postId: string) => Promise<void>;
+
+    /**
+     * Добавляет или удаляет публикацию из личных закладок пользователя.
+     * Выполняется оптимистично.
+     * @param postId - ID сохраняемой публикации
+     */
     toggleFavorite: (postId: string) => Promise<void>;
+
+    /** Сбрасывает состояние ошибки в null */
     clearError: () => void;
 }
 
@@ -26,14 +69,13 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
             error: null,
 
             fetchSettings: async () => {
-                // Если настройки уже загружены из кэша (благодаря persist), не делаем лишний запрос
                 if (get().settings) return;
 
                 set({ isLoading: true, error: null });
 
                 try {
-                    // Имитация API
                     await new Promise(resolve => setTimeout(resolve, 300));
+                    // В будущем: const response = await api.get('/user/settings');
                     set({ settings: MOCK_USER_SETTINGS, isLoading: false });
                 } catch (error: unknown) {
                     set({
@@ -46,7 +88,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
             updateSettings: async (settings) => {
                 set({ isLoading: true, error: null });
                 try {
-                    // TODO: API запрос await api.put('/user/settings', settings);
+                    // В будущем: await api.put('/user/settings', settings);
                     set({ settings, isLoading: false });
                 } catch (error: unknown) {
                     set({ error: 'Ошибка сохранения настроек', isLoading: false });
@@ -62,16 +104,14 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                     ? settings.subscriptions.filter(id => id !== authorId)
                     : [...settings.subscriptions, authorId];
 
-                // Оптимистичное обновление UI (persist сам сохранит в localStorage)
                 set({ settings: { ...settings, subscriptions: newSubs } });
 
                 try {
-                    // API запрос:
+                    // В будущем:
                     // if (isSubbed) await api.delete(`/users/${authorId}/subscribe`);
                     // else await api.post(`/users/${authorId}/subscribe`);
                     console.log(isSubbed ? 'Отписался от:' : 'Подписался на:', authorId);
                 } catch (error) {
-                    // Откат при ошибке сети
                     set({ settings, error: 'Ошибка изменения подписки' });
                 }
             },
@@ -93,7 +133,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 set({ settings: { ...settings, likedPosts: newLiked } });
 
                 try {
-                    // API запрос
+                    // В будущем: API запрос
                     console.log(isLiked ? 'Убран лайк:' : 'Лайкнут пост:', postId);
                 } catch (error) {
                     set({ settings, error: 'Ошибка изменения лайка' });
@@ -112,7 +152,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 set({ settings: { ...settings, favoritePosts: newFavs } });
 
                 try {
-                    // API запрос
+                    // В будущем: API запрос
                     console.log(isFavorited ? 'Убрано из избранного:' : 'Добавлено в избранное:', postId);
                 } catch (error) {
                     set({ settings, error: 'Ошибка изменения избранного' });
@@ -122,8 +162,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
             clearError: () => set({ error: null })
         }),
         {
-            name: 'user_settings', // Ключ в localStorage
-            // Указываем, что сохранять нужно только сами настройки, а статус загрузки и ошибки сбрасывать
+            name: 'user_settings',
             partialize: (state) => ({ settings: state.settings }),
         }
     )

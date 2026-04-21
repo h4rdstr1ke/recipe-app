@@ -8,15 +8,31 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useProfileStore } from '../stores/profileStore';
 
+/**
+ * Компонент страницы профиля пользователя.
+ * Универсален: отображает как личный профиль текущего пользователя, так и публичные профили других авторов.
+ */
 export default function Profile() {
-    // Берем ID из URL (например, /profile/user2). Если его нет — мы в своем профиле.
+    // ---------------------------------------------------------
+    // 1. ДАННЫЕ ИЗ МАРШРУТИЗАЦИИ (URL)
+    // ---------------------------------------------------------
+
+    // Параметр `id` из адресной строки (например, "/profile/user2" -> id = "user2").
+    // Если пользователь зашел по ссылке "/profile" (без ID), значение будет undefined.
     const { id } = useParams<{ id: string }>();
 
-    // Данные авторизации и настроек (наши личные)
+    // ---------------------------------------------------------
+    // 2. ДАННЫЕ ИЗ ГЛОБАЛЬНЫХ СТОРОВ (Zustand)
+    // ---------------------------------------------------------
+
+    // authUser - данные того, кто сейчас сидит за устройством (авторизован).
+    // isAuthenticated - флаг, залогинен ли вообще кто-то.
     const { user: authUser, isAuthenticated } = useAuthStore();
+
+    // Личные настройки (нужны для проверки подписок и загрузки сохраненных рецептов).
     const { settings, isSubscribed, toggleSubscription } = useUserSettingsStore();
 
-    // Данные из стора профиля
+    // Стор, отвечающий за отображаемый в данный момент профиль.
     const {
         currentProfile,
         userPosts,
@@ -29,33 +45,50 @@ export default function Profile() {
         error
     } = useProfileStore();
 
+    // ---------------------------------------------------------
+    // 3. ЛОКАЛЬНЫЕ СОСТОЯНИЯ КОМПОНЕНТА
+    // ---------------------------------------------------------
+
+    // Управляет переключением вкладок "Публикации" / "Сохраненное".
     const [activeTab, setActiveTab] = useState<'publications' | 'saved'>('publications');
 
-    // Определяем, наш ли это профиль
+    // ---------------------------------------------------------
+    // 4. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ (Бизнес-логика)
+    // ---------------------------------------------------------
+
+    // Флаг: смотрим ли мы свой собственный профиль? 
+    // True, если в URL нет ID (перешли по /profile) или если ID из URL совпадает с нашим ID.
     const isMyProfile = !id || id === authUser?.id;
-    // Определяем ID того, чьи данные нужно загрузить
+
+    // ID того пользователя, чьи данные нам нужно запросить с сервера.
+    // Если в URL есть чужой ID — берем его. Иначе берем свой ID.
     const targetUserId = id || authUser?.id;
 
+    // ---------------------------------------------------------
+    // ЭФФЕКТЫ (Жизненный цикл)
+    // ---------------------------------------------------------
     useEffect(() => {
         if (!targetUserId) return;
 
-        // Загружаем данные человека и его посты
         fetchProfile(targetUserId);
         fetchUserPosts(targetUserId);
 
-        // Если смотрим себя — подгружаем сохраненки из наших настроек
+        // Загружаем вкладку "Сохраненное" только если это наш профиль
         if (isMyProfile && settings?.favoritePosts) {
             fetchFavoritePosts(settings.favoritePosts);
         }
 
-        // Очистка при закрытии страницы
         return () => clearProfileData();
-    }, [targetUserId, isMyProfile, settings?.favoritePosts]);
+    }, [targetUserId, isMyProfile, settings?.favoritePosts, fetchProfile, fetchUserPosts, fetchFavoritePosts, clearProfileData]);
 
-    // Если грузимся или профиль не найден
+    // ---------------------------------------------------------
+    // 5. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ ДЛЯ РЕНДЕРА (UI)
+    // ---------------------------------------------------------
+
     if (isLoading) {
         return <div className="h-[100vh] flex items-center justify-center font-montserrat">Загрузка профиля...</div>;
     }
+
     if (error || !currentProfile) {
         return (
             <div className="h-[100vh] flex flex-col items-center justify-center font-montserrat">
@@ -71,8 +104,10 @@ export default function Profile() {
         );
     }
 
-    // Решаем, какой массив постов крутить в цикле .map()
+    // Определяем, какой массив рецептов передать в функцию .map() для отрисовки сетки.
     const postsToRender = activeTab === 'publications' ? userPosts : favoritePosts;
+
+    // Проверяем, подписан ли авторизованный пользователь (мы) на человека, чей профиль открыт.
     const subscribed = isSubscribed(currentProfile.id);
 
     return (
@@ -114,15 +149,18 @@ export default function Profile() {
                         </button>
                     </Link>
                 ) : (
-                    <button
-                        onClick={() => isAuthenticated && toggleSubscription(currentProfile.id)}
-                        className={`w-[360px] h-[40px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
-                            }`}
-                    >
-                        <span className='font-montserrat text-[20px] text-white font-bold'>
-                            {subscribed ? 'Вы подписаны' : 'Подписаться'}
-                        </span>
-                    </button>
+                    <div className='flex gap-8'>
+                        <button
+                            onClick={() => isAuthenticated && toggleSubscription(currentProfile.id)}
+                            className={`w-[177px] h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
+                                }`}
+                        >
+                            <span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>
+                                {subscribed ? 'Вы подписаны' : 'Подписаться'}
+                            </span>
+                        </button>
+                        <button className='bg-[#FF0000] w-[177px] h-[35px] rounded-[5px]'><span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>Пожаловаться</span></button>
+                    </div>
                 )}
             </div>
 
