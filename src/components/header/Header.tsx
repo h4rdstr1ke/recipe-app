@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import logo from '../../assets/Logo.svg';
 import Add from '../../assets/icons/add.svg?react';
-import Favorites from '../../assets/icons/favorites.svg?react';
+import Notification from '../../assets/icons/notification.svg?react';
 import ArrowIcon from '../../assets/arrow.svg?react';
 import ProfileMenu from './ProfileMenu';
 import StarTopAuthor from '../../assets/icons/starTopAuthor.svg?react'
 import { useState } from 'react';
 
 import SearchBar from '../../features/search/Search'
+import Notifications from '../../features/notifications/Notifications';
 
 type HeaderProps = {
     searchQuery: string;
@@ -25,6 +26,10 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
             setIsPressed(false);
         }, 150);
     };
+
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+    const handleNotificationClick = () => { setIsNotificationOpen(true) }
+    const handleCloseModal = () => { setIsNotificationOpen(false) }
 
     return (
         <header className=''>
@@ -49,7 +54,7 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                         <Link to="/PostCreate">
                             <Add className='w-[34px] ' />
                         </Link>
-                        <Favorites className='w-[35px] h-[32px]' />
+                        <Notification className='w-[35px] h-[32px]' onClick={handleNotificationClick} />
                     </div>
 
                     {/* Условный рендеринг: если авторизован — меню, если нет — кнопка "Войти" */}
@@ -72,6 +77,8 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                     )}
                 </div>
             </div>
+            {isNotificationOpen && (<Notifications onClose={handleCloseModal} />)}
         </header>
+
     );
 }
