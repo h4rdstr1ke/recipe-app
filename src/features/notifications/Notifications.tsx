@@ -1,5 +1,5 @@
-import Avatar from "../../assets/avatar.svg"
-import TestPhoto from "../../assets/testPost.png"
+import DefaultAvatar from "../../assets/defaultAvatar.svg"
+import TestPhoto from "../../assets/test/testPost2.png"
 
 export default function Notifications({ onClose }: { onClose: () => void }) {
     return (
@@ -9,7 +9,7 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-[90px_260px_200px] items-center">
                     {/* Первая строка */}
                     <div className="flex justify-center">
-                        <img src={Avatar} alt='photo' className="w-[70px] h-[70px]" />
+                        <img src={DefaultAvatar} alt='photo' className="w-[70px] h-[70px]" />
                     </div>
                     <div className="flex flex-col">
                         <span className="font-montserrat text-[20px] tracking-[0.2px] font-semibold leading-7">kailkswjwjsjss</span>
@@ -25,7 +25,7 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-[90px_260px_200px] items-center">
                     {/* Первая строка */}
                     <div className="flex justify-center">
-                        <img src={Avatar} alt='photo' className="w-[70px] h-[70px]" />
+                        <img src={DefaultAvatar} alt='photo' className="w-[70px] h-[70px]" />
                     </div>
                     <div className="flex flex-col">
                         <span className="font-montserrat text-[20px] tracking-[0.2px] font-semibold leading-7">kailkswjwjsjss</span>
@@ -42,7 +42,7 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
                 <div className="grid grid-cols-[90px_260px_200px] items-center">
                     {/* Первая строка */}
                     <div className="flex justify-center">
-                        <img src={Avatar} alt='photo' className="w-[70px] h-[70px]" />
+                        <img src={DefaultAvatar} alt='photo' className="w-[70px] h-[70px]" />
                     </div>
                     <div className="flex flex-col">
                         <span className="font-montserrat text-[20px] tracking-[0.2px] font-semibold leading-7">kailkswjwjsjss</span>

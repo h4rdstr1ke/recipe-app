@@ -1,10 +1,10 @@
-import StarIcon from '../../../assets/icons/feed/star.svg?react';
+import StarIcon from '../../../assets/icons/starRating.svg?react';
 import { LikeIcon } from '../../../components/icons/LikeIcon';
 import { FavoritesIcon } from '../../../components/icons/FavoritesIcon';
-import CommentIcon from '../../../assets/icons/feed/comment.svg?react';
-import BanIcon from '../../../assets/icons/feed/ban.svg?react';
-import AllergenIcon from '../../../assets/icons/feed/allergen.svg?react';
-import UnwnantedIcon from '../../../assets/icons/feed/unwanted.svg?react';
+import CommentIcon from '../../../assets/icons/comment.svg?react';
+import BanIcon from '../../../assets/icons/ban.svg?react';
+import AllergenIcon from '../../../assets/icons/allergen.svg?react';
+import UnwnantedIcon from '../../../assets/icons/unwanted.svg?react';
 
 import Button from '../../../components/button/Button';
 import { Link } from 'react-router-dom';
@@ -81,7 +81,7 @@ export default function PublicationHeader({
             ) : (
                 <div className="flex py-[5px] justify-between items-center">
                     <div className='flex gap-4 items-center '>
-                        <img src={avatar} className='w-[50px] h-[50px]' alt="avatar" />
+                        <img src={avatar} className='w-[50px] h-[50px] object-cover rounded-full select-none' alt="avatar" />
                         <div className='flex flex-col items-start'>
                             <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{username}</span>
                             <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
@@ -111,7 +111,7 @@ export default function PublicationHeader({
 
             {/* Блок взаимодействия */}
             <div className='flex mt-4 items-center justify-between'>
-                <div className='flex max-w-[200px] gap-2'>
+                <div className='flex max-w-[500px] gap-2'>
                     <div className='flex items-center gap-1'>
                         <LikeIcon
                             isLiked={isLiked}

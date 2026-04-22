@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import Avatar from '../../assets/avatar.svg?react';
-import ArrowIcon from '../../assets/icons/arrowDown.svg?react';
+import avatarDefault from '../../assets/defaultAvatar.svg';
+import ArrowIcon from '../../assets/icons/arrow.svg?react';
 
 export default function ProfileMenu() {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +27,11 @@ export default function ProfileMenu() {
     return (
         <div className="relative">
             <div className='flex gap-3 translate-y-1 items-center cursor-pointer' onClick={toggleDropdown}>
-                <Avatar className='w-[50px] h-[50px]' />
+                <img
+                    src={user?.avatarUrl || avatarDefault}
+                    className='w-[50px] h-[50px] object-cover rounded-full select-none'
+                    alt='Avatar'
+                />
                 <div className='flex flex-col'>
                     <span className='font-montserrat font-extrabold tracking-[0.2px] text-[16px] text-[#000000]'>
                         {user?.nickname || 'Гость'}  {/* подставляем никнейм */}
@@ -36,7 +40,9 @@ export default function ProfileMenu() {
                         {user?.name || 'Пользователь'}
                     </span>
                 </div>
-                <ArrowIcon className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ArrowIcon
+                    className={`transition-transform duration-200 ${isOpen ? '-rotate-90' : 'rotate-90'}`}
+                />
             </div>
 
             {/* Выпадающий список */}

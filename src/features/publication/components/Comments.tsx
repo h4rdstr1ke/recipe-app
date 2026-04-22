@@ -3,11 +3,11 @@ import { useCommentsStore } from '../../../stores/commentStore';
 import { useAuthStore } from '../../../stores/authStore';
 import type { Comment } from '../../../types'; // 
 
-import avatar from '../../../assets/avatar.svg';
-import ImageAdd from '../../../assets/icons/publicationPage/imageAdd.svg?react';
-import Reply from '../../../assets/icons/publicationPage/reply.svg?react';
-import Like from '../../../assets/icons/feed/like.svg?react';
-import Pencil from '../../../assets/icons/publicationPage/pencil.svg?react';
+import DefaultAvatar from '../../../assets/defaultAvatar.svg';
+import ImageAdd from '../../../assets/icons/imageAdd.svg?react';
+import Reply from '../../../assets/icons/reply.svg?react';
+import Like from '../../../assets/icons/like.svg?react';
+import Pencil from '../../../assets/icons/pencil.svg?react';
 
 // 
 // 1. ПОДКОМПОНЕНТ: Отрисовка ОДНОГО комментария
@@ -49,7 +49,7 @@ const CommentItem = ({ comment }: { comment: Comment }) => {
             {/* ШАПКА КОММЕНТАРИЯ */}
             <div className='flex justify-between items-center'>
                 <div className='flex gap-2 items-center'>
-                    <img src={avatar} className='w-[30px]' alt="avatar" />
+                    <img src={DefaultAvatar} className='w-[30px]' alt="avatar" />
                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                         {comment.author}
                     </span>
@@ -123,7 +123,7 @@ const CommentItem = ({ comment }: { comment: Comment }) => {
                         <div key={reply.id} className='flex flex-col mb-4'>
                             <div className='flex justify-between items-center'>
                                 <div className='flex gap-2 items-center'>
-                                    <img src={avatar} className='w-[30px]' alt="avatar" />
+                                    <img src={DefaultAvatar} className='w-[30px]' alt="avatar" />
                                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                                         {reply.author}
                                     </span>

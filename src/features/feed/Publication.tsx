@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import avatar from '../../assets/avatar.svg';
-import testPost from '../../assets/testPost2.png';
-import BanIcon from '../../assets/icons/feed/ban.svg?react';
-import CommentIcon from '../../assets/icons/feed/comment.svg?react';
+import AvatarDefault from '../../assets/defaultAvatar.svg';
+import BanIcon from '../../assets/icons/ban.svg?react';
+import CommentIcon from '../../assets/icons/comment.svg?react';
 import { LikeIcon } from '../../components/icons/LikeIcon';
 import { FavoritesIcon } from '../../components/icons/FavoritesIcon';
-import StarIcon from '../../assets/icons/feed/star.svg?react';
-import UnwnantedIcon from '../../assets/icons/feed/unwanted.svg?react';
-import AllergenIcon from '../../assets/icons/feed/allergen.svg?react';
+import StarIcon from '../../assets/icons/starRating.svg?react';
+import UnwnantedIcon from '../../assets/icons/unwanted.svg?react';
+import AllergenIcon from '../../assets/icons/allergen.svg?react';
 
 import Complaint from '../complaint/Сomplaint';
 
@@ -92,7 +91,7 @@ export default function Publication({ post }: { post: Post }) {
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
                     <Link to={`/profile/${post.authorId}`}>
-                        <img src={avatar} className='w-[35px]' alt="avatar" />
+                        <img src={post.authorAvatar || AvatarDefault} className='w-[35px] h-[35px] object-cover rounded-full select-none' alt="avatar" />
                     </Link>
                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                         {post?.username}
@@ -116,7 +115,7 @@ export default function Publication({ post }: { post: Post }) {
             <Link to={`/publication/${post.id}`}>
                 <div className="relative ">
                     {/* Картинку поста тоже меняем на динамическую */}
-                    <img src={post.image || testPost} className='h-[344px] w-[100%] object-cover' alt="post" />
+                    <img src={post.image} className='h-[344px] w-[100%] object-cover' alt="post" />
 
                     <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                         <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import avatarDefault from '../assets/avatar.svg';
-import PublicationsIcon from '../assets/icons/profile/publications.svg?react';
-import SavedIcon from '../assets/icons/profile/saved.svg?react';
+import avatarDefault from '../assets/defaultAvatar.svg';
+import PublicationsIcon from '../assets/icons/publications.svg?react';
+import SavedIcon from '../assets/icons/saved.svg?react';
 
 import { useAuthStore } from '../stores/authStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';

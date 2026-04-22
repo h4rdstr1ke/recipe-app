@@ -1,5 +1,5 @@
-import avatar from '../assets/avatar.svg';
-import ArrowIcon from '../assets/icons/arrowDown.svg?react';
+import avatar from '../assets/defaultAvatar.svg';
+import ArrowIcon from '../assets/icons/arrow.svg?react';
 import { useState, useEffect } from 'react';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useAuthStore } from '../stores/authStore';

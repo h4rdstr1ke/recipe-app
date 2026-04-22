@@ -1,33 +1,40 @@
 import type { Comment, Post, TopAuthor, UserSettings } from '../types';
-import testPostImage from '../assets/testPost2.png';
+import testPostImage from '../assets/test/testPost2.png';
 import testBowlImage from '../assets/test/bowl.jpg'
 import testBurgerImage from '../assets/test/burger.jpg'
 import testFoundanImage from '../assets/test/fondan.png'
 import testPastaImage from '../assets/test/pasta_karbonara.png'
 import testRamenImage from '../assets/test/ramen.jpg'
 import testSteikImage from '../assets/test/steik.png'
-import testAvatar from '../assets/avatar.svg'
+//import DefaultAvatar from '../assets/defaultAvatar.svg'
+import catAvatar from '../assets/test/catAvatar.jpg'
+import testAvatar1 from '../assets/test/testAvatar1.jpg'
+import testAvatar2 from '../assets/test/testAvatar2.jpg'
+import testAvatar3 from '../assets/test/testAvatar3.jpg'
+import testAvatar4 from '../assets/test/testAvatar4.jpg'
+import testAvatar5 from '../assets/test/testAvatar5.jpeg'
+import testAvatar6 from '../assets/test/testAvatar6.jpg'
 
 export const MOCK_USERS = {
     'user1': {
         id: 'user1',
         username: 'vlad228',
         firstName: 'Владислав',
-        authorAvatar: testAvatar,
+        authorAvatar: catAvatar,
         bio: 'Привет! Я Влад, люблю готовить стейки и делиться рецептами!',
     },
     'user2': {
         id: 'user2',
         username: 'ira000',
         firstName: 'Ирина',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar1,
         bio: 'Фанатка итальянской кухни и пасты Карбонара'
     },
     'user3': {
         id: 'user3',
         username: 'da$ha',
         firstName: 'Дарья',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar2,
         bio: 'Начинающий кулинар, обожаю печь тортики'
 
     },
@@ -35,28 +42,28 @@ export const MOCK_USERS = {
         id: 'user4',
         username: 'm4ks',
         firstName: 'Максим',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar3,
         bio: 'Ем, чтобы жить. Готовлю, чтобы есть вкусно'
     },
     'user5': {
         id: 'user5',
         username: 'kirya',
         firstName: 'Кирилл',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar4,
         bio: 'Спортсмен, составляю рацион из полезных продукто'
     },
     'user6': {
         id: 'user6',
         username: 'moto',
         firstName: 'Николай',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar5,
         bio: 'Гриль-мастер, любитель барбекю и острых соусов'
     },
     'user7': {
         id: 'user7',
         username: 'wisow',
         firstName: 'Софья',
-        authorAvatar: testAvatar,
+        authorAvatar: testAvatar6,
         bio: 'Ищу идеальный рецепт круассанов'
     }
 } as const;

@@ -4,7 +4,7 @@ import ButtonBackRecipes from "../components/button/ButtonBackRecipes"
 
 import Delete from "../assets/icons/delete.svg?react"
 import AiStar from "../assets/icons/aiStar.svg?react"
-import PublicationAdd from "../assets/icons/publicationPage/imageAdd.svg?react"
+import PublicationAdd from "../assets/icons/imageAdd.svg?react"
 
 export default function PostCreatePage() {
     return (

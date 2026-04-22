@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useTopAuthorStore } from '../stores/topAuthorStore';
 
 import Button from "../components/button/Button"
-import Avatar from "../assets/avatar.svg"
-import Medal from "../assets/medal.svg?react"
+import DefaultAvatar from "../assets/defaultAvatar.svg"
+import Medal from "../assets/icons/medal.svg?react"
 
 /**
  * Страница "Топ-авторов" (Рейтинг / Leaderboard).
@@ -80,7 +80,7 @@ export default function TopAuthorsPage() {
                             </div>
 
                             {/* Аватарка (если у автора нет аватарки, ставим дефолтную) */}
-                            <img alt="avatar" src={author.avatarUrl || Avatar} className="w-[50px] rounded-full" />
+                            <img alt="avatar" src={author.avatarUrl || DefaultAvatar} className="w-[50px] h-[50px] object-cover rounded-full select-none" />
 
                             {/* Никнейм */}
                             <span className="font-montserrat font-semibold text-[24px] text-[#23A6F0] underline">

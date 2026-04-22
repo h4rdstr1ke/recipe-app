@@ -1,5 +1,5 @@
-import StarIcon from '../../../assets/icons/feed/star.svg?react';
-import Star from '../../../assets/icons/publicationPage/star.svg?react';
+import StarIcon from '../../../assets/icons/starRating.svg?react';
+import Star from '../../../assets/icons/star.svg?react';
 
 type RecipeRating = {
     rating?: {

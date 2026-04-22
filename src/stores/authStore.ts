@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types';
+import { MOCK_USERS } from '../mocks/mocks';
 
 /**
  * Хранилище для управления авторизацией, регистрацией и сессией пользователя.
@@ -137,11 +138,15 @@ export const useAuthStore = create<AuthStore>()(
                     // В будущем: const response = await api.post('/auth/login', { email, password })
                     if (!email || !password) throw new Error('Заполните все поля');
 
+                    // Имитируем, что бэкенд нашел пользователя vlad228 в базе данных
+                    const dbUser = MOCK_USERS['user1'];
+
                     const fakeUser: User = {
                         id: "user1",
                         email: "admin@example.com",
                         nickname: "vlad228",
                         name: "Владислав",
+                        avatarUrl: dbUser.authorAvatar,
                         bio: "Привет! Я Влад, люблю готовить стейки и делиться рецептами!"
                     };
                     const fakeToken = 'fake-token-' + Date.now();

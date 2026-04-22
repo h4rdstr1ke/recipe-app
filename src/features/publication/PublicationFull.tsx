@@ -3,8 +3,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { usePostStore } from '../../stores/postStore';
 
-import avatar from '../../assets/avatar.svg';
-import testPost from '../../assets/testPost2.png';
+import DefaultAvatar from '../../assets/defaultAvatar.svg';
 
 import NutritionalValue from './components/NutritionalValue';
 import ProductsForCooking from './components/ProductsForCooking';
@@ -93,11 +92,11 @@ export default function PublicationFull({ post }: PublicationFullProps) {
         <div className="max-w-[640px] mx-auto flex flex-col items-center justify-center">
             <PublicationHeader
                 // динамические данные 
-                avatar={post.authorAvatar || avatar}
+                avatar={post.authorAvatar || DefaultAvatar}
                 username={post.username}
                 authorName={post.firstName}
                 onSubscribe={handleSubscribe}
-                image={post.image || testPost}
+                image={post.image}
                 time={post.timeCooking}
                 title={post.title}
                 rating={post.rating}
