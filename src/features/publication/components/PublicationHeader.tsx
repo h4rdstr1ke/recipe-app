@@ -103,7 +103,7 @@ export default function PublicationHeader({
             }
             {/* Фото блок */}
             <div className="relative mt-2">
-                <img src={image} className='h-[344px] w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
+                <img src={image} className='h-[344px] object-cover w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
                 <div className='absolute bottom-4 right-2'>
                     <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>{time}</span>
                 </div>
@@ -121,7 +121,7 @@ export default function PublicationHeader({
                         <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
                     </div>
                     <div className='flex items-center gap-1'>
-                        <CommentIcon className='w-[25px]' onClick={onComment} />
+                        <CommentIcon className='w-[25px] cursor-pointer' onClick={onComment} />
                         <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{commentsCount}</span>
                     </div>
                     <div className='flex items-center gap-1'>

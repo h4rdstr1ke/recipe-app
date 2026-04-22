@@ -1,41 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useCommentsStore } from '../../../stores/commentStore';
 import { useAuthStore } from '../../../stores/authStore';
-import type { Comment } from '../../../types'; // 
+
 
 import DefaultAvatar from '../../../assets/defaultAvatar.svg';
 import ImageAdd from '../../../assets/icons/imageAdd.svg?react';
 import Reply from '../../../assets/icons/reply.svg?react';
-import Like from '../../../assets/icons/like.svg?react';
+import { LikeIcon } from '../../../components/icons/LikeIcon';
 import Pencil from '../../../assets/icons/pencil.svg?react';
+import BanIcon from '../../../assets/icons/ban.svg?react'
+import DeleteIcon from '../../../assets/icons/delete.svg?react'
 
 // 
-// 1. ПОДКОМПОНЕНТ: Отрисовка ОДНОГО комментария
+// 1. ПОДКОМПОНЕНТ: Отрисовка ОДНОГО комментария (рекурсивная)
 // 
-const CommentItem = ({ comment }: { comment: Comment }) => {
-    const { addReply, toggleCommentLike, editReply } = useCommentsStore(); //  Достаем функцию из стора
+const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boolean }) => {
+    const { addReply, toggleCommentLike, editReply, deleteComment } = useCommentsStore(); //  Достаем функцию из стора
     const { user } = useAuthStore(); // Достаем текущего пользователя
 
     const [showReplies, setShowReplies] = useState(false); // Показать/скрыть ветку
     const [isReplying, setIsReplying] = useState(false);   // Открыто ли окно ответа
     const [replyText, setReplyText] = useState('');        // Текст ответа
 
-    // Стейты для редактирования ответа
-    const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
-    const [editReplyText, setEditReplyText] = useState('');
+    // Стейты для редактирования ответа (теперь работают локально и для корневых, и для ответов)
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(comment.text);
 
     // Функция для сохранения изменения ответа
-    const handleSaveEdit = (replyId: string) => {
-        if (editReplyText.trim()) {
-            editReply(comment.id, replyId, editReplyText);
-            setEditingReplyId(null); // Закрываем режим редактирования
+    const handleSaveEdit = () => {
+        if (editText.trim()) {
+            editReply('root', comment.id, editText);
+            setIsEditing(false); // Закрываем режим редактирования
         }
     };
 
     const handleSendReply = () => {
         if (!replyText.trim()) return; // Защита от пустого ответа
 
-        // Отправляем ответ в стор
+        // Отправляем ответ в стор (к любому родителю)
         addReply(comment.id, replyText);
 
         // порядок после отправки:
@@ -44,44 +46,107 @@ const CommentItem = ({ comment }: { comment: Comment }) => {
         setShowReplies(true);    // Автоматически раскрываем ветку ответов, чтобы юзер увидел свой текст!
     };
 
+    // Функция для ответа на конкретный ответ
+    const handleReplyToReply = (replyAuthor: string) => {
+        setIsReplying(true);
+        setShowReplies(true); // На всякий случай раскрываем ветку
+        setReplyText(`${replyAuthor}, `); // Подставляем никнейм с запятой
+    };
+
     return (
-        <div className='flex flex-col mt-6 border-b-[1px] border-[#E6E6E6] pb-4'>
+        <div className={`flex flex-col mt-6 ${isReply ? '' : 'border-b-[1px] border-[#E6E6E6]'} pb-4`}>
             {/* ШАПКА КОММЕНТАРИЯ */}
             <div className='flex justify-between items-center'>
                 <div className='flex gap-2 items-center'>
-                    <img src={DefaultAvatar} className='w-[30px]' alt="avatar" />
+                    <img
+                        src={comment.authorAvatar || DefaultAvatar}
+                        className='w-[30px] h-[30px] object-cover rounded-full'
+                        alt="avatar"
+                    />
                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                         {comment.author}
                     </span>
                 </div>
-                <div className='flex gap-4 translate-y-3'>
+
+                <div className={`flex items-center ${isReply ? 'gap-2' : 'gap-4 translate-y-3'}`}>
                     <div className='flex items-center gap-[7px]'>
-                        <Like className={`cursor-pointer ${comment.isLiked ? 'text-red-500' : ''}
-                            ` } onClick={() => toggleCommentLike(comment.id)} />
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-medium leading-7'>
+                        <LikeIcon
+                            isLiked={comment.isLiked}
+                            className={`cursor-pointer ${isReply ? 'w-[16px]' : ''} ${comment.isLiked ? 'text-[#FF0000]' : 'text-black'}`}
+                            onClick={() => toggleCommentLike(comment.id)}
+                        />
+                        <span className={`font-montserrat tracking-[0.2px] font-medium ${isReply ? 'text-[15px] leading-relaxed' : 'text-[20px] leading-7'}`}>
                             {comment.likesCount}
                         </span>
                     </div>
                     <Reply
-                        className="cursor-pointer hover:opacity-70"
-                        onClick={() => setIsReplying(!isReplying)}
+                        className={`${isReply ? 'w-[15px]' : ''} cursor-pointer hover:opacity-70`}
+                        onClick={() => isReply ? handleReplyToReply(comment.author) : setIsReplying(!isReplying)}
                     />
+                    {/* Карандаш и удалить видно только если ответ/коммент написал пользователь */}
+                    {comment.author === user?.nickname ? (
+                        <div className='flex items-center gap-2'>
+                            <Pencil
+                                className={`${isReply ? 'w-[15px]' : 'w-[20px]'} cursor-pointer hover:opacity-70`}
+                                onClick={() => {
+                                    setIsEditing(true);     // Включаем режим ред. для этого ID
+                                    setEditText(comment.text);    // Подставляем текущий текст в инпут
+                                }}
+                            />
+                            {/* Логика удаления основного комментария и ответа */}
+                            <DeleteIcon
+                                className={`${isReply ? 'h-[16px]' : 'w-[20px]'} cursor-pointer hover:opacity-70`}
+                                onClick={() => deleteComment(comment.id)}
+                            /> {/* Удалить свой комменатрий */}
+                        </div>
+                    ) : (
+                        <div className='flex items-center gap-2'>
+                            <BanIcon className={`${isReply ? 'w-[15px]' : 'w-[25px]'} cursor-pointer hover:opacity-70`} />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* ТЕКСТ КОММЕНТАРИЯ */}
-            <span className='font-montserrat text-[16px] text-[#000000] tracking-[0.2px] font-light leading-7 mt-2'>
-                {comment.text}
-            </span>
-            {comment.imageUrl && (
-                <img src={comment.imageUrl} className='w-[300px] h-[200px] rounded-[10px] bg-[#E6E6E6] mt-2 object-cover' alt='Фото' />
+            {/* УСЛОВИЕ: Показываем либо поле ввода, либо обычный текст */}
+            {isEditing ? (
+                <div className="mt-2 flex flex-col gap-2">
+                    <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        className='min-h-[50px] w-[100%] bg-[#F9F9F9] border-[1px] border-[#E6E6E6] rounded-[5px] p-2 font-montserrat text-[14px] resize-none focus:outline-none'
+                    />
+                    <div className='flex justify-end gap-3'>
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className='font-montserrat text-[12px] text-[#737373] hover:text-black'
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            onClick={handleSaveEdit}
+                            className='bg-[#23A6F0] text-white px-4 py-1 rounded-[5px] font-montserrat text-[12px] font-bold hover:bg-[#7ACDFC] transition-colors'
+                        >
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* ТЕКСТ КОММЕНТАРИЯ */}
+                    <span className={`font-montserrat text-[16px] text-[#000000] tracking-[0.2px] font-light mt-2 ${isReply ? 'mt-1 leading-7' : 'leading-7'}`}>
+                        {comment.text}
+                    </span>
+                    {!isReply && comment.imageUrl && (
+                        <img src={comment.imageUrl} className='w-[300px] h-[200px] rounded-[10px] bg-[#E6E6E6] mt-2 object-cover' alt='Фото' />
+                    )}
+                    {/* ДАТА КОММЕНТАРИЯ */}
+                    <div className={`flex justify-end w-[100%] ${isReply ? 'mt-1' : 'mt-2'}`}>
+                        <span className={`font-montserrat tracking-[0.2px] font-semibold leading-7 ${isReply ? 'text-[12px] text-[#737373]' : 'text-[14px] text-[#000000]'}`}>
+                            {comment.createdAt}
+                        </span>
+                    </div>
+                </>
             )}
-            {/* ДАТА КОММЕНТАРИЯ */}
-            <div className='flex justify-end w-[100%] mt-2'>
-                <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-7'>
-                    {comment.createdAt}
-                </span>
-            </div>
 
             {/* показывается только если нажали на иконку */}
             {isReplying && (
@@ -119,63 +184,8 @@ const CommentItem = ({ comment }: { comment: Comment }) => {
                         {showReplies ? 'Скрыть ответы' : `Посмотреть ответы (${comment.replies.length})`}
                     </span>
 
-                    {showReplies && comment.replies.map(reply => (
-                        <div key={reply.id} className='flex flex-col mb-4'>
-                            <div className='flex justify-between items-center'>
-                                <div className='flex gap-2 items-center'>
-                                    <img src={DefaultAvatar} className='w-[30px]' alt="avatar" />
-                                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
-                                        {reply.author}
-                                    </span>
-                                </div>
-                                {/* Карандаш виден только если ответ написал пользователь */}
-                                {reply.author === user?.nickname && (
-                                    <Pencil
-                                        className="w-[16px] h-[16px] cursor-pointer hover:opacity-70"
-                                        onClick={() => {
-                                            setEditingReplyId(reply.id);     // Включаем режим ред. для этого ID
-                                            setEditReplyText(reply.text);    // Подставляем текущий текст в инпут
-                                        }}
-                                    />
-                                )}
-                            </div>
-
-                            {/* УСЛОВИЕ: Показываем либо поле ввода, либо обычный текст */}
-                            {editingReplyId === reply.id ? (
-                                <div className="mt-2 flex flex-col gap-2">
-                                    <textarea
-                                        value={editReplyText}
-                                        onChange={(e) => setEditReplyText(e.target.value)}
-                                        className='min-h-[50px] w-[100%] bg-[#F9F9F9] border-[1px] border-[#E6E6E6] rounded-[5px] p-2 font-montserrat text-[14px] resize-none focus:outline-none'
-                                    />
-                                    <div className='flex justify-end gap-3'>
-                                        <button
-                                            onClick={() => setEditingReplyId(null)}
-                                            className='font-montserrat text-[12px] text-[#737373] hover:text-black'
-                                        >
-                                            Отмена
-                                        </button>
-                                        <button
-                                            onClick={() => handleSaveEdit(reply.id)}
-                                            className='bg-[#23A6F0] text-white px-4 py-1 rounded-[5px] font-montserrat text-[12px] font-bold hover:bg-[#7ACDFC] transition-colors'
-                                        >
-                                            Сохранить
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className='font-montserrat text-[16px] text-[#000000] tracking-[0.2px] font-light leading-7 mt-1'>
-                                        {reply.text}
-                                    </span>
-                                    <div className='flex justify-end w-[100%] mt-1'>
-                                        <span className='font-montserrat text-[12px] text-[#737373] tracking-[0.2px] font-semibold leading-7'>
-                                            {reply.createdAt}
-                                        </span>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                    {showReplies && comment.replies.map((reply: any) => (
+                        <CommentItem key={reply.id} comment={reply} isReply={true} />
                     ))}
                 </div>
             )}
@@ -223,10 +233,11 @@ export default function Comments({ postId }: CommentsProps) {
         setSelectedImage(null);
     };
 
-    // Считаем все комментарии + все ответы
-    const totalCommentsCount = comments.reduce((total, comment) => {
-        return total + 1 + (comment.replies?.length || 0);
-    }, 0);
+    // Считаем все комментарии + все ответы (рекурсивно)
+    const countTotal = (items: any[]): number => {
+        return items.reduce((total, item) => total + 1 + countTotal(item.replies || []), 0);
+    };
+    const totalCommentsCount = countTotal(comments);
 
     return (
         <div id="comments-section" className='w-[100%] flex flex-col mt-5'>
@@ -287,8 +298,7 @@ export default function Comments({ postId }: CommentsProps) {
 
             {/* СПИСОК КОММЕНТАРИЕВ */}
             <div className='flex flex-col mt-4'>
-                {/* 
-                    React берет массив comments и для каждого объекта Comment 
+                {/* React берет массив comments и для каждого объекта Comment 
                     подкомпонент CommentItem, передавая ему данные внутрь
                 */}
                 {comments.length === 0 ? (

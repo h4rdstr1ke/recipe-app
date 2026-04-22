@@ -120,13 +120,15 @@ export interface Post {
 }
 
 /**
- * Ответ на комментарий.
+ * Ответ на комментарий (поддерживает вложенность).
  */
 export interface Reply {
     /** Уникальный ID ответа */
     id: string;
     /** Автор ответа (его никнейм) */
     author: string;
+    /** Ссылка на аватар автора */
+    authorAvatar?: string | null;
     /** Текст сообщения */
     text: string;
     /** Счетчик лайков под ответом */
@@ -135,6 +137,8 @@ export interface Reply {
     isLiked: boolean;
     /** Дата и время создания в читаемом виде */
     createdAt: string;
+    /** Массив вложенных ответов на этот ответ */
+    replies: Reply[];
 }
 
 /**
@@ -147,6 +151,8 @@ export interface Comment {
     postId: string;
     /** Никнейм автора комментария */
     author: string;
+    /** Ссылка на аватар автора */
+    authorAvatar?: string | null;
     /** Основной текст */
     text: string;
     /** Опциональное прикрепленное изображение */
@@ -157,7 +163,7 @@ export interface Comment {
     isLiked: boolean;
     /** Время публикации */
     createdAt: string;
-    /** Массив вложенных ответов (реализация дерева комментариев) */
+    /** Массив вложенных ответов (реализация дерева комментариев(это корень дерева ответов)) */
     replies: Reply[];
 }
 

@@ -1,7 +1,64 @@
 import { create } from 'zustand';
 import type { Comment } from '../types/index';
-import { MOCK_COMMENTS } from '../mocks/mocks';
+import { MOCK_COMMENTS, MOCK_USERS } from '../mocks/mocks';
 import { useAuthStore } from './authStore';
+
+
+/**
+ * Вспомогательная функция для генерации текущей даты и времени (формат: ДД.ММ.ГГГГ, ЧЧ:ММ) (временная)
+ */
+const getCurrentDateTime = () => {
+    const dateStr = new Date().toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    // Меняем стандартную запятую на букву "в"
+    return dateStr.replace(',', ' в');
+};
+
+/**
+ * Вспомогательная функция для рекурсивного добавления данных автора (аватарок) в комментарии.
+ */
+const enrichWithAuthData = (item: any): any => {
+    // Ищем юзера в базе по его никнейму (item.author)
+    const userData = Object.values(MOCK_USERS).find(u => u.username === item.author);
+
+    return {
+        ...item,
+        authorAvatar: userData?.authorAvatar || null,
+        // Если есть ответы, прогоняем их через эту же функцию
+        replies: item.replies ? item.replies.map(enrichWithAuthData) : []
+    };
+};
+
+/**
+ * Вспомогательная функция для рекурсивного обновления объекта в дереве комментариев.
+ */
+const updateRecursive = (items: any[], id: string, updater: (item: any) => any): any[] => {
+    return items.map(item => {
+        if (item.id === id) return updater(item);
+        if (item.replies && item.replies.length > 0) {
+            return { ...item, replies: updateRecursive(item.replies, id, updater) };
+        }
+        return item;
+    });
+};
+
+/**
+ * Вспомогательная функция для рекурсивного удаления объекта из дерева комментариев.
+ */
+const filterRecursive = (items: any[], idToRemove: string): any[] => {
+    return items
+        .filter(item => item.id !== idToRemove)
+        .map(item => ({
+            ...item,
+            replies: item.replies ? filterRecursive(item.replies, idToRemove) : []
+        }));
+};
 
 /**
  * Хранилище для управления веткой комментариев конкретного (открытого) поста.
@@ -48,6 +105,13 @@ interface CommentsStore {
      * @param newText - Новый текст ответа
      */
     editReply: (commentId: string, replyId: string, newText: string) => Promise<void>;
+
+    /** Удаляет корневой комментарий */
+    deleteComment: (commentId: string) => Promise<void>;
+
+    /** Удаляет конкретный ответ из ветки комментариев */
+    deleteReply: (commentId: string, replyId: string) => Promise<void>;
+
 }
 
 export const useCommentsStore = create<CommentsStore>((set, get) => ({
@@ -60,7 +124,9 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         try {
             await new Promise(resolve => setTimeout(resolve, 500));
             // Временно фильтруем моки. В будущем: const response = await api.get(`/posts/${postId}/comments`);
-            const postComments = MOCK_COMMENTS.filter(comment => comment.postId === postId);
+            const postComments = MOCK_COMMENTS
+                .filter(comment => comment.postId === postId)
+                .map(enrichWithAuthData);
             set({ comments: postComments, isLoading: false });
         } catch (error: unknown) {
             set({ error: 'Ошибка загрузки комментариев', isLoading: false });
@@ -77,7 +143,7 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         }
 
         // Создаем объект нового комментария
-        const newComment: Comment = {
+        const newComment: Comment = enrichWithAuthData({
             id: Date.now().toString(), // Временный ID для UI
             postId: postId,
             author: user.nickname,
@@ -85,9 +151,9 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
             imageUrl: image,
             likesCount: 0,
             isLiked: false,
-            createdAt: new Date().toLocaleDateString('ru-RU'),
+            createdAt: getCurrentDateTime(),
             replies: []
-        };
+        });
 
         // Оптимистичное обновление UI: добавляем новый коммент в начало массива
         set({ comments: [newComment, ...comments] });
@@ -110,25 +176,21 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
             return;
         }
 
-        const newReply = {
+        const newReply = enrichWithAuthData({
             id: Date.now().toString(),
             author: user.nickname,
             text: text,
             likesCount: 0,
             isLiked: false,
-            createdAt: new Date().toLocaleDateString('ru-RU'),
-        };
-
-        // Ищем нужный коммент и обновляем только его массив replies
-        const updatedComments = comments.map(comment => {
-            if (comment.id === commentId) {
-                return {
-                    ...comment,
-                    replies: [...comment.replies, newReply]
-                };
-            }
-            return comment;
+            createdAt: getCurrentDateTime(),
+            replies: []
         });
+
+        // Ищем нужный коммент рекурсивно и обновляем только его массив replies
+        const updatedComments = updateRecursive(comments, commentId, (item) => ({
+            ...item,
+            replies: [...(item.replies || []), newReply]
+        }));
 
         set({ comments: updatedComments });
 
@@ -140,21 +202,14 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         }
     },
 
-    editReply: async (commentId, replyId, newText) => {
+    editReply: async (_commentId, replyId, newText) => {
         const { comments } = get();
 
         // Ищем нужный коммент и внутри него нужный ответ, чтобы заменить текст
-        const updatedComments = comments.map(comment => {
-            if (comment.id === commentId) {
-                return {
-                    ...comment,
-                    replies: comment.replies.map(reply =>
-                        reply.id === replyId ? { ...reply, text: newText } : reply
-                    )
-                };
-            }
-            return comment;
-        });
+        // Теперь ищет рекурсивно по всем уровням!
+        const updatedComments = updateRecursive(comments, replyId, (item) => ({
+            ...item, text: newText
+        }));
 
         set({ comments: updatedComments });
 
@@ -165,25 +220,41 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
             set({ comments, error: 'Ошибка редактирования ответа' });
         }
     },
+    deleteComment: async (commentId) => {
+        const { comments } = get();
+        // Просто фильтруем массив, убирая удаляемый коммент (теперь рекурсивно на всех уровнях)
+        set({ comments: filterRecursive(comments, commentId) });
+
+        try {
+            // В будущем: await api.delete(`/comments/${commentId}`);
+            console.log('Комментарий удален');
+        } catch (error) {
+            set({ comments, error: 'Ошибка при удалении комментария' });
+        }
+    },
+
+    deleteReply: async (_commentId, replyId) => {
+        const { comments } = get();
+        // Ищем нужный коммент и отфильтровываем из него удаляемый ответ (рекурсивно)
+        set({ comments: filterRecursive(comments, replyId) });
+
+        try {
+            // В будущем: await api.delete(`/comments/${commentId}/reply/${replyId}`);
+            console.log('Ответ удален');
+        } catch (error) {
+            set({ comments, error: 'Ошибка при удалении ответа' });
+        }
+    },
 
     toggleCommentLike: async (commentId) => {
         const { comments } = get();
 
-        const commentIndex = comments.findIndex(c => c.id === commentId);
-        if (commentIndex === -1) return;
-
-        const isCurrentlyLiked = comments[commentIndex].isLiked;
-
-        const updatedComments = comments.map(comment => {
-            if (comment.id === commentId) {
-                return {
-                    ...comment,
-                    isLiked: !isCurrentlyLiked,
-                    likesCount: comment.likesCount + (isCurrentlyLiked ? -1 : 1)
-                };
-            }
-            return comment;
-        });
+        // Теперь рекурсивно ищет лайки в том числе у ответов!
+        const updatedComments = updateRecursive(comments, commentId, (item) => ({
+            ...item,
+            isLiked: !item.isLiked,
+            likesCount: item.likesCount + (item.isLiked ? -1 : 1)
+        }));
 
         set({ comments: updatedComments });
 

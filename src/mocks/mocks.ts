@@ -325,32 +325,58 @@ export const MOCK_USER_SETTINGS: UserSettings = {
 export const MOCK_COMMENTS: Comment[] = [
     {
         id: '1',
-        postId: MOCK_POSTS[0].id,
-        author: MOCK_USERS['user1'].username,
+        postId: '1',
+        author: 'vlad228',
         text: "Ну пойдет",
-        imageUrl: '/src/assets/testPost2.png',
+        imageUrl: testPostImage,
         likesCount: 11,
         isLiked: false,
-        createdAt: '27.01.2024',
-        replies: [ // Массив
+        createdAt: '27.01.2024 в 14:30',
+        replies: [
             {
-                id: '101', // Уникальный ID ответа
-                author: MOCK_USERS['user2'].username,
+                id: '101',
+                author: 'ira000',
                 text: 'Вкусняшка',
                 likesCount: 5,
                 isLiked: false,
-                createdAt: '27.01.2024'
-            },
-            {
-                id: '102', // Уникальный ID ответа
-                author: MOCK_USERS['user2'].username,
-                text: 'Наверно',
-                likesCount: 1,
-                isLiked: false,
-                createdAt: '27.01.2024'
+                createdAt: '27.01.2024 в 15:01',
+                // Вложенный ответ на ответ
+                replies: [
+                    {
+                        id: '101-1',
+                        author: 'vlad228',
+                        text: 'Рад, что понравилось!',
+                        likesCount: 2,
+                        isLiked: true,
+                        createdAt: '28.01.2024 в 15:05',
+                        replies: []
+                    }
+                ]
             }
         ]
-    }
+    },
+    {
+        id: '2',
+        postId: '1',
+        author: MOCK_USERS['user4'].username,
+        text: "Ну пойдет",
+        imageUrl: testPostImage,
+        likesCount: 1,
+        isLiked: false,
+        createdAt: '29.01.2024 в 17:45',
+        replies: []
+    },
+    {
+        id: '3',
+        postId: '1',
+        author: MOCK_USERS['user2'].username,
+        text: "Пу пу пу",
+        imageUrl: testPostImage,
+        likesCount: 31,
+        isLiked: false,
+        createdAt: '27.01.2024 в 18:07',
+        replies: []
+    },
 ];
 
 export const MOCK_NOTIFICATIONS: AppNotification[] = [
