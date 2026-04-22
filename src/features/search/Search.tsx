@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'; // Добавили useEffe
 import LoupeIcon from '../../assets/icons/loupe.svg?react';
 import SettingsIcon from '../../assets/icons/settings.svg?react';
 import SortingIcon from '../../assets/icons/sorting.svg?react'
+import SearchActiveIcon from '../../assets/icons/searchActiveIcon.svg?react'
 
 import SearchModal from './components/SearchModal';
 import SortingModal from './components/SortingModal';
@@ -11,7 +12,20 @@ import { useSearchStore } from '../../stores/searchStore';
 export default function SearchBar() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSortingOpen, setIsSortingOpen] = useState(false);
-    const { query, setQuery } = useSearchStore();
+    const {
+        query,
+        setQuery,
+        filters,
+        sortBy,
+        excludeAllergens
+    } = useSearchStore();
+
+    // Проверяем, активен ли хотя бы один фильтр
+    const isFilterActive = Object.values(filters).some(arr => arr.length > 0) || excludeAllergens;
+
+    // Проверяем, выбрана ли сортировка
+    const isSortingActive = sortBy !== null;
+
     // Создаем реф для привязки к главному контейнеру поиска
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +67,8 @@ export default function SearchBar() {
         setIsSortingOpen(false);
     };
 
+
+
     return (
         // Вешаем ref на самый внешний div компонента SearchBar
         <div ref={searchContainerRef}>
@@ -70,16 +86,25 @@ export default function SearchBar() {
                     />
                     <LoupeIcon className='w-[16px] h-[16px]' />
                 </div>
-
-                <SettingsIcon
-                    className='w-[26px] h-[25px] cursor-pointer hover:opacity-70 transition-opacity'
-                    onClick={handleFilterClick}
-                />
-                <SortingIcon
-                    className='h-[25px] cursor-pointer hover:opacity-70 transition-opacity'
-                    onClick={handleSortingClick}
-                />
-
+                <div className='flex gap-3 items-center'>
+                    <SettingsIcon
+                        className='w-[26px] h-[25px] cursor-pointer hover:opacity-70 transition-opacity'
+                        onClick={handleFilterClick}
+                    />
+                    {isFilterActive && (
+                        <SearchActiveIcon className="w-[10px] h-[10px] text-[#23A6F0]" />
+                    )}
+                </div>
+                <div className='flex gap-3 items-center'>
+                    <SortingIcon
+                        className='h-[25px] cursor-pointer hover:opacity-70 transition-opacity'
+                        onClick={handleSortingClick}
+                    />
+                    {/* Показываем иконку, если сортировка активна */}
+                    {isSortingActive && (
+                        <SearchActiveIcon className="w-[10px] h-[10px] text-[#23A6F0]" />
+                    )}
+                </div>
                 {isFilterOpen && (<SearchModal onClose={handleCloseModal} />)}
                 {isSortingOpen && (<SortingModal onClose={handleCloseModal} />)}
             </form>

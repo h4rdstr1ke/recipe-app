@@ -18,8 +18,8 @@ export default function SortingModal({ onClose }: { onClose: () => void }) {
     const getButtonClass = (sortType: string) => {
         const isActive = sortBy === sortType;
         return `border rounded-[37px] px-[20px] py-[6px] cursor-pointer transition-colors ${isActive
-            ? 'border-[#23A6F0] text-[#23A6F0] bg-[#eef8ff]' // Активный стиль (синий)
-            : 'border-[#C4C4C4] text-[#737373] hover:border-[#23A6F0] hover:text-[#23A6F0]' // Обычный стиль (серый)
+            ? 'border-[#23A6F0] bg-[#23A6F0] text-[#FFFFFF]' // Активный стиль 
+            : 'border-[#C4C4C4] text-[#737373] hover:border-[#23A6F0] hover:text-[#23A6F0]' // Обычный ст
             }`;
     };
 
@@ -38,8 +38,6 @@ export default function SortingModal({ onClose }: { onClose: () => void }) {
                     <button type="button" onClick={onClose} className="absolute left-[40px] text-[28px] font-light text-[#000000] hover:text-gray-500 transition-colors">✕</button>
                     <h1 className="font-montserrat text-[26px] font-bold leading-7 tracking-[0.2px]">Сортировка</h1>
                 </div>
-
-                {/* Кнопки сортировки. Теперь они реагируют на клик! */}
                 <div className="flex flex-wrap justify-center px-[70px] gap-x-[50px] gap-y-[15px]">
                     <div onClick={() => handleSortClick('new')} className={getButtonClass('new')}>
                         <span className="font-montserrat text-[14px] font-bold leading-7 tracking-[0.2px]">По новизне</span>

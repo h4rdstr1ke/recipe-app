@@ -11,12 +11,7 @@ import ProfileMenu from './ProfileMenu';
 import SearchBar from '../../features/search/Search'
 import Notifications from '../../features/notifications/Notifications';
 
-type HeaderProps = {
-    searchQuery: string;
-    setSearchQuery: (value: string) => void;
-};
-
-export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
+export default function Header() {
 
     const { isAuthenticated } = useAuthStore();
 
@@ -37,7 +32,7 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                             onDragStart={(e) => e.preventDefault()}
                         />
                     </Link>
-                    <SearchBar value={searchQuery} onChange={setSearchQuery} />
+                    <SearchBar />
                 </div>
 
                 <div className='flex gap-12 items-end mr-[80px]'>
