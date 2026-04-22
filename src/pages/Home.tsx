@@ -1,5 +1,5 @@
 import Feed from '../features/feed/Feed';
-import Helper from '../components/helperAI/Helper'
+//import Helper from '../components/helperAI/Helper'
 /*import { Link } from 'react-router-dom'; */
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
                 <Link to="/PostCreate" >PostCreate</Link>
             </div> */} {/* Временно */}
             <Feed />
-            <Helper />
+            {/*<Helper />*/}
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from '../header/Header';
+import Helper from '../helperAI/Helper'
 
 export default function Layout() {
     const location = useLocation();
@@ -12,6 +13,7 @@ export default function Layout() {
                 <Header />
             )}
             <Outlet />
+            <Helper /> {/* Временно */}
         </>
     );
 }

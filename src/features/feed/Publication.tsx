@@ -147,6 +147,10 @@ export default function Publication({ post }: { post: Post }) {
                                 {post.likesCount}
                             </span>
                         </div>
+                        <div className='flex items-center gap-1 cursor-pointer'>
+                            <CommentIcon onClick={handleCommentClick} />
+                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
+                        </div>
                         <div className='flex items-center gap-[4px]'>
                             <FavoritesIcon
                                 isFavorited={isFavorited}
@@ -156,10 +160,6 @@ export default function Publication({ post }: { post: Post }) {
                             <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
                                 {post.favoritesCount}
                             </span>
-                        </div>
-                        <div className='flex items-center gap-1 cursor-pointer'>
-                            <CommentIcon onClick={handleCommentClick} />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
                         </div>
                         <BanIcon className="cursor-pointer" onClick={handleBanClick} />
                     </div>

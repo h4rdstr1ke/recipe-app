@@ -1,4 +1,5 @@
-import type { Comment, Post, TopAuthor, UserSettings } from '../types';
+import type { Comment, Post, TopAuthor, UserSettings } from '../types/index';
+import type { AppNotification } from '../types/index';
 import testPostImage from '../assets/test/testPost2.png';
 import testBowlImage from '../assets/test/bowl.jpg'
 import testBurgerImage from '../assets/test/burger.jpg'
@@ -349,5 +350,46 @@ export const MOCK_COMMENTS: Comment[] = [
                 createdAt: '27.01.2024'
             }
         ]
+    }
+];
+
+export const MOCK_NOTIFICATIONS: AppNotification[] = [
+    {
+        id: 'notif_1',
+        type: 'SUBSCRIBE',
+        createdAt: '29 марта',
+        isRead: false,
+        actorId: 'user2',
+    },
+    {
+        id: 'notif_2',
+        type: 'LIKE',
+        createdAt: '29 марта',
+        isRead: false,
+        actorId: 'user3', // Ссылаемся на user3
+        postId: '1',      // Ссылаемся на конкретный пост 
+    },
+    {
+        id: 'notif_3',
+        type: 'COMMENT',
+        createdAt: '29 марта',
+        isRead: true,
+        actorId: 'user3',
+        postId: '1',
+        message: 'Огонь, рецепт супер! Обязательно попробую приготовить на выходных.'
+    },
+    {
+        id: 'notif_4',
+        type: 'WARNING',
+        createdAt: '27 марта',
+        isRead: true,
+        message: 'Ваша публикация была удалена из-за нарушения правил сайта. Следующее нарушение приведет к удалению аккаунта.'
+    },
+    {
+        id: 'notif_5',
+        type: 'REPORT',
+        createdAt: '26 марта',
+        isRead: true,
+        message: 'Мы рассмотрим Вашу жалобу и примем меру в случае нарушения. Спасибо!'
     }
 ];

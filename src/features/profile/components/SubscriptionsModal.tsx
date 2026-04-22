@@ -11,7 +11,7 @@ export default function SubscriptionsModal({ onClose }: { onClose: () => void })
 
     // ДОСТАЕМ МАССИВ ПОДПИСОК (на кого подписан юзер)
     const { subscriptionsList } = useProfileStore();
-    const { isSubscribed, toggleSubscription } = useUserSettingsStore();
+    const { isSubscribed, toggleSubscription } = useUserSettingsStore(); // Надо будет доработать
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
