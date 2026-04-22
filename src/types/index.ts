@@ -14,6 +14,8 @@ export interface User {
     avatarUrl?: string | null;
     /** Краткая информация о себе (биография) */
     bio?: string;
+    /** Массив ID пользователей, на которых подписан этот человек */
+    subscriptions?: string[];
 }
 
 /**

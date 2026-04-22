@@ -31,7 +31,7 @@ export default function SortingModal({ onClose }: { onClose: () => void }) {
     };
 
     return (
-        <div className="fixed top-[110px] left-0 right-0 bottom-0 bg-white/80 backdrop-blur-sm z-50 flex justify-center items-start pt-[20px] overflow-y-auto pb-[40px]" onClick={onClose}>
+        <div className="fixed top-[100px] left-0 right-0 bottom-0 bg-white/80 backdrop-blur-sm z-50 flex justify-center items-start pt-[20px] overflow-y-auto pb-[40px]" onClick={onClose}>
             <div className="bg-[#FFFFFF] relative flex flex-col w-[780px] rounded-[15px] shadow-[0_4px_30px_rgba(0,0,0,0.08)] border border-gray-100 pb-[40px]" onClick={(e) => e.stopPropagation()}>
 
                 <div className="flex justify-center items-center relative h-[80px] shrink-0 border-b border-gray-100 mb-[20px]">

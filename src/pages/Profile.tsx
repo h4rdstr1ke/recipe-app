@@ -8,6 +8,10 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useProfileStore } from '../stores/profileStore';
 
+// Импорты модалок
+import SubscribersModal from '../features/profile/components/SubscribesModal';
+import SubscriptionsModal from '../features/profile/components/SubscriptionsModal';
+
 /**
  * Компонент страницы профиля пользователя.
  * Универсален: отображает как личный профиль текущего пользователя, так и публичные профили других авторов.
@@ -40,6 +44,8 @@ export default function Profile() {
         fetchProfile,
         fetchUserPosts,
         fetchFavoritePosts,
+        fetchSubscribersList,
+        fetchSubscriptionsList,
         clearProfileData,
         isLoading,
         error
@@ -51,6 +57,10 @@ export default function Profile() {
 
     // Управляет переключением вкладок "Публикации" / "Сохраненное".
     const [activeTab, setActiveTab] = useState<'publications' | 'saved'>('publications');
+
+    // Состояния для обеих модалок
+    const [isSubscribersOpen, setIsSubscribersOpen] = useState(false);
+    const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState(false);
 
     // ---------------------------------------------------------
     // 4. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ (Бизнес-логика)
@@ -72,6 +82,8 @@ export default function Profile() {
 
         fetchProfile(targetUserId);
         fetchUserPosts(targetUserId);
+        fetchSubscribersList(targetUserId);
+        fetchSubscriptionsList(targetUserId); // Загрузка подписок
 
         // Загружаем вкладку "Сохраненное" только если это наш профиль
         if (isMyProfile && settings?.favoritePosts) {
@@ -79,7 +91,7 @@ export default function Profile() {
         }
 
         return () => clearProfileData();
-    }, [targetUserId, isMyProfile, settings?.favoritePosts, fetchProfile, fetchUserPosts, fetchFavoritePosts, clearProfileData]);
+    }, [targetUserId, isMyProfile, settings?.favoritePosts, fetchProfile, fetchUserPosts, fetchFavoritePosts, fetchSubscribersList, fetchSubscriptionsList, clearProfileData]);
 
     // ---------------------------------------------------------
     // 5. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ ДЛЯ РЕНДЕРА (UI)
@@ -128,10 +140,18 @@ export default function Profile() {
                             <span className='font-montserrat text-[20px]'>
                                 <span className='font-semibold'>{userPosts.length} </span>Публикации
                             </span>
-                            <span className='font-montserrat text-[20px]'>
+
+                            <span
+                                className='font-montserrat text-[20px] cursor-pointer hover:text-gray-500 transition-colors'
+                                onClick={() => setIsSubscribersOpen(true)}
+                            >
                                 <span className='font-semibold'>{currentProfile.subscribersCount} </span>Подписчиков
                             </span>
-                            <span className='font-montserrat text-[20px]'>
+                            {/* Открытие модалки подписок */}
+                            <span
+                                className='font-montserrat text-[20px] cursor-pointer hover:text-gray-500 transition-colors'
+                                onClick={() => setIsSubscriptionsOpen(true)}
+                            >
                                 <span className='font-semibold'>{currentProfile.subscriptionsCount} </span>Подписок
                             </span>
                         </div>
@@ -189,6 +209,14 @@ export default function Profile() {
 
             {postsToRender.length === 0 && (
                 <div className="mt-10 font-montserrat text-gray-400">Здесь пока ничего нет</div>
+            )}
+
+            {/* Рендер модалок */}
+            {isSubscribersOpen && (
+                <SubscribersModal onClose={() => setIsSubscribersOpen(false)} />
+            )}
+            {isSubscriptionsOpen && (
+                <SubscriptionsModal onClose={() => setIsSubscriptionsOpen(false)} />
             )}
         </div>
     );

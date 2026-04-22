@@ -21,6 +21,14 @@ export default function Ai({ onClose }: { onClose: () => void }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Блокировка скролла
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -56,7 +64,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
 
     return (
         <div
-            className="fixed top-[110px] left-0 right-0 bottom-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-start pt-[20px] pb-[40px] px-4"
+            className="fixed top-[100px] left-0 right-0 bottom-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-start pt-[20px] pb-[40px] px-4"
             onClick={onClose}
         >
             <div

@@ -22,20 +22,23 @@ export const MOCK_USERS = {
         firstName: 'Владислав',
         authorAvatar: catAvatar,
         bio: 'Привет! Я Влад, люблю готовить стейки и делиться рецептами!',
+        subscriptions: ['user2', 'user5', 'user3', 'user7']
     },
     'user2': {
         id: 'user2',
         username: 'ira000',
         firstName: 'Ирина',
         authorAvatar: testAvatar1,
-        bio: 'Фанатка итальянской кухни и пасты Карбонара'
+        bio: 'Фанатка итальянской кухни и пасты Карбонара',
+        subscriptions: ['user1', 'user5']
     },
     'user3': {
         id: 'user3',
         username: 'da$ha',
         firstName: 'Дарья',
         authorAvatar: testAvatar2,
-        bio: 'Начинающий кулинар, обожаю печь тортики'
+        bio: 'Начинающий кулинар, обожаю печь тортики',
+        subscriptions: ['user3', 'user1, user6']
 
     },
     'user4': {
@@ -43,28 +46,32 @@ export const MOCK_USERS = {
         username: 'm4ks',
         firstName: 'Максим',
         authorAvatar: testAvatar3,
-        bio: 'Ем, чтобы жить. Готовлю, чтобы есть вкусно'
+        bio: 'Ем, чтобы жить. Готовлю, чтобы есть вкусно',
+        subscriptions: ['user2', 'user5', 'user6', 'user7']
     },
     'user5': {
         id: 'user5',
         username: 'kirya',
         firstName: 'Кирилл',
         authorAvatar: testAvatar4,
-        bio: 'Спортсмен, составляю рацион из полезных продукто'
+        bio: 'Спортсмен, составляю рацион из полезных продукто',
+        subscriptions: ['user1']
     },
     'user6': {
         id: 'user6',
         username: 'moto',
         firstName: 'Николай',
         authorAvatar: testAvatar5,
-        bio: 'Гриль-мастер, любитель барбекю и острых соусов'
+        bio: 'Гриль-мастер, любитель барбекю и острых соусов',
+        subscriptions: ['user1']
     },
     'user7': {
         id: 'user7',
         username: 'wisow',
         firstName: 'Софья',
         authorAvatar: testAvatar6,
-        bio: 'Ищу идеальный рецепт круассанов'
+        bio: 'Ищу идеальный рецепт круассанов',
+        subscriptions: []
     }
 } as const;
 
@@ -309,7 +316,7 @@ export const MOCK_TOP_AUTHORS: TopAuthor[] = [
 export const MOCK_USER_SETTINGS: UserSettings = {
     allergens: ['Картофель', 'Орехи'],
     unwanted: ['Чеснок', 'Мука'],
-    subscriptions: [MOCK_USERS['user1'].id], // id авторов, на которых подписан
+    subscriptions: [...MOCK_USERS['user1'].subscriptions], // id авторов, на которых подписан
     likedPosts: ['2', '5', '7'],
     favoritePosts: ['2', '4', '7'],
 };

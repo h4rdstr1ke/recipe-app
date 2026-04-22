@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { Post, UserProfile } from '../types/index';
-import { MOCK_POSTS, MOCK_USERS, MOCK_TOP_AUTHORS } from '../mocks/mocks';
+import type { Post, UserProfile, User } from '../types/index';
+import { MOCK_POSTS, MOCK_USERS } from '../mocks/mocks'; // MOCK_TOP_AUTRHORS
 
 /**
  * Хранилище для страницы профиля пользователя.
@@ -13,6 +13,10 @@ interface ProfileStore {
     userPosts: Post[];
     /** Массив сохраненных рецептов (заполняется только если мы смотрим свой собственный профиль) */
     favoritePosts: Post[];
+    /** Массив пользователей, которые подписаны на текущий профиль */
+    subscribersList: User[];
+    /** Массив авторов, на которых подписан текущий профиль */
+    subscriptionsList: User[];
     /** Индикатор загрузки данных по сети */
     isLoading: boolean;
     /** Текст ошибки, если профиль или данные не найдены */
@@ -37,6 +41,12 @@ interface ProfileStore {
      */
     fetchFavoritePosts: (ids: string[]) => void;
 
+    /** Загружает список подписчиков (КТО подписан на userId) */
+    fetchSubscribersList: (userId: string) => Promise<void>;
+
+    /** Загружает список подписок (на КОГО подписан userId) */
+    fetchSubscriptionsList: (userId: string) => Promise<void>;
+
     /**
      * Очищает данные профиля.
      * Обязательно вызывать при размонтировании компонента (уходе со страницы), 
@@ -49,6 +59,8 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     currentProfile: null,
     userPosts: [],
     favoritePosts: [],
+    subscribersList: [],
+    subscriptionsList: [],
     isLoading: false,
     error: null,
 
@@ -57,7 +69,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
 
         // В будущем: const response = await api.get(`/users/${userId}/profile`);
         const userBasic = Object.values(MOCK_USERS).find(u => u.id === userId);
-        const userStats = MOCK_TOP_AUTHORS.find(a => a.id === userId);
+        //const userStats = MOCK_TOP_AUTHORS.find(a => a.id === userId);
 
         if (userBasic) {
             set({
@@ -68,8 +80,10 @@ export const useProfileStore = create<ProfileStore>((set) => ({
                     name: userBasic.firstName,
                     avatarUrl: userBasic.authorAvatar,
                     bio: userBasic.bio || 'Описание профиля отсутствует',
-                    subscribersCount: userStats?.subscribersCount || 0,
-                    subscriptionsCount: userStats?.postsCount || 5,
+                    subscribersCount: Object.values(MOCK_USERS).filter(u =>
+                        (u.subscriptions as readonly string[] | undefined)?.includes(userBasic.id)
+                    ).length,
+                    subscriptionsCount: userBasic.subscriptions?.length || 0,
                 },
                 isLoading: false
             });
@@ -85,11 +99,52 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     },
 
     fetchFavoritePosts: (ids) => {
-        // В будущем: бэкенд может принимать массив ID или отдавать сохраненки по специальному роуту
-        // например: await api.get(`/posts/favorites`, { params: { ids } });
+        // await api.get(`/posts/favorites`, { params: { ids } });
         const filtered = MOCK_POSTS.filter(p => ids.includes(p.id));
         set({ favoritePosts: filtered });
     },
 
-    clearProfileData: () => set({ currentProfile: null, userPosts: [], favoritePosts: [] })
+    fetchSubscribersList: async (userId) => {
+        const allUsers = Object.values(MOCK_USERS);
+
+        // ИСПРАВЛЕНИЕ TS: Используем readonly string[]
+        const actualSubscribers = allUsers.filter(u =>
+            (u.subscriptions as readonly string[] | undefined)?.includes(userId)
+        );
+
+        const mappedSubscribers = actualSubscribers.map(u => ({
+            id: u.id,
+            email: 'user@example.com',
+            nickname: u.username,
+            name: u.firstName,
+            avatarUrl: u.authorAvatar
+        }));
+        set({ subscribersList: mappedSubscribers });
+    },
+
+    fetchSubscriptionsList: async (userId) => {
+        const allUsers = Object.values(MOCK_USERS);
+        const targetUser = allUsers.find(u => u.id === userId);
+
+        const targetUserSubs = (targetUser?.subscriptions as readonly string[]) || [];
+
+        const actualSubscriptions = allUsers.filter(u => targetUserSubs.includes(u.id));
+
+        const mappedSubscriptions = actualSubscriptions.map(u => ({
+            id: u.id,
+            email: 'user@example.com',
+            nickname: u.username,
+            name: u.firstName,
+            avatarUrl: u.authorAvatar
+        }));
+        set({ subscriptionsList: mappedSubscriptions });
+    },
+
+    clearProfileData: () => set({
+        currentProfile: null,
+        userPosts: [],
+        favoritePosts: [],
+        subscribersList: [],
+        subscriptionsList: []
+    })
 }));
