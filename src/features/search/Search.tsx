@@ -6,17 +6,15 @@ import SortingIcon from '../../assets/icons/sorting.svg?react'
 import SearchModal from './components/SearchModal';
 import SortingModal from './components/SortingModal';
 
-type SearchBarProps = {
-    value: string;
-    onChange: (value: string) => void;
-};
+import { useSearchStore } from '../../stores/searchStore';
 
-export default function SearchBar({ value, onChange }: SearchBarProps) {
+export default function SearchBar() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSortingOpen, setIsSortingOpen] = useState(false);
-
+    const { query, setQuery } = useSearchStore();
     // Создаем реф для привязки к главному контейнеру поиска
     const searchContainerRef = useRef<HTMLDivElement>(null);
+
 
     // Отслеживаем клики вне компонента
     useEffect(() => {
@@ -65,8 +63,8 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
                 <div className='w-[340px] h-[50px] gap-8 flex justify-center items-center bg-[#F9F9F9] border border-[#DADADA] rounded-[5px]'>
                     <input
                         type="text"
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)} // Записываем в стор при вводе
                         placeholder="Поиск"
                         className='w-[75%] h-[100%] border-none focus:outline-none focus:border-none placeholder:text-[#737373] font-montserrat text-[14px] tracking-[0.2px] bg-transparent'
                     />

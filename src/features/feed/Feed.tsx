@@ -4,19 +4,23 @@ import Publication from './Publication';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { useAuthStore } from '../../stores/authStore';
 
+
+import { useFilteredPosts } from './hooks/useFilteredPosts';
+
 export default function Feed() {
     const { isAuthenticated } = useAuthStore();
     const { fetchSettings } = useUserSettingsStore();
-    const { posts, isLoading, fetchPosts, hasMore } = usePostStore();
+    const { isLoading, fetchPosts, hasMore } = usePostStore();
 
+    // Вся логика фильтрации и сортировки
+    const filteredAndSortedPosts = useFilteredPosts();
 
     useEffect(() => {
-        fetchPosts(true); // Загружаем первую страницу
-        // Если пользователь авторизован, загружаем его настройки
+        fetchPosts(true);
         if (isAuthenticated) {
             fetchSettings();
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, fetchPosts, fetchSettings]);
 
     // Логика бесконечного скролла
     useEffect(() => {
@@ -32,17 +36,25 @@ export default function Feed() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isLoading, hasMore, fetchPosts]);
 
+
     return (
         <div className='w-[100%] flex items-center flex-col'>
-            <div className='flex justify-start w-[1185px] mt-[30px] mb-[30px]'> {/* НАДО ИСПРАВИТЬ!! */}
+            <div className='flex justify-start w-[1185px] mt-[30px] mb-[30px]'>
                 <h1 className='font-montserrat text-[48px] text-[#000000] tracking-[0.2px] font-thin leading-7'>Приготовить сегодня</h1>
             </div>
+
             <div className='grid grid-cols-2 gap-x-[85px] gap-y-6 max-w-[1200px]'>
-                {posts.map(post => (
+                {filteredAndSortedPosts.map(post => (
                     <Publication key={post.id} post={post} />
                 ))}
                 {isLoading && <div className="col-span-2 text-center">Загрузка...</div>}
             </div>
+
+            {!isLoading && filteredAndSortedPosts.length === 0 && (
+                <div className="mt-10 font-montserrat text-gray-400 text-[20px]">
+                    По вашему запросу ничего не найдено :(
+                </div>
+            )}
         </div >
     );
 }
