@@ -5,8 +5,14 @@ import ButtonBackRecipes from "../components/button/ButtonBackRecipes"
 import Delete from "../assets/icons/delete.svg?react"
 import AiStar from "../assets/icons/aiStar.svg?react"
 import PublicationAdd from "../assets/icons/imageAdd.svg?react"
+import { useState } from "react"
+
+const MEAL_TYPES = ['Завтрак', 'Обед', 'Полдник', 'Ужин', 'Перекус'];
+const DISH_TYPES = ['Первые блюда', 'Вторые блюда', 'Салаты', 'Закуски', 'Выпечка', 'Соусы и маринады', 'Заготовки', 'Десерты', 'Напитки', 'Гарниры'];
 
 export default function PostCreatePage() {
+    const [selectedMeal, setSelectedMeal] = useState<string>('');
+    const [selectedDish, setSelectedDish] = useState<string>('');
     return (
         <div className="flex flex-col items-center">
             <div className="flex w-[890px] my-[18px]"> {/* поменять! */}
@@ -70,6 +76,69 @@ export default function PostCreatePage() {
                                 <Input placeholder="0" className="max-w-[75px] text-center" />
                                 <span className="font-h3">Минут</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                {/* Блок тип блюда и тип приема пищи */}
+                <div className="relative flex flex-col w-[100%] border-[2px] rounded-[10px] border-[#E6E6E6] px-[20px] py-[20px] mt-[30px] gap-6">
+                    {/* Кнопка сброса */}
+                    {(selectedMeal || selectedDish) && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSelectedMeal('');
+                                setSelectedDish('');
+                            }}
+                            className="absolute top-[20px] right-[20px] font-montserrat text-[13px] text-[#737373] underline hover:text-[#23A6F0] transition-colors"
+                        >
+                            Сбросить
+                        </button>
+                    )}
+
+                    {/* Тип приема пищи */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-1">
+                            <h3 className="font-h3">Тип приема пищи</h3>
+                            <span className="text-[#E0232E] font-bold">*</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-[15px] gap-y-[10px]">
+                            {MEAL_TYPES.map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    // Если текущий тип уже выбран, сбрасываем его (''), иначе выбираем (type)
+                                    onClick={() => setSelectedMeal(prev => prev === type ? '' : type)}
+                                    className={`border rounded-[37px] px-[20px] py-[6px] transition-colors font-montserrat text-[14px] font-bold tracking-[0.2px] leading-7 ${selectedMeal === type
+                                        ? 'border-[#23A6F0] bg-[#23A6F0] text-[#FFFFFF]'
+                                        : 'border-[#C4C4C4] text-[#737373] hover:border-[#23A6F0] hover:text-[#23A6F0]'
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Тип блюда */}
+                    <div className="flex flex-col gap-3 mt-2">
+                        <div className="flex items-center gap-1">
+                            <h3 className="font-h3">Тип блюда</h3>
+                            <span className="text-[#E0232E] font-bold">*</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-[15px] gap-y-[10px]">
+                            {DISH_TYPES.map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setSelectedDish(prev => prev === type ? '' : type)}
+                                    className={`border rounded-[37px] px-[20px] py-[6px] transition-colors font-montserrat text-[14px] font-bold tracking-[0.2px] leading-7 ${selectedDish === type
+                                        ? 'border-[#23A6F0] bg-[#23A6F0] text-[#FFFFFF]'
+                                        : 'border-[#C4C4C4] text-[#737373] hover:border-[#23A6F0] hover:text-[#23A6F0]'
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
