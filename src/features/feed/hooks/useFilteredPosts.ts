@@ -53,14 +53,17 @@ export const useFilteredPosts = () => {
         }
 
         // --- ФИЛЬТРЫ ИЗ МОДАЛКИ ---
-        const textFilters = [...(filters['Тип блюда'] || []), ...(filters['Тип приема пищи'] || [])];
-        if (textFilters.length > 0) {
-            result = result.filter(post => {
-                return textFilters.some(filterItem =>
-                    post.title.toLowerCase().includes(filterItem.toLowerCase()) ||
-                    post.description.toLowerCase().includes(filterItem.toLowerCase())
-                );
-            });
+
+        // Фильтр по "Типу приема пищи" (mealType)
+        const mealFilters = filters['Тип приема пищи'];
+        if (mealFilters && mealFilters.length > 0) {
+            result = result.filter(post => mealFilters.includes(post.mealType));
+        }
+
+        // Фильтр по "Типу блюда" (dishType)
+        const dishFilters = filters['Тип блюда'];
+        if (dishFilters && dishFilters.length > 0) {
+            result = result.filter(post => dishFilters.includes(post.dishType));
         }
 
         if (filters['Время приготовления'] && filters['Время приготовления'].length > 0) {

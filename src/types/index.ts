@@ -84,6 +84,10 @@ export interface Post {
     };
     /** Время приготовления */
     timeCooking: string;
+    /** Тип приема пищи */
+    mealType: string;
+    /** Тип блюда */
+    dishType: string;
     /** Суммарное количество лайков */
     likesCount: number;
     /** Сколько раз рецепт добавили в избранное */
