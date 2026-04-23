@@ -18,6 +18,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import type { Post } from '../../types';
 
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+
 export default function Publication({ post }: { post: Post }) {
     // 2. Достаем новые объединенные экшены (toggle)
     const { isAuthenticated } = useAuthStore();
@@ -25,6 +27,9 @@ export default function Publication({ post }: { post: Post }) {
     const { updateLikeCount, updateFavoriteCount } = usePostStore();
 
     const subscribed = isSubscribed(post.authorId);
+
+    /* Для мобилки */
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     /* Модалка */
     const [isComplaintOpen, setIsComplaintOpen] = useState(false);
@@ -86,7 +91,7 @@ export default function Publication({ post }: { post: Post }) {
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
 
     return (
-        <div className="w-[550px] flex flex-col border-[2px] border-[#E6E6E6]">
+        <div className={` ${isMobile ? 'w-[100%] max-w-[400px]' : 'w-[550px]'} flex flex-col border-[2px] border-[#E6E6E6]`}>
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
@@ -98,7 +103,7 @@ export default function Publication({ post }: { post: Post }) {
                     </span>
                 </div>
                 <button
-                    className={`w-[150px] h-[30px] mr-[9px] rounded-[5px] transition-all duration-300 transform hover:scale-100 active:scale-95 ${subscribed
+                    className={`${isMobile ? 'w-[100px] h-[20px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[5px] transition-all duration-300 transform hover:scale-100 active:scale-95 ${subscribed
                         ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
                         : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
                         }`}
@@ -107,7 +112,7 @@ export default function Publication({ post }: { post: Post }) {
                         handleSubscribe();
                     }}
                 >
-                    <span className='font-montserrat text-[14px] text-[#FFFFFF] tracking-[0.2px] leading-7 font-bold'>
+                    <span className={`font-montserrat ${isMobile ? 'text-[10px] leading-3' : 'text-[14px] leading-7'} text-[#FFFFFF] tracking-[0.2px] font-bold`}>
                         {subscribed ? 'Вы подписаны' : 'Подписаться'}
                     </span>
                 </button>
@@ -115,7 +120,8 @@ export default function Publication({ post }: { post: Post }) {
             <Link to={`/publication/${post.id}`}>
                 <div className="relative ">
                     {/* Картинку поста тоже меняем на динамическую */}
-                    <img src={post.image} className='h-[344px] w-[100%] object-cover' alt="post" />
+                    <img src={post.image} className={`
+                        ${isMobile ? 'h-[200px] w-[100%]' : 'h-[344px] w-[100%]'} object-cover`} alt="post" />
 
                     <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                         <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>

@@ -11,14 +11,22 @@ import ProfileMenu from './ProfileMenu';
 import SearchBar from '../../features/search/Search'
 import Notifications from '../../features/notifications/Notifications';
 
-export default function Header() {
+import HeaderMobile from './HeaderMobile'
 
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+
+export default function Header() {
+    //Для адаптива
+    // Эта константа будет true, если экран меньше 768px
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const { isAuthenticated } = useAuthStore();
 
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const handleNotificationClick = () => { setIsNotificationOpen(true) };
     const handleCloseModal = () => { setIsNotificationOpen(false) };
-
+    if (isMobile) {
+        return <HeaderMobile />;
+    }
     return (
         <header>
             <div className='flex items-center justify-between pr-[40px] pl-[102px] border-b-4 border-[#D9D9D9] h-[100px]'>
