@@ -8,6 +8,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useProfileStore } from '../stores/profileStore';
 
+import { useMediaQuery } from '../hooks/useMediaQuery';
+
 // Импорты модалок
 import SubscribersModal from '../features/profile/components/SubscribesModal';
 import SubscriptionsModal from '../features/profile/components/SubscriptionsModal';
@@ -57,6 +59,9 @@ export default function Profile() {
 
     // Управляет переключением вкладок "Публикации" / "Сохраненное".
     const [activeTab, setActiveTab] = useState<'publications' | 'saved'>('publications');
+
+    // Эта константа будет true, если экран меньше 768px
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     // Состояния для обеих модалок
     const [isSubscribersOpen, setIsSubscribersOpen] = useState(false);
@@ -123,49 +128,51 @@ export default function Profile() {
     const subscribed = isSubscribed(currentProfile.id);
 
     return (
-        <div className='flex items-center flex-col min-h-[100vh]'>
-            <div className='flex flex-col'>
-                <div className='w-[900px] flex items-start gap-8 py-[35px]'>
+        <div className='flex items-center flex-col pt-[20px] md:pt-[35px] min-h-[100vh]'>
+            <div className='flex flex-col px-[15px] md:px-0'>
+                <div className='w-[100%] md:w-[900px] flex items-start gap-3 md:gap-8'>
                     <img
                         src={currentProfile.avatarUrl || avatarDefault}
-                        className='w-[200px] h-[200px] object-cover rounded-full select-none'
+                        className='w-[80px] h-[80px] md:w-[200px] md:h-[200px] object-cover rounded-full select-none'
                         alt='Avatar'
                     />
                     <div className='w-[100%] flex flex-col gap-3'>
                         <div>
-                            <h1 className='leading-7 font-montserrat text-[36px] font-bold'>{currentProfile.nickname}</h1>
-                            <p className='pt-2 font-montserrat text-[20px]'>{currentProfile.name}</p>
+                            <h1 className='font-montserrat leading-relaxed text-[18px] md:leading-7 md:text-[36px] font-bold'>{currentProfile.nickname}</h1>
+                            <p className='font-montserrat text-[16px] md:pt-2 md:text-[20px] '>{currentProfile.name}</p>
                         </div>
-                        <div className='flex w-[100%] justify-between'>
-                            <span className='font-montserrat text-[20px]'>
-                                <span className='font-semibold'>{userPosts.length} </span>Публикации
-                            </span>
-
-                            <span
-                                className='font-montserrat text-[20px] cursor-pointer hover:text-gray-500 transition-colors'
-                                onClick={() => setIsSubscribersOpen(true)}
-                            >
-                                <span className='font-semibold'>{currentProfile.subscribersCount} </span>Подписчиков
-                            </span>
+                        <div className='flex w-[100%] gap-3 md:gap-none md:justify-between'>
+                            <div className='flex flex-col md:flex-row md:gap-1'>
+                                <span className='font-montserrat font-semibold leading-4 md:leading-7 md:text-[20px]'>{userPosts.length} </span>
+                                <span className='font-montserrat leading-4 text-[12px] md:leading-7 md:text-[20px]'>
+                                    Публикации
+                                </span>
+                            </div>
+                            <div className='flex flex-col md:flex-row md:gap-1 cursor-pointer hover:text-gray-500 transition-colors'
+                                onClick={() => setIsSubscribersOpen(true)}>
+                                <span className='font-montserrat font-semibold leading-4 md:leading-7 md:text-[20px]'>{currentProfile.subscribersCount} </span>
+                                <span className='font-montserrat leading-4 text-[12px] md:leading-7 md:text-[20px]'>Подписчиков</span>
+                            </div>
                             {/* Открытие модалки подписок */}
-                            <span
-                                className='font-montserrat text-[20px] cursor-pointer hover:text-gray-500 transition-colors'
-                                onClick={() => setIsSubscriptionsOpen(true)}
-                            >
-                                <span className='font-semibold'>{currentProfile.subscriptionsCount} </span>Подписок
-                            </span>
+                            <div className='flex flex-col md:flex-row md:gap-1 cursor-pointer hover:text-gray-500 transition-colors'
+                                onClick={() => setIsSubscriptionsOpen(true)}>
+                                <span className='font-montserrat font-semibold leading-4 md:leading-7 md:text-[20px]'>{currentProfile.subscriptionsCount} </span>
+                                <span className='font-montserrat leading-4 text-[12px] md:leading-7 md:text-[20px]'>Подписок</span>
+                            </div>
                         </div>
-                        <span className='font-montserrat text-[20px] leading-7'>
+                        {!isMobile && <span className='font-montserrat text-[20px] leading-7'>
                             {currentProfile.bio || 'Описание профиля отсутствует.'}
-                        </span>
+                        </span>}
                     </div>
                 </div>
-
+                {isMobile && <span className='font-montserrat mt-[20px] text-[16px] leading-4'>
+                    {currentProfile.bio || 'Описание профиля отсутствует.'}
+                </span>}
                 {/* Редактировать (для себя) или Подписаться (для других) */}
                 {isMyProfile ? (
                     <Link to="/profileEdit">
-                        <button className='w-[360px] h-[40px] border-[1px] rounded-[5px] border-[#E6E6E6] bg-[#F9F9F9] hover:bg-[#efefef] transition-colors'>
-                            <span className='font-montserrat text-[20px]'>Редактировать профиль</span>
+                        <button className='flex items-center justify-center w-[200px] h-[20px] mt-[20px] md:w-[360px] md:h-[40px] md:mt-[40px] border-[1px] rounded-[5px] border-[#E6E6E6] bg-[#F9F9F9] hover:bg-[#efefef] transition-colors'>
+                            <span className='font-montserrat text-[12px] md:leading-7 md:text-[20px]'>Редактировать профиль</span>
                         </button>
                     </Link>
                 ) : (
@@ -185,21 +192,21 @@ export default function Profile() {
             </div>
 
             {/* НАВИГАЦИЯ Скрываем вкладку "Сохраненное" у чужих*/}
-            <nav className='pt-[35px] pb-[10px] flex gap-[150px] justify-center border-b-4 border-[#D9D9D9] w-[100%]'>
+            <nav className='pt-[20px] gap-[40px] md:pt-[35px] md:gap-[150px] pb-[5px] md:pb-[10px] flex  justify-center border-b-2 md:border-b-4 border-[#D9D9D9] w-[100%]'>
                 <PublicationsIcon
-                    className={`cursor-pointer ${isMyProfile ? 'hover:text-[#9B9B9B]' : 'hover:none'} transition duration-300 ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                    className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer ${isMyProfile ? 'hover:text-[#9B9B9B]' : 'hover:none'} transition duration-300 ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
                     onClick={() => setActiveTab('publications')}
                 />
                 {isMyProfile && (
                     <SavedIcon
-                        className={`cursor-pointer hover:text-[#9B9B9B] transition duration-300 ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                        className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer hover:text-[#9B9B9B] transition duration-300 ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
                         onClick={() => setActiveTab('saved')}
                     />
                 )}
             </nav>
 
             {/* СЕТКА ПОСТОВ */}
-            <div className='grid grid-cols-3 gap-1 w-[70%] mt-4 pb-10'>
+            <div className='grid grid-cols-3 gap-[1px] md:gap-1 md:w-[70%] mt-2 md:mt-4 pb-10'>
                 {postsToRender.map(post => (
                     <Link key={post.id} to={`/publication/${post.id}`} className="aspect-square">
                         <img src={post.image} alt={post.title} className='w-full h-full object-cover hover:opacity-90' />
