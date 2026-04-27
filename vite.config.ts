@@ -9,9 +9,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Настраиваем кэширование всей статики, включая картинки блюд
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}']
+      },
       manifest: {
-        name: 'Мои Рецепты',
-        short_name: 'Рецепты',
+        name: 'Вкусно Просто',
+        short_name: 'Вкусно Просто',
         description: 'Ваши любимые рецепты всегда под рукой',
         theme_color: '#ffffff',
         background_color: '#ffffff',
@@ -20,14 +24,15 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/logo192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icon-512.png',
+            src: '/logo512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }
