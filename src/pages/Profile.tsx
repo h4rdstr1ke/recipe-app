@@ -170,10 +170,13 @@ export default function Profile() {
                 </span>}
                 {/* Редактировать (для себя) или Подписаться (для других) */}
                 {isMyProfile ? (
-                    <Link to="/profileEdit">
-                        <button className='flex items-center justify-center w-[200px] h-[20px] mt-[20px] md:w-[360px] md:h-[40px] md:mt-[40px] border-[1px] rounded-[5px] border-[#E6E6E6] bg-[#F9F9F9] hover:bg-[#efefef] transition-colors'>
-                            <span className='font-montserrat text-[12px] md:leading-7 md:text-[20px]'>Редактировать профиль</span>
-                        </button>
+                    <Link
+                        to="/profileEdit"
+                        className='flex items-center justify-center w-[250px] h-[30px] mt-[20px] md:w-[360px] md:h-[40px] md:mt-[40px] border-[1px] rounded-[5px] border-[#E6E6E6] bg-[#F9F9F9] hover:bg-[#efefef] transition-colors'
+                    >
+                        <span className='font-montserrat text-[16px] md:leading-7 md:text-[20px]'>
+                            Редактировать профиль
+                        </span>
                     </Link>
                 ) : (
                     <div className='flex gap-8'>
@@ -194,12 +197,12 @@ export default function Profile() {
             {/* НАВИГАЦИЯ Скрываем вкладку "Сохраненное" у чужих*/}
             <nav className='pt-[20px] gap-[40px] md:pt-[35px] md:gap-[150px] pb-[5px] md:pb-[10px] flex  justify-center border-b-2 md:border-b-4 border-[#D9D9D9] w-[100%]'>
                 <PublicationsIcon
-                    className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer ${isMyProfile ? 'hover:text-[#9B9B9B]' : 'hover:none'} transition duration-300 ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                    className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer ${isMyProfile ? 'md:hover:text-[#9B9B9B]' : 'hover:none'} transition duration-300 ${activeTab === 'publications' ? 'text-black' : 'text-[#C0BFBF]'}`}
                     onClick={() => setActiveTab('publications')}
                 />
                 {isMyProfile && (
                     <SavedIcon
-                        className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer hover:text-[#9B9B9B] transition duration-300 ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
+                        className={`w-[30px] h-[30px] md:w-[40px] md:h-[40px] cursor-pointer md:hover:text-[#9B9B9B] transition duration-300 ${activeTab === 'saved' ? 'text-black' : 'text-[#C0BFBF]'}`}
                         onClick={() => setActiveTab('saved')}
                     />
                 )}
