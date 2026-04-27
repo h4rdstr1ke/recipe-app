@@ -103,7 +103,7 @@ export default function Publication({ post }: { post: Post }) {
                     </span>
                 </div>
                 <button
-                    className={`${isMobile ? 'w-[120px] h-[25px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[5px] md:transition-all md:duration-300 md:transform md:hover:scale-100 active:scale-95 ${subscribed
+                    className={`${isMobile ? 'w-[140px] h-[30px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[10px] md:rounded-[5px] md:transition-all md:duration-300 md:transform md:hover:scale-100 active:scale-95 ${subscribed
                         ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
                         : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
                         }`}
@@ -112,7 +112,7 @@ export default function Publication({ post }: { post: Post }) {
                         handleSubscribe();
                     }}
                 >
-                    <span className={`font-montserrat ${isMobile ? 'text-[12px] leading-3' : 'text-[14px] leading-7'} text-[#FFFFFF] tracking-[0.2px] font-bold`}>
+                    <span className={`font-montserrat ${isMobile ? 'text-[14px] leading-3' : 'text-[14px] leading-7'} text-[#FFFFFF] tracking-[0.2px] font-bold`}>
                         {subscribed ? 'Вы подписаны' : 'Подписаться'}
                     </span>
                 </button>
@@ -121,7 +121,7 @@ export default function Publication({ post }: { post: Post }) {
                 <div className="relative ">
                     {/* Картинку поста тоже меняем на динамическую */}
                     <img src={post.image} className={`
-                        ${isMobile ? 'h-[200px] w-[100%]' : 'h-[344px] w-[100%]'} object-cover`} alt="post" />
+                        ${isMobile ? 'h-[250px] w-[100%]' : 'h-[344px] w-[100%]'} object-cover`} alt="post" />
 
                     <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
                         <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
@@ -139,31 +139,33 @@ export default function Publication({ post }: { post: Post }) {
                 </div>
 
                 <div className='flex border-t-[2px] items-center justify-between '>
-                    <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-2 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px]'
+                    <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-4 md:gap-2 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px]'
                         onClick={(e) => {
                             e.preventDefault();
                         }}>
-                        <div className='flex items-center gap-[4px]'>
+                        <div className='flex items-center gap-1'>
                             <LikeIcon
                                 isLiked={isLiked}
-                                className={`cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
+                                className={`
+                                    w-[22px] h-[22px]
+                                    md:w-[26px] md:h-[26px] cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
                                 onClick={handleLike}
                             />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
+                            <span className='font-montserrat md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
                                 {post.likesCount}
                             </span>
                         </div>
                         <div className='flex items-center gap-1 cursor-pointer'>
-                            <CommentIcon onClick={handleCommentClick} />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
+                            <CommentIcon className='w-[22px] h-[22px] md:w-[25px] md:h-[25px]' onClick={handleCommentClick} />
+                            <span className='font-montserrat md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
                         </div>
-                        <div className='flex items-center gap-[4px]'>
+                        <div className='flex items-center gap-1'>
                             <FavoritesIcon
                                 isFavorited={isFavorited}
-                                className={`cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
+                                className={`w-[22px] h-[22px] md:w-[25px] md:h-[25px] cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
                                 onClick={handleFavorite}
                             />
-                            <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
+                            <span className='font-montserrat md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>
                                 {post.favoritesCount}
                             </span>
                         </div>

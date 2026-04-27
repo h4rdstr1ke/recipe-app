@@ -6,14 +6,14 @@ import { Link } from 'react-router-dom'
 
 export default function FooterMobile() {
     return (
-        <footer className='w-full h-[60px] flex items-center justify-around bg-white border-t-[1px] border-[#D9D9D9] touch-none'>
+        <footer className='w-full h-[60px] shrink-0 flex items-center justify-around bg-white border-t-[1px] border-[#D9D9D9] touch-none'>
             <Link to='/' >
-                <HomeIcon className='w-[24px] h-[24px]' />
+                <HomeIcon className='w-[28px] h-[28px]' />
             </Link>
-            <StarIcon className='w-[24px] h-[24px]' />
-            <FindIcon className='w-[24px] h-[24px]' />
+            <StarIcon className='w-[28px] h-[28px]' />
+            <FindIcon className='w-[28px] h-[28px]' />
             <Link to='profile' >
-                <DefaultAvatar className='w-[24px] h-[24px]' />
+                <DefaultAvatar className='w-[28px] h-[28px]' />
             </Link>
         </footer>
     )
