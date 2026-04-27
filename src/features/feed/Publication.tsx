@@ -103,7 +103,7 @@ export default function Publication({ post }: { post: Post }) {
                     </span>
                 </div>
                 <button
-                    className={`${isMobile ? 'w-[100px] h-[20px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[5px] transition-all duration-300 transform hover:scale-100 active:scale-95 ${subscribed
+                    className={`${isMobile ? 'w-[120px] h-[25px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[5px] md:transition-all md:duration-300 md:transform md:hover:scale-100 active:scale-95 ${subscribed
                         ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
                         : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
                         }`}
@@ -112,7 +112,7 @@ export default function Publication({ post }: { post: Post }) {
                         handleSubscribe();
                     }}
                 >
-                    <span className={`font-montserrat ${isMobile ? 'text-[10px] leading-3' : 'text-[14px] leading-7'} text-[#FFFFFF] tracking-[0.2px] font-bold`}>
+                    <span className={`font-montserrat ${isMobile ? 'text-[12px] leading-3' : 'text-[14px] leading-7'} text-[#FFFFFF] tracking-[0.2px] font-bold`}>
                         {subscribed ? 'Вы подписаны' : 'Подписаться'}
                     </span>
                 </button>
