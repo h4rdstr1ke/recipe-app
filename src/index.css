@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#root {
+    height: 100%;
+    overflow: hidden;
+    /* Запрещаем системный скролл окна */
+    overscroll-behavior: none;
+    /* Убираем эффект "резинки" (pull-to-refresh и оттяжку) */
+}
+
 /*базовые стили для HTML-элементов (сбросы, типографика)*/
 @layer base {
 

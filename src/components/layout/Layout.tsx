@@ -22,7 +22,7 @@ export default function Layout() {
             )}
 
             {/* Основной контент: занимает всё свободное место и имеет свой скролл */}
-            <main className="flex-1 overflow-y-auto relative">
+            <main className="flex-1 overflow-y-auto relative overscroll-none">
                 <Outlet />
             </main>
 

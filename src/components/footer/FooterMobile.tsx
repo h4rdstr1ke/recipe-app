@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 
 export default function FooterMobile() {
     return (
-        <footer className='w-full h-[60px] flex items-center justify-around bg-white border-t-[1px] border-[#D9D9D9]'>
+        <footer className='w-full h-[60px] flex items-center justify-around bg-white border-t-[1px] border-[#D9D9D9] touch-none'>
             <Link to='/' >
                 <HomeIcon className='w-[24px] h-[24px]' />
             </Link>
