@@ -31,6 +31,15 @@ export default function Publication({ post }: { post: Post }) {
     /* Для мобилки */
     const isMobile = useMediaQuery('(max-width: 768px)');
 
+    // Функция для безопасного вызова вибрации
+    /*
+    const triggerVibration = (pattern: number | number[] = 50) => {
+        // Проверяем, поддерживает ли браузер вибрацию
+        if (typeof window !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(pattern);
+        }
+    };*/
+
     /* Модалка */
     const [isComplaintOpen, setIsComplaintOpen] = useState(false);
 
@@ -55,7 +64,9 @@ export default function Publication({ post }: { post: Post }) {
         // Меняем в профиле (красим сердечко)
         toggleLike(post.id);
         // Меняем счетчик в посте (передаем true, если СЕЙЧАС не лайкнут, чтобы сделать +1)
-        updateLikeCount(post.id, !isLiked);;
+        updateLikeCount(post.id, !isLiked);
+        // Вибрация в будущем (PWA)
+        //triggerVibration(30);
     };
 
     const handleFavorite = () => {
@@ -104,8 +115,8 @@ export default function Publication({ post }: { post: Post }) {
                 </div>
                 <button
                     className={`${isMobile ? 'w-[140px] h-[30px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[10px] md:rounded-[5px] md:transition-all md:duration-300 md:transform md:hover:scale-100 active:scale-95 ${subscribed
-                        ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
-                        : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
+                        ? `bg-[#8F94989C] ${!isMobile && 'hover:bg-[#7ACDFC]'}`
+                        : `bg-[#23A6F0] ${!isMobile && 'hover:bg-[#7ACDFC]'}`
                         }`}
                     onClick={(e) => {
                         e.preventDefault();
@@ -143,7 +154,7 @@ export default function Publication({ post }: { post: Post }) {
                         onClick={(e) => {
                             e.preventDefault();
                         }}>
-                        <div className='flex items-center gap-1'>
+                        <div className='flex items-center gap-2 md:gap-1'>
                             <LikeIcon
                                 isLiked={isLiked}
                                 className={`
@@ -155,11 +166,11 @@ export default function Publication({ post }: { post: Post }) {
                                 {post.likesCount}
                             </span>
                         </div>
-                        <div className='flex items-center gap-1 cursor-pointer'>
+                        <div className='flex items-center gap-2 md:gap-1 cursor-pointer'>
                             <CommentIcon className='w-[22px] h-[22px] md:w-[25px] md:h-[25px]' onClick={handleCommentClick} />
                             <span className='font-montserrat md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{post.commentsCount}</span>
                         </div>
-                        <div className='flex items-center gap-1'>
+                        <div className='flex items-center gap-2 md:gap-1'>
                             <FavoritesIcon
                                 isFavorited={isFavorited}
                                 className={`w-[22px] h-[22px] md:w-[25px] md:h-[25px] cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}

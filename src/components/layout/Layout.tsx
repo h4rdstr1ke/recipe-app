@@ -12,7 +12,7 @@ export default function Layout() {
 
     return (
         // Каркас: flex-колонка высотой ровно в экран мобильного устройства (dvh учитывает панель адреса)
-        <div className="flex flex-col h-[100dvh] overflow-hidden bg-white">
+        <div className="flex flex-col h-[100svh] overflow-hidden bg-white">
 
             {/* Шапка */}
             {!hideHeader && (
