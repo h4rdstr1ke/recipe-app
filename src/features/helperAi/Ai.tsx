@@ -64,11 +64,11 @@ export default function Ai({ onClose }: { onClose: () => void }) {
 
     return (
         <div
-            className="fixed top-[100px] left-0 right-0 bottom-0 bg-black/20 backdrop-blur-sm z-50 flex justify-center items-start pt-[20px] pb-[40px] px-4"
+            className="fixed top-0 md:top-[100px] left-0 right-0 bottom-0 bg-black/20 md:backdrop-blur-sm z-50 flex justify-center items-start pt-[10px] md:pt-[20px] pb-[10px] md:pb-[40px] md:px-4"
             onClick={onClose}
         >
             <div
-                className="relative flex flex-col w-full max-w-[800px] h-[80vh] min-h-[600px] max-h-[800px] rounded-[20px] shadow-2xl overflow-hidden bg-gradient-to-b from-[#3BB5FF] to-[#8ED9FF]"
+                className="relative flex flex-col w-full md:max-w-[800px] md:h-[80vh] h-[100%] md:min-h-[600px] md:max-h-[800px] rounded-[20px] shadow-2xl overflow-hidden bg-gradient-to-b from-[#3BB5FF] to-[#8ED9FF]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Шапка */}
@@ -76,7 +76,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute left-[30px] w-10 h-10 flex items-center justify-center text-[28px] font-light text-black hover:text-gray-700 rounded-full transition-colors"
+                        className="absolute left-1 md:left-[30px] w-10 h-10 flex items-center justify-center text-[28px] font-light text-black hover:text-gray-700 rounded-full transition-colors"
                         aria-label="Закрыть"
                     >
                         ✕
@@ -119,7 +119,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Что хотите приготовить сегодня?"
-                        className="flex-1 h-[44px] rounded-[12px] bg-white/90 focus:bg-white px-[20px] font-montserrat text-[15px] outline-none placeholder:text-gray-400 shadow-sm transition-all focus:ring-2 focus:ring-white/50"
+                        className="flex-1 h-[44px] rounded-[12px] bg-white/90 focus:bg-white px-[20px] font-montserrat text-[16px] md:text-[15px] outline-none placeholder:text-gray-400 shadow-sm transition-all focus:ring-2 focus:ring-white/50"
                     />
 
                     {/* Кнопка отправки */}

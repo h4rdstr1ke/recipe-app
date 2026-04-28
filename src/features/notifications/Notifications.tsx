@@ -17,7 +17,7 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
 
     return (
         // overflow-y-auto, чтобы список скроллился, если уведомлений много
-        <div className="absolute top-[110px] right-[100px] bg-[#FFFFFF] bottom-0 flex flex-col z-50 border border-[#E6E6E6] rounded-[5px] w-[500px] p-5 overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed md:absolute h-[100%] md:h-auto md:top-[110px] w-[100%] md:right-[100px] bg-[#FFFFFF] bottom-0 flex flex-col z-50 border border-[#E6E6E6] rounded-[5px] md:w-[500px] p-5 overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
                 <h3 className="font-montserrat text-[32px] tracking-[0.2px] font-bold leading-7">Уведомления</h3>
                 <button onClick={onClose} className="text-black hover:text-gray-500 transition-colors text-2xl">✕</button>
@@ -39,7 +39,7 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
                             const subscribed = notif.actorId ? isSubscribed(notif.actorId) : false;
 
                             return (
-                                <div key={notif.id} className={`grid grid-cols-[90px_1fr_190px] items-center py-2 ${!notif.isRead ? 'bg-blue-50/50 rounded-lg' : ''}`}>
+                                <div key={notif.id} className={`grid grid-cols-[90px_1fr_90px] md:grid-cols-[90px_1fr_190px] items-center py-2 ${!notif.isRead ? 'bg-blue-50/50 rounded-lg' : ''}`}>
                                     {/* Аватар */}
                                     <div className="flex justify-center">
                                         <img src={actor?.authorAvatar || DefaultAvatar} alt='avatar' className="w-[70px] h-[70px] rounded-full object-cover" />
