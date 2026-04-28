@@ -43,7 +43,7 @@ export default function Feed() {
         <div className='w-[100%] flex items-center flex-col'>
             {isMobile ?
                 (<div className='flex px-4 w-[100%] mt-2 mb-2'>
-                    <h1 className='font-montserrat text-[26px] text-[#000000] tracking-[0.2px] font-thin leading-relaxed'>Приготовить сегодня</h1>
+                    <h1 className='font-montserrat text-[30px] text-[#000000] tracking-[0.2px] font-thin leading-relaxed'>Приготовить сегодня</h1>
                 </div>)
                 :
                 (<div className='flex justify-start w-[1185px] mt-[30px] mb-[30px]'>

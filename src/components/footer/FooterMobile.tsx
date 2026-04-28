@@ -10,7 +10,9 @@ export default function FooterMobile() {
             <Link to='/' >
                 <HomeIcon className='w-[28px] h-[28px]' />
             </Link>
-            <StarIcon className='w-[28px] h-[28px]' />
+            <Link to='/topAuthors' >
+                <StarIcon className='w-[28px] h-[28px]' />
+            </Link>
             <FindIcon className='w-[28px] h-[28px]' />
             <Link to='profile' >
                 <DefaultAvatar className='w-[28px] h-[28px]' />
