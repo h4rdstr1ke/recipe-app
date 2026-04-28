@@ -100,7 +100,7 @@ export default function ProfileEdit() {
     return (
         <div className='flex w-[100%] justify-center pb-20'>
             <form onSubmit={handleSubmit} className='flex flex-col items-center'>
-                <div className="flex w-[640px] h-[60px] mt-[34px] mb-[34px] px-[20px] items-center justify-between rounded-[20px] bg-[#F9F9F9] border-[1px] border-[#E6E6E6]">
+                <div className="flex md:w-[640px] h-[60px] mt-[34px] mb-[34px] px-[20px] items-center justify-between rounded-[20px] bg-[#F9F9F9] border-[1px] border-[#E6E6E6]">
                     <div className='flex items-center gap-4 '>
                         <img src={user?.avatarUrl || avatar} className='w-[50px] rounded-full' alt="avatar" />
                         <span className='font-montserrat text-[36px] tracking-[0.2px] leading-7'>{user?.nickname || 'vlad228'}</span>
@@ -109,7 +109,7 @@ export default function ProfileEdit() {
                         <span className='font-montserrat text-[14px] font-bold text-[#FFFFFF] tracking-[0.2px] leading-7'>Новое фото</span>
                     </button>
                 </div>
-                <div className="flex flex-col w-[960px] gap-2">
+                <div className="flex flex-col md:w-[960px] gap-2">
 
                     <label className='font-montserrat text-[20px] tracking-[0.2px] leading-6 font-semibold flex gap-1'>
                         Поменять никнейм <span className="text-[#E0232E] font-bold">*</span>

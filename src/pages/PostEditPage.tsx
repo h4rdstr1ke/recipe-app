@@ -8,14 +8,14 @@ import AiStar from "../assets/icons/aiStar.svg?react"
 export default function PostEditPage() {
     return (
         <div className="flex flex-col items-center">
-            <div className="flex w-[890px] my-[18px]"> {/* поменять! */}
+            <div className="flex md:w-[890px] my-[18px]"> {/* поменять! */}
                 <ButtonBackRecipes />
             </div>
-            <div className="max-w-[638px] w-[100%] flex flex-col">
+            <div className="md:max-w-[638px] w-[100%] flex flex-col">
                 {/* Фото */}
-                <div className="flex flex-col w-[622px] mx-auto">
+                <div className="flex flex-col w-[100%] md:w-[622px] mx-auto">
                     <img alt="Photo" className="w-[100%] h-[344px] mx-auto border-[2px] rounded-[10px] border-[#E6E6E6]" />
-                    <Button className='w-[175px] h-[30px] text-[14px] my-[11px] ml-auto'>Изменить фото</Button>
+                    <Button className='md:w-[175px] h-[30px] text-[14px] my-[11px] ml-auto'>Изменить фото</Button>
                 </div>
                 {/* Блок про рецепт */}
                 <div className="flex flex-col w-[100%] border-[2px] rounded-[10px] border-[#E6E6E6] px-[20px] py-[15px]">
