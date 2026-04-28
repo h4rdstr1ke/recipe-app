@@ -15,7 +15,7 @@ export default function PostCreatePage() {
     const [selectedDish, setSelectedDish] = useState<string>('');
     return (
         <div className="flex flex-col items-center">
-            <div className="flex w-[890px] my-[18px]"> {/* поменять! */}
+            <div className="flex md:w-[890px] my-[18px]"> {/* поменять! */}
                 <ButtonBackRecipes />
             </div>
             <div className="max-w-[638px] w-[100%] flex flex-col">
