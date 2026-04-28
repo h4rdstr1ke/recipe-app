@@ -179,17 +179,17 @@ export default function Profile() {
                         </span>
                     </Link>
                 ) : (
-                    <div className='flex gap-8'>
+                    <div className='flex gap-4 md:gap-8 mt-[20px] md:mt-[40px]'>
                         <button
                             onClick={() => isAuthenticated && toggleSubscription(currentProfile.id)}
-                            className={`w-[177px] h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
+                            className={`w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
                                 }`}
                         >
                             <span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>
                                 {subscribed ? 'Вы подписаны' : 'Подписаться'}
                             </span>
                         </button>
-                        <button className='bg-[#FF0000] w-[177px] h-[35px] rounded-[5px]'><span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>Пожаловаться</span></button>
+                        <button className='bg-[#FF0000] w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px]'><span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>Пожаловаться</span></button>
                     </div>
                 )}
             </div>
