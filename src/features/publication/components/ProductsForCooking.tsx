@@ -11,8 +11,8 @@ export default function ProductsForCooking({ products, portions }: ProductsForCo
     return (
         <div className="w-[100%] mt-7"> {/* Продукты для приготовления */}
             <div className="flex flex-col gap-3">
-                <h3 className='font-montserrat text-[28px] font-bold tracking-[0.2px] leading-7'>ПРОДУКТЫ ДЛЯ ПРИГОТОВЛЕНИЯ</h3>
-                <span className='font-montserrat text-[20px] text-[#000000] font-semibold tracking-[0.2px] leading-7'>Порций: {portions}</span>
+                <h3 className='font-montserrat text-[24px] md:text-[28px] font-bold tracking-[0.2px] leading-7'>ПРОДУКТЫ ДЛЯ ПРИГОТОВЛЕНИЯ</h3>
+                <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] font-semibold tracking-[0.2px] leading-7'>Порций: {portions}</span>
             </div>
             <div className="">
                 {products?.map((product, idx) => (

@@ -89,7 +89,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
     };
     // =======================
     return (
-        <div className="max-w-[640px] mx-auto flex flex-col items-center justify-center">
+        <div className="w-[100%] mt-4 md:mt-0 px-2 md:px-0 md:max-w-[640px] mx-auto flex flex-col items-center justify-center">
             <PublicationHeader
                 // динамические данные 
                 avatar={post.authorAvatar || DefaultAvatar}

@@ -89,7 +89,7 @@ export default function PublicationHeader({
                     </div>
                     {!isMyPost && (
                         <button
-                            className={`w-[150px] h-[30px] rounded-[5px] transition-colors ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
+                            className={`w-[140px] h-[30px] md:w-[150px] md:h-[30px] rounded-[10px] md:rounded-[5px] transition-colors ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
                                 }`}
                             onClick={onSubscribe}
                         >
@@ -103,7 +103,7 @@ export default function PublicationHeader({
             }
             {/* Фото блок */}
             <div className="relative mt-2">
-                <img src={image} className='h-[344px] object-cover w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
+                <img src={image} className='md:h-[344px] object-cover w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
                 <div className='absolute bottom-4 right-2'>
                     <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>{time}</span>
                 </div>
@@ -111,26 +111,26 @@ export default function PublicationHeader({
 
             {/* Блок взаимодействия */}
             <div className='flex mt-4 items-center justify-between'>
-                <div className='flex max-w-[500px] gap-2'>
-                    <div className='flex items-center gap-1'>
+                <div className='flex md:max-w-[500px] gap-4 md:gap-2'>
+                    <div className='flex items-center gap-2 md:gap-1'>
                         <LikeIcon
                             isLiked={isLiked}
                             className={`cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
                             onClick={onLike}
                         />
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
+                        <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
                     </div>
-                    <div className='flex items-center gap-1'>
+                    <div className='flex items-center gap-2 md:gap-1'>
                         <CommentIcon className='w-[25px] cursor-pointer' onClick={onComment} />
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{commentsCount}</span>
+                        <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{commentsCount}</span>
                     </div>
-                    <div className='flex items-center gap-1'>
+                    <div className='flex items-center gap-2 md:gap-1'>
                         <FavoritesIcon
                             isFavorited={isFavorited}
                             className={`cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
                             onClick={onFavorite}
                         />
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>
+                        <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>
                     </div>
                     <BanIcon className='w-[25px]' onClick={onBan} />
                 </div>
@@ -141,7 +141,7 @@ export default function PublicationHeader({
                         {hasAllergen && (
                             <div className="relative group">
                                 <AllergenIcon className='w-[30px] h-[30px] cursor-help' />
-                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                     Содержит аллергены
                                 </div>
                             </div>
@@ -149,7 +149,7 @@ export default function PublicationHeader({
                         {hasUnwanted && (
                             <div className="relative group">
                                 <UnwnantedIcon className='w-[30px] h-[30px] cursor-help' />
-                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                     Содержит нежелательные ингредиенты
                                 </div>
                             </div>
@@ -159,16 +159,16 @@ export default function PublicationHeader({
             </div>
 
             {/* Заголовок и описание */}
-            <div className='flex mt-4 flex-col gap-[14px]'>
+            <div className='flex mt-4 flex-col md:gap-[14px]'>
                 <div className='flex justify-between items-center'>
-                    <span className='font-montserrat text-[28px] text-[#000000] tracking-[0.2px] font-bold leading-7'>{title}</span>
-                    <div className='w-[100px] h-[30px] flex items-center justify-end gap-1'>
-                        <span className='font-montserrat text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{rating?.rating}</span>
+                    <span className='font-montserrat text-[24px] md:text-[28px] text-[#000000] tracking-[0.2px] font-bold leading-7'>{title}</span>
+                    <div className='md:w-[100px] w-[70px] h-[30px] flex items-center justify-end gap-1'>
+                        <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] font-bold'>{rating?.rating}</span>
                         <StarIcon className='w-[20px] h-[20px]' />
-                        <span className='font-montserrat text-[16px] text-[#000000] tracking-[0.2px] font-light'>({rating?.quantity})</span>
+                        <span className='font-montserrat text-[14px] md:text-[16px] text-[#000000] tracking-[0.2px] font-light'>({rating?.quantity})</span>
                     </div>
                 </div>
-                <span className='font-montserrat text-[22px] text-[#737373] tracking-[0.2px] leading-6'>{description}</span>
+                <span className='font-montserrat text-[16px] md:text-[22px] text-[#737373] tracking-[0.2px] leading-6'>{description}</span>
             </div>
         </div >
     );

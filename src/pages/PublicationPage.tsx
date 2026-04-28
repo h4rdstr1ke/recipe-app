@@ -81,7 +81,7 @@ export default function PublicationPage() {
     // СОСТОЯНИЕ 3: Успех. Данные загружены, рендерим страницу
     return (
         <div className='flex justify-center'>
-            <div className='flex flex-col w-[900px] mt-4 gap-2'>
+            <div className='flex flex-col w-[100%] md:w-[900px] mt-4 gap-2'>
                 <ButtonBackRecipes />
                 {/* Передаем загруженный пост в дочерний презентационный компонент */}
                 <PublicationFull post={currentPost} />

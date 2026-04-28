@@ -240,16 +240,16 @@ export default function Comments({ postId }: CommentsProps) {
     const totalCommentsCount = countTotal(comments);
 
     return (
-        <div id="comments-section" className='w-[100%] flex flex-col mt-5'>
+        <div id="comments-section" className='w-[100%] flex flex-col mt-[50px] md:mt-5'>
             {/* ПОЛЕ ВВОДА */}
             <div>
                 <div className='flex gap-1 mb-6'>
-                    <h3 className='font-montserrat text-[28px] font-bold tracking-[0.2px] leading-7'>КОММЕНТАРИИ</h3>
-                    <span className='font-montserrat text-[28px] font-light text-[#D1D1D1] tracking-[0.2px] leading-7'>
+                    <h3 className='font-montserrat text-[24px] md:text-[28px] font-bold tracking-[0.2px] leading-7'>КОММЕНТАРИИ</h3>
+                    <span className='font-montserrat text-[24px] md:text-[28px] font-light text-[#D1D1D1] tracking-[0.2px] leading-7'>
                         ({totalCommentsCount})
                     </span>
                 </div>
-                <div className='pl-5 relative'>
+                <div className='md:pl-5 relative'>
                     <textarea
                         value={newCommentText}
                         onChange={(e) => setNewCommentText(e.target.value)}
