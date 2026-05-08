@@ -223,10 +223,12 @@ export default function Profile() {
 
             {/* Рендер модалок */}
             {isSubscribersOpen && (
-                <SubscribersModal onClose={() => setIsSubscribersOpen(false)} />
+                <SubscribersModal onClose={() => setIsSubscribersOpen(false)}
+                    userId={currentProfile.id} />
             )}
             {isSubscriptionsOpen && (
-                <SubscriptionsModal onClose={() => setIsSubscriptionsOpen(false)} />
+                <SubscriptionsModal onClose={() => setIsSubscriptionsOpen(false)}
+                    userId={currentProfile.id} />
             )}
         </div>
     );

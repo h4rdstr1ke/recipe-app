@@ -23,7 +23,7 @@ export default function Register() {
     useEffect(() => {
         let interval: number | undefined;
         if (timer > 0) {
-            interval = setInterval(() => {
+            interval = window.setInterval(() => {
                 setTimer(prev => {
                     if (prev <= 1) {
                         setCanResend(true);
@@ -68,7 +68,7 @@ export default function Register() {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Отправка кода
+    // Шаг 1: Отправка кода
     const handleSendCode = async (e: React.FormEvent) => {
         e.preventDefault();
         clearError();
@@ -104,7 +104,7 @@ export default function Register() {
         }
     };
 
-    // Подтверждение кода
+    // Шаг 2: Подтверждение кода и регистрация
     const handleConfirmCode = async (e: React.FormEvent) => {
         e.preventDefault();
         clearError();
@@ -120,7 +120,6 @@ export default function Register() {
         }
     };
 
-    // Обновление полей
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -133,11 +132,10 @@ export default function Register() {
         }
     };
 
-    // Общий стиль для инпутов
     const inputClassName = (hasError: boolean) => `
     w-[100%] h-[50px] px-[15px] mt-2 border rounded-[5px] 
     bg-[#F9F9F9] placeholder:text-[#737373] 
-    font-normal placeholder:font-normal focus:outline-none
+    font-normal placeholder:font-normal focus:outline-none transition-colors
     ${hasError ? 'border-[#E0232E]' : 'border-[#DDDDDD]'}
   `;
 
@@ -148,10 +146,9 @@ export default function Register() {
             </h1>
 
             {!showCodeInput ? (
-                // Форма регистрации
                 <form onSubmit={handleSendCode} className="max-w-[250px] w-[100%] flex items-center justify-center flex-col gap-2 text-[#252B42] font-montserrat font-semibold text-[14px] tracking-[0.2px]">
                     {error && (
-                        <div className="w-full bg-red-50 border border-[#E0232E] text-[#E0232E] px-4 py-2 rounded text-sm">
+                        <div className="w-full bg-red-50 border border-[#E0232E] text-[#E0232E] px-4 py-2 rounded text-sm text-center">
                             {error}
                         </div>
                     )}
@@ -223,23 +220,22 @@ export default function Register() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-[100%] h-[50px] mt-5 bg-[#23A6F0] font-montserrat font-bold text-[#FFFFFF] text-[14px] tracking-[0.2px] rounded-[5px] hover:opacity-90 disabled:opacity-70"
+                        className="w-[100%] h-[50px] mt-5 bg-[#23A6F0] font-montserrat font-bold text-[#FFFFFF] text-[14px] tracking-[0.2px] rounded-[5px] hover:opacity-90 disabled:opacity-70 transition-opacity"
                     >
                         {isLoading ? 'Отправка...' : 'Выслать код на почту'}
                     </button>
 
                     <Link to="/login">
-                        <p className="underline font-montserrat font-normal text-[#737373] text-[12px] tracking-[0.2px] hover:text-[#23A6F0]">
+                        <p className="underline font-montserrat font-normal text-[#737373] text-[12px] tracking-[0.2px] hover:text-[#23A6F0] mt-2 transition-colors">
                             Уже есть аккаунт?
                         </p>
                     </Link>
                 </form>
 
             ) : (
-                // Форма ввода кода
                 <form onSubmit={handleConfirmCode} className="max-w-[350px] flex items-center justify-center flex-col gap-2">
                     {error && (
-                        <div className="w-full bg-red-50 border border-[#E0232E] text-[#E0232E] px-4 py-2 rounded text-sm">
+                        <div className="w-full bg-red-50 border border-[#E0232E] text-[#E0232E] px-4 py-2 rounded text-sm text-center">
                             {error}
                         </div>
                     )}
@@ -267,7 +263,7 @@ export default function Register() {
                         type="button"
                         onClick={handleResendCode}
                         disabled={!canResend}
-                        className={`font-montserrat text-[12px] tracking-[0.2px] ${canResend
+                        className={`font-montserrat text-[12px] tracking-[0.2px] mt-2 ${canResend
                             ? 'text-[#23A6F0] hover:text-[#1a7fb3] cursor-pointer'
                             : 'text-[#737373] cursor-not-allowed'
                             }`}
@@ -283,7 +279,7 @@ export default function Register() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-[100%] max-w-[250px] h-[50px] mt-5 bg-[#23A6F0] font-montserrat font-bold text-[#FFFFFF] text-[14px] tracking-[0.2px] rounded-[5px] hover:opacity-90 disabled:opacity-70"
+                        className="w-[100%] max-w-[250px] h-[50px] mt-5 bg-[#23A6F0] font-montserrat font-bold text-[#FFFFFF] text-[14px] tracking-[0.2px] rounded-[5px] hover:opacity-90 disabled:opacity-70 transition-opacity"
                     >
                         {isLoading ? 'Проверка...' : 'Подтвердить'}
                     </button>
@@ -294,7 +290,7 @@ export default function Register() {
                             setShowCodeInput(false);
                             clearError();
                         }}
-                        className="flex justify-center items-center gap-2 w-[143px] h-[28px] mt-2 text-[#23A6F0] font-montserrat font-bold text-[14px] tracking-[0.2px] border border-[#23A6F0] rounded-[37px] hover:bg-[#23A6F0] hover:text-white transition-colors"
+                        className="flex justify-center items-center gap-2 w-[143px] h-[28px] mt-4 text-[#23A6F0] font-montserrat font-bold text-[14px] tracking-[0.2px] border border-[#23A6F0] rounded-[37px] hover:bg-[#23A6F0] hover:text-white transition-colors"
                     >
                         <ArrowIcon className="w-3.5 h-[14px] rotate-180" />
                         <span className='p-0'>Вернуться</span>

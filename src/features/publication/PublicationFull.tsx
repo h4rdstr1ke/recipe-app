@@ -4,7 +4,7 @@ import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { usePostStore } from '../../stores/postStore';
 
 import DefaultAvatar from '../../assets/defaultAvatar.svg';
-
+import { useProfileStore } from '../../stores/profileStore';
 import NutritionalValue from './components/NutritionalValue';
 import ProductsForCooking from './components/ProductsForCooking';
 import SwitchDisplay from './components/SwitchDisplay';
@@ -22,7 +22,8 @@ type PublicationFullProps = {
 export default function PublicationFull({ post }: PublicationFullProps) {
     // Достаем новые тогглы из postStore
     const { updateLikeCount, updateFavoriteCount } = usePostStore();
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, user } = useAuthStore(); // Добавили user
+    const { currentProfile } = useProfileStore(); // Добавили currentProfile
 
     // Достаем тоггл подписки из userSettingsStore
     const {
@@ -36,11 +37,11 @@ export default function PublicationFull({ post }: PublicationFullProps) {
     const { hash } = useLocation();
 
     const hasAllergen = (settings && post.products?.some(
-        product => settings.allergens.includes(product.name)
+        product => settings.allergens.some((allergen: any) => allergen.id === product.id)
     )) ?? null;
 
     const hasUnwanted = (settings && post.products?.some(
-        product => settings.unwanted.includes(product.name)
+        product => settings.unwanted.some((item: any) => item.id === product.id)
     )) ?? null;
 
     // Вычисляем статусы на лету (вместо post.isLiked)
@@ -87,12 +88,18 @@ export default function PublicationFull({ post }: PublicationFullProps) {
             commentsSection.scrollIntoView({ behavior: 'smooth' });
         }
     };
+
+    // Вычисляем умную аватарку
+    const isMyPost = post.authorId === user?.id;
+    const displayAvatar = isMyPost
+        ? (currentProfile?.avatarUrl || user?.avatarUrl || DefaultAvatar)
+        : (post.authorAvatar || DefaultAvatar);
     // =======================
     return (
         <div className="w-[100%] mt-4 md:mt-0 px-2 md:px-0 md:max-w-[640px] mx-auto flex flex-col items-center justify-center">
             <PublicationHeader
                 // динамические данные 
-                avatar={post.authorAvatar || DefaultAvatar}
+                avatar={displayAvatar || DefaultAvatar}
                 username={post.username}
                 authorName={post.firstName}
                 onSubscribe={handleSubscribe}
@@ -121,7 +128,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 portions={post.portions || 0} />
             <SwitchDisplay />
             <PhotoRecipe steps={post.steps} />
-            <RecipeRating rating={post.rating} />
+            <RecipeRating rating={post.rating as any} recipeId={post.id} />
             <Comments postId={post.id} />
         </div >
     );

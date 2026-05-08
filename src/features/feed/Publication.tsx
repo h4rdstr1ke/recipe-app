@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
 import AvatarDefault from '../../assets/defaultAvatar.svg';
 import BanIcon from '../../assets/icons/ban.svg?react';
 import CommentIcon from '../../assets/icons/comment.svg?react';
@@ -12,7 +11,6 @@ import AllergenIcon from '../../assets/icons/allergen.svg?react';
 
 import Complaint from '../complaint/Сomplaint';
 
-// 1. Обновляем импорты сторов и типов
 import { usePostStore } from '../../stores/postStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
@@ -22,11 +20,12 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 export default function Publication({ post }: { post: Post }) {
     // 2. Достаем новые объединенные экшены (toggle)
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, user } = useAuthStore();
     const { settings, toggleSubscription, isSubscribed, toggleLike, toggleFavorite } = useUserSettingsStore();
     const { updateLikeCount, updateFavoriteCount } = usePostStore();
 
     const subscribed = isSubscribed(post.authorId);
+
 
     /* Для мобилки */
     const isMobile = useMediaQuery('(max-width: 768px)');
@@ -93,13 +92,20 @@ export default function Publication({ post }: { post: Post }) {
     // проходимся по массиву объектов products, берем у каждого product.name 
     // и проверяем, есть ли это имя в списке аллергенов
     const hasAllergen = settings && post.products?.some(
-        product => settings.allergens.includes(product.name)
+        product => settings.allergens.some(allergen => allergen.id === product.id)
     );
 
     const hasUnwanted = settings && post.products?.some(
-        product => settings.unwanted.includes(product.name)
+        product => settings.unwanted.some(unwantedItem => unwantedItem.id === product.id)
     );
     const showWarnings = isAuthenticated && settings && (hasAllergen || hasUnwanted);
+
+    // Если это МОЙ пост, показываем самую свежую аватарку профиля. Если чужой - ту, что в посте.
+    // Если чужой - берем ту, что прислал бэкенд вместе с постом.
+    const isMyPost = post.authorId === user?.id;
+    const displayAvatar = isMyPost
+        ? (user?.avatarUrl || AvatarDefault)
+        : (post.authorAvatar || AvatarDefault);
 
     return (
         <div className={` ${isMobile ? 'w-[100%] max-w-[400px]' : 'w-[550px]'} flex flex-col border-[2px] border-[#E6E6E6]`}>
@@ -107,7 +113,7 @@ export default function Publication({ post }: { post: Post }) {
                 <div className='flex ml-[22px] gap-2 items-center'>
                     {/* Аватарку тоже можно сделать динамической, если она есть: src={post.authorAvatar || avatar} */}
                     <Link to={`/profile/${post.authorId}`}>
-                        <img src={post.authorAvatar || AvatarDefault} className='w-[35px] h-[35px] object-cover rounded-full select-none' alt="avatar" />
+                        <img src={displayAvatar} className='w-[35px] h-[35px] object-cover rounded-full select-none' alt="avatar" />
                     </Link>
                     <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
                         {post?.username}

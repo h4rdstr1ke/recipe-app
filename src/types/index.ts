@@ -24,9 +24,9 @@ export interface User {
  */
 export interface UserSettings {
     /** Список ингредиентов, на которые у пользователя аллергия */
-    allergens: string[];
+    allergens: { id: string; title: string }[];
     /** Список продуктов, которые пользователь не хочет видеть в рецептах */
-    unwanted: string[];
+    unwanted: { id: string; title: string }[];
     /** Массив ID авторов, на которых подписан текущий пользователь */
     subscriptions: string[];
     /** Массив ID постов, которым пользователь поставил лайк */
@@ -42,11 +42,11 @@ export interface TopAuthor {
     /** ID автора, соответствующий User.id */
     id: string;
     /** Публичный никнейм */
-    username: string;
+    nickname: string;
     /** Ссылка на аватар */
     avatarUrl: string | null;
     /** Общее количество опубликованных рецептов */
-    postsCount: number;
+    recipesCount: number;
     /** Количество подписчиков */
     subscribersCount: number;
     /** Внутренний скоринг рейтинга для сортировки в топе */
@@ -64,7 +64,7 @@ export interface Post {
     /** Никнейм автора на момент публикации */
     username: string;
     /** Имя автора для отображения в ленте */
-    firstName: string;
+    name: string;
     /** Аватар автора */
     authorAvatar: string | null;
     /** Главное изображение готового блюда */
@@ -105,6 +105,7 @@ export interface Post {
     portions?: number;
     /** Список необходимых ингредиентов */
     products?: {
+        id: string;
         /** Название ингредиента */
         name: string;
         /** Числовое значение количества */

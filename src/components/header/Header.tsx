@@ -19,7 +19,7 @@ export default function Header() {
     //Для адаптива
     // Эта константа будет true, если экран меньше 768px
     const isMobile = useMediaQuery('(max-width: 768px)');
-    const { isAuthenticated } = useAuthStore();
+    const isAuthenticated = useAuthStore(state => !!state.token);
 
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const handleNotificationClick = () => { setIsNotificationOpen(true) };

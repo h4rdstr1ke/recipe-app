@@ -10,21 +10,26 @@ import { useUserSettingsStore } from '../../../stores/userSettingsStore';
  * Модальное окно со списком подписчиков.
  * Использует глобальный стор профиля для получения списка и стор настроек для управления подписками.
  */
-export default function SubscribersModal({ onClose }: { onClose: () => void }) {
+export default function SubscribersModal({ onClose, userId }: { onClose: () => void, userId: string }) {
     // Состояние строки поиска
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Достаем массив подписчиков, который загрузил Profile.tsx
-    const { subscribersList } = useProfileStore();
+    const { subscribersList, fetchSubscribersList } = useProfileStore();
 
     // Достаем функции для работы с подписками (чтобы кнопки работали)
     const { isSubscribed, toggleSubscription } = useUserSettingsStore();
 
-    // Блокировка скролла страницы на фоне
+    // 3. Добавляем вызов при монтировании модалки
     useEffect(() => {
+        if (userId) {
+            fetchSubscribersList(userId);
+        }
+        // Блокировка скролла страницы на фоне
         document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = 'unset'; };
-    }, []);
+    }, [userId, fetchSubscribersList]);
+    // Блокировка скролла страницы на фоне
+
 
     // Динамическая фильтрация списка по введенному тексту
     const filteredUsers = subscribersList.filter(user =>

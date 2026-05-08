@@ -6,17 +6,23 @@ import LoupeIcon from '../../../assets/icons/loupe.svg?react';
 import { useProfileStore } from '../../../stores/profileStore';
 import { useUserSettingsStore } from '../../../stores/userSettingsStore';
 
-export default function SubscriptionsModal({ onClose }: { onClose: () => void }) {
+export default function SubscriptionsModal({ onClose, userId }: { onClose: () => void, userId: string }) {
     const [searchQuery, setSearchQuery] = useState('');
 
     // ДОСТАЕМ МАССИВ ПОДПИСОК (на кого подписан юзер)
-    const { subscriptionsList } = useProfileStore();
+    const { subscriptionsList, fetchSubscriptionsList } = useProfileStore();
     const { isSubscribed, toggleSubscription } = useUserSettingsStore(); // Надо будет доработать
 
     useEffect(() => {
+        if (userId) {
+            fetchSubscriptionsList(userId);
+        }
+        // Блокировка скролла страницы на фоне
         document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = 'unset'; };
-    }, []);
+    }, [userId, fetchSubscriptionsList]);
+
+
 
     const filteredUsers = subscriptionsList.filter(user =>
         user.nickname.toLowerCase().includes(searchQuery.toLowerCase())

@@ -1,63 +1,30 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserSettings } from '../types/index';
-import { MOCK_USER_SETTINGS } from '../mocks/mocks';
+import { useAuthStore } from './authStore';
+import { api } from '../api/api';
+import axios from 'axios';
 
-/**
- * Хранилище личных настроек текущего пользователя (аллергены, подписки, закладки).
- * Автоматически синхронизирует состояние `settings` с localStorage браузера.
- */
 interface UserSettingsStore {
-    /** * Текущие настройки пользователя. 
-     * Может быть null, пока данные не загружены с сервера или из кэша. 
-     */
     settings: UserSettings | null;
-    /** Индикатор загрузки данных по сети */
     isLoading: boolean;
-    /** Текст ошибки, если запрос завершился неудачно */
     error: string | null;
 
-    /**
-     * Загружает настройки пользователя с сервера.
-     * Если данные уже восстановлены из localStorage, повторный сетевой запрос не делается.
-     */
+    /** Загружает все настройки пользователя (лайки, закладки, подписки, аллергены). */
     fetchSettings: () => Promise<void>;
-
-    /**
-     * Перезаписывает настройки пользователя (например, при редактировании профиля).
-     * @param settings - Полный объект новых настроек
-     */
-    updateSettings: (settings: UserSettings) => Promise<void>;
-
-    /**
-     * Подписывает текущего пользователя на автора или отписывает от него.
-     * Выполняется оптимистично: UI обновляется мгновенно, до ответа сервера.
-     * @param authorId - ID целевого автора (пользователя)
-     */
+    /** Подписывает на автора или отписывает от него (оптимистичное обновление UI). */
     toggleSubscription: (authorId: string) => Promise<void>;
-
-    /**
-     * Вспомогательная функция для UI: проверяет, есть ли подписка на автора.
-     * @param authorId - ID проверяемого автора
-     * @returns `true`, если подписка есть, иначе `false`
-     */
+    /** Проверяет, подписан ли текущий пользователь на указанного автора. */
     isSubscribed: (authorId: string) => boolean;
-
-    /**
-     * Добавляет или удаляет публикацию из списка оцененных (лайкнутых) постов.
-     * Выполняется оптимистично.
-     * @param postId - ID оцениваемой публикации
-     */
+    /** Ставит или убирает лайк с поста (оптимистичное обновление UI). */
     toggleLike: (postId: string) => Promise<void>;
-
-    /**
-     * Добавляет или удаляет публикацию из личных закладок пользователя.
-     * Выполняется оптимистично.
-     * @param postId - ID сохраняемой публикации
-     */
+    /** Добавляет или удаляет пост из закладок (оптимистичное обновление UI). */
     toggleFavorite: (postId: string) => Promise<void>;
-
-    /** Сбрасывает состояние ошибки в null */
+    /** Сохраняет новый список аллергенов на сервере и обновляет стейт. */
+    updateAllergens: (items: { id: string, title: string }[]) => Promise<void>;
+    /** Сохраняет новый список нежелательных продуктов на сервере и обновляет стейт. */
+    updateUnwanted: (items: { id: string, title: string }[]) => Promise<void>;
+    /** Очищает текст ошибки. */
     clearError: () => void;
 }
 
@@ -69,14 +36,51 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
             error: null,
 
             fetchSettings: async () => {
-                if (get().settings) return;
-
                 set({ isLoading: true, error: null });
 
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    // В будущем: const response = await api.get('/user/settings');
-                    set({ settings: MOCK_USER_SETTINGS, isLoading: false });
+                    const authState = useAuthStore.getState();
+                    if (!authState.isAuthenticated || !authState.user?.id) {
+                        set({ isLoading: false });
+                        return;
+                    }
+                    const userId = authState.user.id;
+
+                    // Запускаем все запросы независимо друг от друга
+                    const results = await Promise.allSettled([
+                        api.get('/api/recipes/liked'),
+                        api.get('/api/recipes/favorites'),
+                        api.get(`/api/users/${userId}/following`),
+                        api.get('/api/allergens'),
+                        api.get('/api/unwanted-ingredients')
+                    ]);
+
+                    // Функция-помощник: безопасно достает массив из успешного ответа
+                    const extractData = (res: PromiseSettledResult<any>) =>
+                        res.status === 'fulfilled' && res.value?.data ? res.value.data : [];
+
+                    const likedData = extractData(results[0]);
+                    const favsData = extractData(results[1]);
+                    const subsData = extractData(results[2]);
+                    const allergensData = extractData(results[3]);
+                    const unwantedData = extractData(results[4]);
+
+                    const newSettings: UserSettings = {
+                        likedPosts: likedData.map((item: any) => typeof item === 'string' ? item : item.id),
+                        favoritePosts: favsData.map((item: any) => typeof item === 'string' ? item : item.id),
+                        subscriptions: subsData.map((item: any) => typeof item === 'string' ? item : item.id),
+                        allergens: allergensData.map((item: any) => ({
+                            id: item.id || item.ingredientId,
+                            title: item.title || item.name
+                        })),
+                        unwanted: unwantedData.map((item: any) => ({
+                            id: item.id || item.ingredientId,
+                            title: item.title || item.name
+                        }))
+                    };
+
+                    set({ settings: newSettings, isLoading: false });
+
                 } catch (error: unknown) {
                     set({
                         error: error instanceof Error ? error.message : 'Ошибка загрузки настроек',
@@ -85,34 +89,40 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 }
             },
 
-            updateSettings: async (settings) => {
-                set({ isLoading: true, error: null });
-                try {
-                    // В будущем: await api.put('/user/settings', settings);
-                    set({ settings, isLoading: false });
-                } catch (error: unknown) {
-                    set({ error: 'Ошибка сохранения настроек', isLoading: false });
-                }
-            },
-
             toggleSubscription: async (authorId) => {
                 const { settings } = get();
                 if (!settings || !authorId) return;
 
                 const isSubbed = settings.subscriptions.includes(authorId);
-                const newSubs = isSubbed
-                    ? settings.subscriptions.filter(id => id !== authorId)
-                    : [...settings.subscriptions, authorId];
 
-                set({ settings: { ...settings, subscriptions: newSubs } });
+                // Оптимистичное обновление
+                set({
+                    settings: {
+                        ...settings,
+                        subscriptions: isSubbed
+                            ? settings.subscriptions.filter(id => id !== authorId)
+                            : [...settings.subscriptions, authorId]
+                    }
+                });
 
                 try {
-                    // В будущем:
-                    // if (isSubbed) await api.delete(`/users/${authorId}/subscribe`);
-                    // else await api.post(`/users/${authorId}/subscribe`);
-                    console.log(isSubbed ? 'Отписался от:' : 'Подписался на:', authorId);
-                } catch (error) {
-                    set({ settings, error: 'Ошибка изменения подписки' });
+                    await api.put(`/api/users/${authorId}/subscription`, { isSubscribed: !isSubbed });
+                } catch (error: unknown) {
+                    // Умный откат: отменяем действие на базе САМОГО СВЕЖЕГО стейта
+                    set(state => {
+                        if (!state.settings) return state;
+                        const currentSubs = state.settings.subscriptions;
+                        return {
+                            ...state,
+                            settings: {
+                                ...state.settings,
+                                subscriptions: isSubbed
+                                    ? [...currentSubs, authorId] // Возвращаем, если отписка упала
+                                    : currentSubs.filter(id => id !== authorId) // Убираем, если подписка упала
+                            },
+                            error: 'Ошибка изменения подписки'
+                        };
+                    });
                 }
             },
 
@@ -126,17 +136,35 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 if (!settings || !postId) return;
 
                 const isLiked = settings.likedPosts.includes(postId);
-                const newLiked = isLiked
-                    ? settings.likedPosts.filter(id => id !== postId)
-                    : [...settings.likedPosts, postId];
 
-                set({ settings: { ...settings, likedPosts: newLiked } });
+                // Оптимистичное обновление
+                set({
+                    settings: {
+                        ...settings,
+                        likedPosts: isLiked
+                            ? settings.likedPosts.filter(id => id !== postId)
+                            : [...settings.likedPosts, postId]
+                    }
+                });
 
                 try {
-                    // В будущем: API запрос
-                    console.log(isLiked ? 'Убран лайк:' : 'Лайкнут пост:', postId);
-                } catch (error) {
-                    set({ settings, error: 'Ошибка изменения лайка' });
+                    await api.put(`/api/recipes/${postId}/like`, { isLiked: !isLiked });
+                } catch (error: unknown) {
+                    // Умный откат
+                    set(state => {
+                        if (!state.settings) return state;
+                        const currentLikes = state.settings.likedPosts;
+                        return {
+                            ...state,
+                            settings: {
+                                ...state.settings,
+                                likedPosts: isLiked
+                                    ? [...currentLikes, postId]
+                                    : currentLikes.filter(id => id !== postId)
+                            },
+                            error: 'Ошибка при постановке лайка'
+                        };
+                    });
                 }
             },
 
@@ -145,17 +173,53 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 if (!settings || !postId) return;
 
                 const isFavorited = settings.favoritePosts.includes(postId);
-                const newFavs = isFavorited
-                    ? settings.favoritePosts.filter(id => id !== postId)
-                    : [...settings.favoritePosts, postId];
 
-                set({ settings: { ...settings, favoritePosts: newFavs } });
+                // Оптимистичное обновление
+                set({
+                    settings: {
+                        ...settings,
+                        favoritePosts: isFavorited
+                            ? settings.favoritePosts.filter(id => id !== postId)
+                            : [...settings.favoritePosts, postId]
+                    }
+                });
 
                 try {
-                    // В будущем: API запрос
-                    console.log(isFavorited ? 'Убрано из избранного:' : 'Добавлено в избранное:', postId);
+                    await api.put(`/api/recipes/${postId}/favorite`, { isFavorite: !isFavorited });
+                } catch (error: unknown) {
+                    // Умный откат
+                    set(state => {
+                        if (!state.settings) return state;
+                        const currentFavs = state.settings.favoritePosts;
+                        return {
+                            ...state,
+                            settings: {
+                                ...state.settings,
+                                favoritePosts: isFavorited
+                                    ? [...currentFavs, postId]
+                                    : currentFavs.filter(id => id !== postId)
+                            },
+                            error: 'Ошибка при добавлении в избранное'
+                        };
+                    });
+                }
+            },
+
+            updateAllergens: async (newItems) => {
+                try {
+                    await api.post('/api/allergens', { ingredientIds: newItems.map(a => a.id) });
+                    await get().fetchSettings();
                 } catch (error) {
-                    set({ settings, error: 'Ошибка изменения избранного' });
+                    set({ error: 'Ошибка обновления аллергенов' });
+                }
+            },
+
+            updateUnwanted: async (newItems) => {
+                try {
+                    await api.post('/api/unwanted-ingredients', { ingredientIds: newItems.map(a => a.id) });
+                    await get().fetchSettings();
+                } catch (error) {
+                    set({ error: 'Ошибка обновления нежелательных продуктов' });
                 }
             },
 

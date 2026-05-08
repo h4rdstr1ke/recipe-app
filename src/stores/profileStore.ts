@@ -1,57 +1,29 @@
 import { create } from 'zustand';
 import type { Post, UserProfile, User } from '../types/index';
-import { MOCK_POSTS, MOCK_USERS } from '../mocks/mocks'; // MOCK_TOP_AUTRHORS
+import { api } from '../api/api';
+import axios from 'axios';
+import { mapRecipeDtoToPost } from '../utils/mappers';
 
-/**
- * Хранилище для страницы профиля пользователя.
- * Управляет загрузкой данных как для "своего" профиля, так и для профилей других авторов.
- */
 interface ProfileStore {
-    /** Данные пользователя, чей профиль открыт в данный момент */
     currentProfile: UserProfile | null;
-    /** Массив рецептов, созданных этим пользователем */
     userPosts: Post[];
-    /** Массив сохраненных рецептов (заполняется только если мы смотрим свой собственный профиль) */
     favoritePosts: Post[];
-    /** Массив пользователей, которые подписаны на текущий профиль */
     subscribersList: User[];
-    /** Массив авторов, на которых подписан текущий профиль */
     subscriptionsList: User[];
-    /** Индикатор загрузки данных по сети */
     isLoading: boolean;
-    /** Текст ошибки, если профиль или данные не найдены */
     error: string | null;
 
-    /**
-     * Загружает основную информацию о пользователе (имя, био, аватар) и его статистику.
-     * @param userId - ID пользователя, профиль которого нужно отобразить
-     */
-    fetchProfile: (userId: string) => void;
-
-    /**
-     * Загружает список публикаций, созданных указанным автором.
-     * @param authorId - ID автора (обычно совпадает с currentProfile.id)
-     */
-    fetchUserPosts: (authorId: string) => void;
-
-    /**
-     * Загружает посты, добавленные в закладки. 
-     * Принимает массив ID из личных настроек пользователя (UserSettings).
-     * @param ids - Массив ID сохраненных постов
-     */
-    fetchFavoritePosts: (ids: string[]) => void;
-
-    /** Загружает список подписчиков (КТО подписан на userId) */
+    /** Загружает основную информацию о пользователе и его статистику. */
+    fetchProfile: (userId: string) => Promise<void>;
+    /** Загружает список публикаций, созданных указанным автором. */
+    fetchUserPosts: (authorId: string) => Promise<void>;
+    /** Загружает посты, добавленные в закладки. */
+    fetchFavoritePosts: (ids: string[]) => Promise<void>;
+    /** Загружает список подписчиков (КТО подписан на userId). */
     fetchSubscribersList: (userId: string) => Promise<void>;
-
-    /** Загружает список подписок (на КОГО подписан userId) */
+    /** Загружает список подписок (на КОГО подписан userId). */
     fetchSubscriptionsList: (userId: string) => Promise<void>;
-
-    /**
-     * Очищает данные профиля.
-     * Обязательно вызывать при размонтировании компонента (уходе со страницы), 
-     * чтобы при открытии другого профиля не было мерцания старых данных.
-     */
+    /** Очищает данные профиля при размонтировании компонента. */
     clearProfileData: () => void;
 }
 
@@ -64,80 +36,107 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     isLoading: false,
     error: null,
 
-    fetchProfile: (userId) => {
+    fetchProfile: async (userId) => {
         set({ isLoading: true, error: null });
+        try {
+            const response = await api.get(`/api/users/${userId}`);
+            const userData = response.data;
 
-        // В будущем: const response = await api.get(`/users/${userId}/profile`);
-        const userBasic = Object.values(MOCK_USERS).find(u => u.id === userId);
-        //const userStats = MOCK_TOP_AUTHORS.find(a => a.id === userId);
-
-        if (userBasic) {
             set({
                 currentProfile: {
-                    id: userBasic.id,
-                    email: 'user@example.com',
-                    nickname: userBasic.username,
-                    name: userBasic.firstName,
-                    avatarUrl: userBasic.authorAvatar,
-                    bio: userBasic.bio || 'Описание профиля отсутствует',
-                    subscribersCount: Object.values(MOCK_USERS).filter(u =>
-                        (u.subscriptions as readonly string[] | undefined)?.includes(userBasic.id)
-                    ).length,
-                    subscriptionsCount: userBasic.subscriptions?.length || 0,
+                    id: userData.id || userId,
+                    email: userData.email || '',
+                    nickname: userData.userName || 'Неизвестно',
+                    name: userData.name || '',
+                    avatarUrl: userData.avatarUrl || null,
+                    bio: userData.description || 'Описание профиля отсутствует.',
+                    subscribersCount: userData.subscribersCount || userData.followersCount || 0,
+                    subscriptionsCount: userData.subscriptionsCount || userData.followingCount || 0,
                 },
                 isLoading: false
             });
-        } else {
-            set({ error: 'Пользователь не найден', isLoading: false, currentProfile: null });
+        } catch (err: unknown) {
+            let errorMessage = 'Не удалось загрузить профиль';
+            if (axios.isAxiosError(err)) {
+                errorMessage = err.response?.status === 404 ? 'Пользователь не найден.' : `Ошибка сервера: ${err.response?.status}`;
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+            set({ error: errorMessage, isLoading: false, currentProfile: null });
         }
     },
 
-    fetchUserPosts: (authorId) => {
-        // В будущем: const response = await api.get(`/users/${authorId}/posts`);
-        const filtered = MOCK_POSTS.filter(p => p.authorId === authorId);
-        set({ userPosts: filtered });
+    fetchUserPosts: async (authorId) => {
+        try {
+            const response = await api.get(`/api/recipes/creator/${authorId}`);
+            const recipes = Array.isArray(response.data) ? response.data : [];
+
+            set({ userPosts: recipes.map(item => mapRecipeDtoToPost(item)) });
+        } catch (error) {
+            console.error("Ошибка загрузки публикаций пользователя", error);
+            set({ userPosts: [] });
+        }
     },
 
-    fetchFavoritePosts: (ids) => {
-        // await api.get(`/posts/favorites`, { params: { ids } });
-        const filtered = MOCK_POSTS.filter(p => ids.includes(p.id));
-        set({ favoritePosts: filtered });
+    fetchFavoritePosts: async (ids) => {
+        if (!ids || ids.length === 0) {
+            set({ favoritePosts: [] });
+            return;
+        }
+
+        try {
+            // Используем allSettled: он дождется завершения всех запросов (и успешных, и упавших).
+            const responses = await Promise.allSettled(
+                ids.map(id => api.get(`/api/recipes/${id}`))
+            );
+
+            // Собираем успешные результаты за один проход через reduce
+            const mappedPosts = responses.reduce<Post[]>((acc, res) => {
+                if (res.status === 'fulfilled' && res.value?.data) {
+                    acc.push(mapRecipeDtoToPost(res.value.data));
+                }
+                return acc;
+            }, []);
+
+            set({ favoritePosts: mappedPosts });
+        } catch (error) {
+            console.error("Ошибка загрузки избранных публикаций", error);
+            set({ favoritePosts: [] });
+        }
     },
 
     fetchSubscribersList: async (userId) => {
-        const allUsers = Object.values(MOCK_USERS);
-
-        // ИСПРАВЛЕНИЕ TS: Используем readonly string[]
-        const actualSubscribers = allUsers.filter(u =>
-            (u.subscriptions as readonly string[] | undefined)?.includes(userId)
-        );
-
-        const mappedSubscribers = actualSubscribers.map(u => ({
-            id: u.id,
-            email: 'user@example.com',
-            nickname: u.username,
-            name: u.firstName,
-            avatarUrl: u.authorAvatar
-        }));
-        set({ subscribersList: mappedSubscribers });
+        try {
+            const response = await api.get(`/api/users/${userId}/followers`);
+            const mappedUsers = response.data.map((u: any) => ({
+                id: u.id,
+                email: u.email || '',
+                nickname: u.userName || 'Неизвестно',
+                name: u.name || '',
+                avatarUrl: u.avatarUrl || null
+            }));
+            set({ subscribersList: mappedUsers });
+        } catch (error) {
+            console.error("Ошибка загрузки подписчиков", error);
+            set({ subscribersList: [] });
+        }
     },
 
     fetchSubscriptionsList: async (userId) => {
-        const allUsers = Object.values(MOCK_USERS);
-        const targetUser = allUsers.find(u => u.id === userId);
-
-        const targetUserSubs = (targetUser?.subscriptions as readonly string[]) || [];
-
-        const actualSubscriptions = allUsers.filter(u => targetUserSubs.includes(u.id));
-
-        const mappedSubscriptions = actualSubscriptions.map(u => ({
-            id: u.id,
-            email: 'user@example.com',
-            nickname: u.username,
-            name: u.firstName,
-            avatarUrl: u.authorAvatar
-        }));
-        set({ subscriptionsList: mappedSubscriptions });
+        try {
+            const response = await api.get(`/api/users/${userId}/following`);
+            const mappedUsers = response.data.map((u: any) => ({
+                id: u.id,
+                email: u.email || '',
+                nickname: u.userName || 'Неизвестно',
+                name: u.name || '',
+                avatarUrl: u.avatarUrl || null
+            }));
+            set({ subscriptionsList: mappedUsers });
+        } catch (error) {
+            console.error("Ошибка загрузки подписок", error);
+            set({ subscriptionsList: [] });
+        }
     },
 
     clearProfileData: () => set({

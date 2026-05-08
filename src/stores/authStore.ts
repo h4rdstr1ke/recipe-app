@@ -1,73 +1,50 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '../types';
-import { MOCK_USERS } from '../mocks/mocks';
+import { jwtDecode } from 'jwt-decode';
+import type { User } from '../types/index';
+import { api } from '../api/api';
+import axios from 'axios';
 
-/**
- * Хранилище для управления авторизацией, регистрацией и сессией пользователя.
- * Частично сохраняется в localStorage (токен и базовые данные юзера).
- */
+// Структукра JWT токена
+interface TokenPayload {
+    sub?: string;
+    id?: string;
+    name?: string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+}
+
 interface AuthStore {
-    /** Данные авторизованного пользователя. Сбрасываются в null при выходе. */
     user: User | null;
-    /** JWT токен для доступа к защищенным API-методам */
     token: string | null;
-    /** Индикатор загрузки при сетевых запросах авторизации */
     isLoading: boolean;
-    /** Сообщение об ошибке (например, "Неверный пароль") */
     error: string | null;
-    /** Флаг состояния: вошел ли пользователь в систему */
-    isAuthenticated: boolean;
-
-    /** * Временное хранилище данных при регистрации. 
-     * Данные лежат здесь между шагом 1 (ввод email/пароля) и шагом 2 (ввод кода из письма).
-     */
     tempData: {
         email: string;
         nickname: string;
         password?: string;
     } | null;
 
-    /**
-     * Шаг 1 (Регистрация): Отправляет проверочный код на указанный email.
-     * Сохраняет введенные данные во временный стейт (`tempData`).
-     * @param email - Почта пользователя
-     * @param nickname - Желаемый никнейм
-     * @param password - Придуманный пароль
-     * @returns `true`, если запрос успешен, иначе `false`
-     */
+    /** Вычисляемый метод: проверяет, авторизован ли пользователь (есть ли токен) */
+    isAuthenticated: () => boolean;
+
+    /** Запрашивает код подтверждения на email при регистрации */
     sendVerificationCode: (email: string, nickname: string, password?: string) => Promise<boolean>;
-
-    /**
-     * Шаг 2 (Регистрация): Проверяет код подтверждения. 
-     * Если код верный, берет данные из `tempData`, "регистрирует" юзера и авторизует его.
-     * @param code - Код из письма (в моках: '123456')
-     * @returns `true` при успешной проверке, иначе `false`
-     */
+    /** Отправляет код подтверждения и завершает регистрацию, после чего сразу логинит */
     verifyCode: (code: string) => Promise<boolean>;
-
-    /**
-     * Стандартный вход по email и паролю.
-     * @param email - Почта пользователя
-     * @param password - Пароль
-     * @returns `true` при успешном входе, иначе `false`
-     */
+    /** Авторизация пользователя по email и паролю */
     login: (email: string, password: string) => Promise<boolean>;
-
-    /**
-     * Выход из аккаунта. 
-     * Очищает стейт и удаляет данные сессии из localStorage.
-     */
+    /** Выход из аккаунта и полная очистка сессии */
     logout: () => void;
-
-    /** Сбрасывает состояние ошибки в null (например, при начале нового ввода формы) */
+    /** Сброс текста ошибки */
     clearError: () => void;
+    /** Обновление данных профиля (имя, био, аватар) */
+    updateProfile: (updatedData: Partial<User> & { avatarFile?: File | null }) => Promise<boolean>;
+    /** Запрашивает свежие данные текущего юзера с сервера (синхронизация) */
+    fetchAuthUser: () => Promise<void>;
 
-    /**
-     * Локально обновляет данные профиля текущего пользователя (имя, био).
-     * @param updatedData - Объект с новыми полями пользователя
-     */
-    updateProfile: (updatedData: Partial<User>) => void;
+    refreshTokenSuccess: (newToken: string) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -77,16 +54,15 @@ export const useAuthStore = create<AuthStore>()(
             token: null,
             isLoading: false,
             error: null,
-            isAuthenticated: false,
             tempData: null,
+
+            // функция. Она всегда вернет актуальный статус.
+            isAuthenticated: () => !!get().token,
 
             sendVerificationCode: async (email, nickname, password) => {
                 set({ isLoading: true, error: null });
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    console.log('Отправка кода на:', email);
-
-                    // В будущем: await api.post('/auth/send-code', { email })
+                    await api.post('/auth/register/email-code', { Email: email });
                     set({ tempData: { email, nickname, password }, isLoading: false });
                     return true;
                 } catch (error: unknown) {
@@ -97,35 +73,31 @@ export const useAuthStore = create<AuthStore>()(
 
             verifyCode: async (code) => {
                 set({ isLoading: true, error: null });
-                const { tempData } = get();
+                const { tempData, login } = get();
 
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    if (!tempData) throw new Error('Нет данных для регистрации');
 
-                    // В будущем: const response = await api.post('/auth/verify-and-register', { code, ...tempData })
-                    if (code !== '123456') throw new Error('Неверный код подтверждения');
+                    const formData = new FormData();
+                    formData.append('UserName', tempData.nickname);
+                    formData.append('Email', tempData.email);
+                    formData.append('Name', tempData.nickname);
+                    formData.append('Password', tempData.password || '');
+                    formData.append('ConfirmPassword', tempData.password || '');
+                    formData.append('EmailVerificationCode', code);
 
-                    const fakeUser: User = {
-                        id: Date.now().toString(),
-                        email: tempData!.email,
-                        nickname: tempData!.nickname,
-                        name: "Пользователь"
-                    };
-                    const fakeToken = 'fake-token-' + Date.now();
+                    await api.post('/auth/register', formData);
 
-                    set({
-                        user: fakeUser,
-                        token: fakeToken,
-                        isAuthenticated: true,
-                        isLoading: false,
-                        tempData: null
-                    });
-                    return true;
+                    // Сразу логиним юзера после успешной регистрации
+                    return await login(tempData.email, tempData.password || '');
                 } catch (error: unknown) {
-                    set({
-                        error: error instanceof Error ? error.message : 'Ошибка подтверждения',
-                        isLoading: false
-                    });
+                    let errorMessage = 'Ошибка регистрации';
+                    if (axios.isAxiosError(error) && error.response?.data?.errors?.EmailVerificationCode) {
+                        errorMessage = error.response.data.errors.EmailVerificationCode[0];
+                    } else if (error instanceof Error) {
+                        errorMessage = error.message;
+                    }
+                    set({ error: errorMessage, isLoading: false });
                     return false;
                 }
             },
@@ -133,61 +105,98 @@ export const useAuthStore = create<AuthStore>()(
             login: async (email, password) => {
                 set({ isLoading: true, error: null });
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const response = await api.post('/auth/login', { email, password });
+                    const token = response.data.token || response.data.accessToken;
 
-                    // В будущем: const response = await api.post('/auth/login', { email, password })
-                    if (!email || !password) throw new Error('Заполните все поля');
+                    const decodedToken = jwtDecode<TokenPayload>(token);
 
-                    // Имитируем, что бэкенд нашел пользователя vlad228 в базе данных
-                    const dbUser = MOCK_USERS['user1'];
+                    const id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || decodedToken.sub || decodedToken.id || '';
+                    const name = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken.name || email.split('@')[0];
 
-                    const fakeUser: User = {
-                        id: "user1",
-                        email: "admin@example.com",
-                        nickname: "vlad228",
-                        name: "Владислав",
-                        avatarUrl: dbUser.authorAvatar,
-                        bio: "Привет! Я Влад, люблю готовить стейки и делиться рецептами!"
-                    };
-                    const fakeToken = 'fake-token-' + Date.now();
-
-                    set({
-                        user: fakeUser,
-                        token: fakeToken,
-                        isAuthenticated: true,
-                        isLoading: false
-                    });
+                    set({ user: { id, email, nickname: name, name }, token, isLoading: false });
                     return true;
                 } catch (error: unknown) {
-                    set({
-                        error: error instanceof Error ? error.message : 'Ошибка входа',
-                        isLoading: false
-                    });
+                    set({ error: 'Неверный логин или пароль', isLoading: false });
                     return false;
                 }
             },
 
-            logout: () => {
-                set({ user: null, token: null, isAuthenticated: false, error: null, tempData: null });
+            fetchAuthUser: async () => {
+                const { user, isAuthenticated } = get();
+                if (!isAuthenticated() || !user?.id) return;
+
+                try {
+                    const response = await api.get(`/api/users/${user.id}`);
+                    const freshData = response.data;
+
+                    set({
+                        user: {
+                            ...user,
+                            nickname: freshData.userName || user.nickname,
+                            name: freshData.name || user.name,
+                            avatarUrl: freshData.avatarUrl || null
+                        }
+                    });
+                } catch (error) {
+                    console.error("Ошибка загрузки данных текущего пользователя", error);
+                }
             },
+
+            logout: () => set({ user: null, token: null, error: null, tempData: null }),
 
             clearError: () => set({ error: null }),
 
-            updateProfile: (updatedData) => {
-                const { user } = get();
-                if (user) {
-                    // Обновляем только те поля, которые были переданы
-                    set({ user: { ...user, ...updatedData } });
+            updateProfile: async (updatedData) => {
+                set({ isLoading: true, error: null });
+                try {
+                    const formData = new FormData();
+
+                    if (updatedData.nickname) formData.append('UserName', updatedData.nickname);
+                    if (updatedData.name) formData.append('Name', updatedData.name);
+                    if (updatedData.bio !== undefined) formData.append('Description', updatedData.bio);
+                    if (updatedData.avatarFile) formData.append('Avatar', updatedData.avatarFile);
+
+                    await api.patch('/auth/profile', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
+                    // логика обновления аватара и имени в `fetchAuthUser`
+                    await get().fetchAuthUser();
+
+                    set({ isLoading: false });
+                    return true;
+                } catch (error: unknown) {
+                    console.error("Ошибка обновления профиля", error);
+                    set({ error: 'Ошибка обновления профиля', isLoading: false });
+                    return false;
+                }
+            },
+            refreshTokenSuccess: (newToken) => {
+                try {
+                    const decodedToken = jwtDecode<TokenPayload>(newToken);
+
+                    const id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || decodedToken.sub || decodedToken.id || '';
+                    const name = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken.name || '';
+                    const email = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '';
+
+                    // Обновляем и токен, и юзера централизованно!
+                    set({
+                        token: newToken,
+                        user: { id, email, nickname: name, name }
+                    });
+                } catch (error) {
+                    console.error("Ошибка расшифровки токена при обновлении", error);
                 }
             },
         }),
+
         {
-            name: 'auth_storage', // Ключ в localStorage
-            // partialize гарантирует, что мы не сохраним в localStorage временные ошибки или статус загрузки
+            name: 'auth_storage',
+            // В LocalStorage сохраняем ТОЛЬКО токен и базовые данные юзера. 
+            // isAuthenticated больше не кэшируется, что защищает от рассинхрона.
             partialize: (state) => ({
                 user: state.user,
-                token: state.token,
-                isAuthenticated: state.isAuthenticated
+                token: state.token
             }),
         }
     )

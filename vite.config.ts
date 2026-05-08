@@ -42,5 +42,18 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true   // Временно
+    ,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5297',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/auth': {
+        target: 'http://localhost:5297',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 })

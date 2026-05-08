@@ -93,7 +93,7 @@ export default function TopAuthorsPage() {
                             >
                                 <img alt="avatar" src={author.avatarUrl || DefaultAvatar} className="w-[25px] h-[25px] object-cover rounded-full select-none" />
                                 <span className="font-montserrat font-semibold text-[12px] text-[#23A6F0] underline truncate max-w-[80px]">
-                                    {author.username}
+                                    {author.nickname}
                                 </span>
                             </Link>
                             {/* Аватарка (если у автора нет аватарки, ставим дефолтную) */}
@@ -111,12 +111,12 @@ export default function TopAuthorsPage() {
                                 to={`/profile/${author.id}`}
                                 className="hidden md:block font-montserrat font-semibold md:text-[24px] text-[#23A6F0] underline hover:text-[#1a7db8] transition-colors"
                             >
-                                {author.username}
+                                {author.nickname}
                             </Link>
 
                             {/* Посты */}
                             <span className="font-montserrat font-semibold md:text-[24px]">
-                                {author.postsCount}
+                                {author.recipesCount}
                             </span>
 
                             {/* Подписчики */}

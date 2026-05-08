@@ -1,25 +1,15 @@
 import { create } from 'zustand';
 import type { TopAuthor } from '../types/index';
-import { MOCK_TOP_AUTHORS } from '../mocks/mocks';
+import { api } from '../api/api';
 
-/**
- * Хранилище для страницы/блока рейтинга авторов.
- */
 interface TopAuthorStore {
-    /** Массив авторов, отсортированный по убыванию рейтинга */
     authors: TopAuthor[];
-    /** Индикатор загрузки данных рейтинга */
     isLoading: boolean;
-    /** Сообщение об ошибке при сбое загрузки */
     error: string | null;
 
-    /**
-     * Загружает список авторов для доски почета.
-     * Ожидается, что сортировка по `ratingScore` происходит на стороне бэкенда.
-     */
+    /** Загружает топ авторов с сервера, отсортированных по рейтингу */
     fetchTopAuthors: () => Promise<void>;
-
-    /** Сбрасывает состояние ошибки */
+    /** Сбрасывает текст ошибки */
     clearError: () => void;
 }
 
@@ -32,21 +22,21 @@ export const useTopAuthorStore = create<TopAuthorStore>((set) => ({
         set({ isLoading: true, error: null });
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 600));
+            const response = await api.get('/api/users/rating/top');
 
-            // Сортировка на фронте (временное решение для моков). 
-            // В будущем : await api.get('/authors/top');
-            const sortedMock = [...MOCK_TOP_AUTHORS].sort((a, b) => b.ratingScore - a.ratingScore);
+            const mappedAuthors: TopAuthor[] = response.data.map((author: any) => ({
+                id: author.id,
+                nickname: author.userName || 'Неизвестный',
+                avatarUrl: author.avatarUrl || null,
+                ratingScore: author.rating || author.ratingScore || author.score || 0,
+                subscribersCount: author.subscribersCount || author.followersCount || 0,
+                recipesCount: author.recipesCount || 0
+            }));
 
-            set({
-                authors: sortedMock,
-                isLoading: false
-            });
+            set({ authors: mappedAuthors, isLoading: false });
         } catch (error: unknown) {
-            set({
-                error: error instanceof Error ? error.message : 'Ошибка загрузки топ-авторов',
-                isLoading: false
-            });
+            console.error("Ошибка при загрузке топа авторов:", error);
+            set({ error: 'Ошибка загрузки топ-авторов', isLoading: false });
         }
     },
 

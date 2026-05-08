@@ -1,63 +1,37 @@
 import { create } from 'zustand';
 import type { Post } from '../types/index';
-import { MOCK_POSTS } from '../mocks/mocks';
+import { api } from '../api/api';
+import { mapRecipeDtoToPost } from '../utils/mappers';
 
-/**
- * Хранилище для управления лентой публикаций и просмотром конкретного рецепта.
- */
 interface PostStore {
-    /** Массив постов для отображения в общей ленте */
     posts: Post[];
-    /** Данные поста, открытого в данный момент на отдельной странице (PublicationPage) */
     currentPost: Post | null;
-    /** Индикатор процесса загрузки данных по сети */
     isLoading: boolean;
-    /** Текст ошибки, если запрос завершился неудачно (или null, если всё ок) */
     error: string | null;
-    /** Флаг наличия следующих страниц на сервере (для бесконечной прокрутки) */
     hasMore: boolean;
-    /** Текущая загруженная страница пагинации */
     page: number;
 
-    /**
-     * Загружает следующую порцию постов для ленты.
-     * Защищена от двойного вызова во время загрузки.
-     * * @param reset - Если true, сбрасывает пагинацию и загружает первую страницу (полезно для Pull-to-Refresh)
-     */
+    /** Загружает ленту постов с пагинацией. Защищена от двойного вызова. */
     fetchPosts: (reset?: boolean) => Promise<void>;
-
-    /**
-     * Изменяет счетчик лайков на конкретном посте (оптимистичное обновление UI).
-     * Обновляет пост как в общей ленте (`posts`), так и в открытом посте (`currentPost`).
-     * * @param postId - ID целевого поста
-     * @param increment - `true` (добавить лайк) или `false` (убрать лайк)
-     */
-    updateLikeCount: (postId: string, increment: boolean) => Promise<void>;
-
-    /**
-     * Изменяет счетчик добавлений в избранное на посте (оптимистичное обновление UI).
-     * * @param postId - ID целевого поста
-     * @param increment - `true` (добавить) или `false` (убрать)
-     */
-    updateFavoriteCount: (postId: string, increment: boolean) => Promise<void>;
-
-    /**
-     * Запрашивает данные конкретного поста для отображения на его странице.
-     * Сначала пытается найти пост в кэше ленты (`posts`), чтобы избежать лишнего запроса.
-     * * @param id - Уникальный ID запрашиваемого поста
-     * @returns Найденный объект поста или null в случае ошибки/отсутствия
-     */
+    /** Загружает конкретный пост по ID (ищет в кэше, если нет — грузит с сервера). */
     fetchPostById: (id: string) => Promise<Post | null>;
-
-    /** * Очищает `currentPost`. 
-     * Обязательно вызывать при уходе со страницы (unmount), чтобы при открытии 
-     * следующего рецепта не мелькал старый контент.
-     */
+    /** Создает новый рецепт. Возвращает ID созданного поста или null при ошибке. */
+    createRecipe: (formData: FormData) => Promise<string | null>;
+    /** Добавляет шаг приготовления к существующему рецепту. */
+    createRecipeStep: (recipeId: string, formData: FormData) => Promise<boolean>;
+    /** Устанавливает оценку (рейтинг) рецепту. */
+    setRecipeRating: (recipeId: string, value: number) => Promise<void>;
+    /** Оптимистично обновляет счетчик лайков в стейте. */
+    updateLikeCount: (postId: string, increment: boolean) => void;
+    /** Оптимистично обновляет счетчик закладок в стейте. */
+    updateFavoriteCount: (postId: string, increment: boolean) => void;
+    /** Очищает выбранный пост (вызывать при размонтировании страницы рецепта). */
     clearCurrentPost: () => void;
-
-    /** Сбрасывает состояние ошибки в null */
+    /** Сбрасывает текст ошибки. */
     clearError: () => void;
 }
+
+const LIMIT = 10; // константа пагинации
 
 export const usePostStore = create<PostStore>((set, get) => ({
     posts: [],
@@ -68,96 +42,136 @@ export const usePostStore = create<PostStore>((set, get) => ({
     page: 1,
 
     fetchPosts: async (reset = false) => {
-        // Защита от двойного вызова, если уже грузим
         if (get().isLoading) return;
-
         set({ isLoading: true, error: null });
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 500));
             const currentPage = reset ? 1 : get().page;
+            const response = await api.get('/api/recipes', {
+                params: { page: currentPage, limit: LIMIT }
+            });
+
+            const items = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+
+            // TODO: Убрать этот блок, когда бэкенд начнет отдавать аватарки и никнеймы вместе с постами
+            const uniqueAuthorIds = [...new Set(items.map((item: any) => item.creatorId).filter(Boolean))] as string[];
+            const authorDataMap: Record<string, { avatar: string | null; username: string }> = {};
+
+            await Promise.allSettled(
+                uniqueAuthorIds.map(async (authorId) => {
+                    const userRes = await api.get(`/api/users/${authorId}`);
+                    authorDataMap[authorId] = {
+                        avatar: userRes.data.avatarUrl || null,
+                        username: userRes.data.userName || userRes.data.name || 'Пользователь'
+                    };
+                })
+            );
+            // Конец TODO блока
+
+            // Используем маппер
+            const mappedPosts = items.map((item: any) =>
+                mapRecipeDtoToPost(
+                    item,
+                    authorDataMap[item.creatorId]?.avatar,    // Передаем аватарку
+                    authorDataMap[item.creatorId]?.username   // Передаем никнейм
+                )
+            );
 
             set(state => ({
-                posts: reset ? MOCK_POSTS : [...state.posts, ...MOCK_POSTS],
+                posts: reset ? mappedPosts : [...state.posts, ...mappedPosts],
                 page: currentPage + 1,
-                hasMore: false, // Временно false из-за моков
+                // Исправленная логика: если пришло меньше, чем лимит — это конец списка
+                hasMore: items.length === LIMIT,
                 isLoading: false
             }));
-        } catch (error: unknown) {
-            set({
-                error: error instanceof Error ? error.message : 'Ошибка загрузки постов',
-                isLoading: false
-            });
+        } catch (error: any) {
+            console.error("Ошибка загрузки ленты:", error);
+            set({ error: 'Не удалось загрузить публикации', isLoading: false });
         }
-    },
-
-    updateLikeCount: async (postId: string, increment: boolean) => {
-        set(state => {
-            const updatedPosts = state.posts.map(p => p.id === postId ? {
-                ...p,
-                likesCount: p.likesCount + (increment ? 1 : -1)
-            } : p);
-
-            let updatedCurrentPost = state.currentPost;
-            if (state.currentPost?.id === postId) {
-                updatedCurrentPost = {
-                    ...state.currentPost,
-                    likesCount: state.currentPost.likesCount + (increment ? 1 : -1)
-                };
-            }
-
-            return { posts: updatedPosts, currentPost: updatedCurrentPost };
-        });
-    },
-
-    updateFavoriteCount: async (postId: string, increment: boolean) => {
-        set(state => {
-            const updatedPosts = state.posts.map(p => p.id === postId ? {
-                ...p,
-                favoritesCount: p.favoritesCount + (increment ? 1 : -1)
-            } : p);
-
-            let updatedCurrentPost = state.currentPost;
-            if (state.currentPost?.id === postId) {
-                updatedCurrentPost = {
-                    ...state.currentPost,
-                    favoritesCount: state.currentPost.favoritesCount + (increment ? 1 : -1)
-                };
-            }
-
-            return { posts: updatedPosts, currentPost: updatedCurrentPost };
-        });
     },
 
     fetchPostById: async (id: string) => {
         set({ isLoading: true, error: null });
 
         try {
-            let post = get().posts.find(p => p.id === id);
+            // Ищем в загруженных постах
+            let post = get().posts.find(p => p.id === id) || null;
 
+            // Если не нашли — качаем с сервера
             if (!post) {
-                post = MOCK_POSTS.find(p => p.id === id);
-                // В будущем: post = await api.get(`/posts/${id}`);
+                const response = await api.get(`/api/recipes/${id}`);
+                post = mapRecipeDtoToPost(response.data);
             }
 
-            if (post) {
-                set({ currentPost: post, isLoading: false });
-                return post;
-            } else {
-                set({ currentPost: null, isLoading: false, error: 'Пост не найден' });
-                return null;
-            }
-        } catch (error: unknown) {
-            set({
-                error: error instanceof Error ? error.message : 'Ошибка загрузки поста',
-                isLoading: false,
-                currentPost: null
-            });
+            set({ currentPost: post, isLoading: false });
+            return post;
+        } catch (error: any) {
+            console.error("Ошибка загрузки рецепта:", error);
+            set({ error: 'Ошибка загрузки рецепта', isLoading: false, currentPost: null });
             return null;
         }
     },
 
-    clearCurrentPost: () => set({ currentPost: null }),
+    updateLikeCount: (postId, increment) => {
+        set(state => {
+            const diff = increment ? 1 : -1;
+            return {
+                posts: state.posts.map(p => p.id === postId ? { ...p, likesCount: p.likesCount + diff } : p),
+                currentPost: state.currentPost?.id === postId
+                    ? { ...state.currentPost, likesCount: state.currentPost.likesCount + diff }
+                    : state.currentPost
+            };
+        });
+    },
 
+    updateFavoriteCount: (postId, increment) => {
+        set(state => {
+            const diff = increment ? 1 : -1;
+            return {
+                posts: state.posts.map(p => p.id === postId ? { ...p, favoritesCount: p.favoritesCount + diff } : p),
+                currentPost: state.currentPost?.id === postId
+                    ? { ...state.currentPost, favoritesCount: state.currentPost.favoritesCount + diff }
+                    : state.currentPost
+            };
+        });
+    },
+
+    createRecipe: async (formData) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await api.post('/api/recipes', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            set({ isLoading: false });
+            return response.data?.id || response.data;
+        } catch (error: any) {
+            console.error("Ошибка создания рецепта:", error);
+            set({ error: 'Не удалось создать рецепт. Проверьте данные.', isLoading: false });
+            return null;
+        }
+    },
+
+    createRecipeStep: async (recipeId, formData) => {
+        try {
+            await api.post(`/api/recipes/${recipeId}/steps`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return true;
+        } catch (error) {
+            console.error("Ошибка при добавлении шага:", error);
+            return false;
+        }
+    },
+
+    setRecipeRating: async (recipeId, value) => {
+        try {
+            await api.put(`/api/recipes/${recipeId}/rating`, { value });
+            await get().fetchPostById(recipeId);
+        } catch (error) {
+            console.error("Ошибка при установке рейтинга:", error);
+        }
+    },
+
+    clearCurrentPost: () => set({ currentPost: null }),
     clearError: () => set({ error: null })
 }));
