@@ -354,7 +354,6 @@ export const MOCK_COMMENTS: Comment[] = [
                 likesCount: 5,
                 isLiked: false,
                 createdAt: '27.01.2024 в 15:01',
-                // Вложенный ответ на ответ
                 replies: [
                     {
                         id: '101-1',

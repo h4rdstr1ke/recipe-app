@@ -8,15 +8,21 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useFilteredPosts } from './hooks/useFilteredPosts';
 
 export default function Feed() {
-    const { isAuthenticated } = useAuthStore();
-    const { fetchSettings } = useUserSettingsStore();
-    const { isLoading, fetchPosts, hasMore } = usePostStore();
+    // Булево значение наличия валидного токена для контроля доступа к персонализированным данным
+    const isAuthenticated = useAuthStore((state) => !!state.token);
 
+    // Метод загрузки глобальных списков (избранное, аллергены)
+    const { fetchSettings } = useUserSettingsStore();
+    // Состояние процесса загрузки, метод пагинации и флаг наличия следующих страниц
+    const { isLoading, fetchPosts } = usePostStore();
+
+    // Флаг мобильного разрешения экрана 
     const isMobile = useMediaQuery('(max-width: 768px)');
 
-    // Вся логика фильтрации и сортировки
+    // Итоговый массив публикаций после применения активных фильтров и сортировки
     const filteredAndSortedPosts = useFilteredPosts();
 
+    // Первичная инициализация: получение первой страницы постов и профиля пользователя
     useEffect(() => {
         fetchPosts(true);
         if (isAuthenticated) {
@@ -24,11 +30,13 @@ export default function Feed() {
         }
     }, [isAuthenticated, fetchPosts, fetchSettings]);
 
-    // Логика бесконечного скролла
+    // Механизм бесконечного скролла: отслеживание позиции окна и вызов метода пагинации
     useEffect(() => {
         const handleScroll = () => {
+            const state = usePostStore.getState();
+
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500) {
-                if (!isLoading && hasMore) {
+                if (!state.isLoading && state.hasMore) {
                     fetchPosts();
                 }
             }
@@ -36,8 +44,7 @@ export default function Feed() {
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [isLoading, hasMore, fetchPosts]);
-
+    }, [fetchPosts]);
 
     return (
         <div className='w-[100%] flex items-center flex-col'>
