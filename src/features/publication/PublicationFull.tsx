@@ -101,7 +101,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 // динамические данные 
                 avatar={displayAvatar || DefaultAvatar}
                 username={post.username}
-                authorName={post.firstName}
+                authorName={post.name}
                 onSubscribe={handleSubscribe}
                 image={post.image}
                 time={post.timeCooking}

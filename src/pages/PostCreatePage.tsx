@@ -91,30 +91,53 @@ export default function PostCreatePage() {
         description: string;
         imageFile: File | null;
         imagePreview: string | null;
+        timerMinutes: string;
+        isTimerVisible: boolean;
     }>>([
-        // По умолчанию показываем хотя бы один пустой шаг
-        { id: Date.now().toString(), description: '', imageFile: null, imagePreview: null }
+        { id: Date.now().toString(), description: '', imageFile: null, imagePreview: null, timerMinutes: '', isTimerVisible: false }
     ]);
 
+    // Добавление нового пустого шага в массив
     const handleAddStep = () => {
         setSteps([
             ...steps,
-            { id: Date.now().toString(), description: '', imageFile: null, imagePreview: null }
+            { id: Date.now().toString(), description: '', imageFile: null, imagePreview: null, timerMinutes: '', isTimerVisible: false }
         ]);
     };
 
+    // Удаление целевого шага из массива по идентификатору
     const handleRemoveStep = (idToRemove: string) => {
-        // Оставляем минимум один шаг
         if (steps.length === 1) return;
         setSteps(steps.filter(step => step.id !== idToRemove));
     };
 
+    // Мутация текстового описания целевого шага
     const handleStepDescriptionChange = (id: string, newDescription: string) => {
         setSteps(steps.map(step =>
             step.id === id ? { ...step, description: newDescription } : step
         ));
     };
 
+    // Мутация значения таймера целевого шага
+    const handleStepTimerChange = (id: string, newTimer: string) => {
+        setSteps(steps.map(step =>
+            step.id === id ? { ...step, timerMinutes: newTimer } : step
+        ));
+    };
+
+    // Показать или скрыть поле таймера для конкретного шага
+    const handleToggleTimer = (id: string, show: boolean) => {
+        setSteps(steps.map(step =>
+            step.id === id ? {
+                ...step,
+                isTimerVisible: show,
+                // Очищаем значение, если пользователь решил скрыть таймер
+                timerMinutes: show ? step.timerMinutes : ''
+            } : step
+        ));
+    };
+
+    // Мутация изображения целевого шага
     const handleStepImageChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -165,6 +188,7 @@ export default function PostCreatePage() {
         recipeFormData.append('Fats', '0');
         recipeFormData.append('Carbohydrates', '0');
         recipeFormData.append('CookingTime', cookingTime);
+        recipeFormData.append('PortionsCount', portions);
         if (selectedDish) recipeFormData.append('DishType', selectedDish);
         if (selectedMeal) recipeFormData.append('MealType', selectedMeal);
         recipeFormData.append('IngredientsJson', JSON.stringify(ingredientsJsonArray));
@@ -191,7 +215,13 @@ export default function PostCreatePage() {
             const stepFormData = new FormData();
             stepFormData.append('Description', step.description);
             stepFormData.append('Order', (i + 1).toString());
-
+            // Форматирование минут в строку TimeSpan (00:00:00) для бэкенда
+            if (step.timerMinutes) {
+                const totalMins = parseInt(step.timerMinutes, 10) || 0;
+                const h = Math.floor(totalMins / 60).toString().padStart(2, '0');
+                const m = (totalMins % 60).toString().padStart(2, '0');
+                stepFormData.append('CookingTime', `${h}:${m}:00`);
+            }
             if (step.imageFile) {
                 stepFormData.append('Image', step.imageFile);
             }
@@ -549,9 +579,34 @@ export default function PostCreatePage() {
                                         onChange={(e: any) => handleStepDescriptionChange(step.id, e.target.value)}
                                     />
                                 </div>
-                                <button type="button" className='w-[175px] h-[30px] text-[14px] mt-[17px] ml-auto bg-gray-400 hover:bg-gray-500 border-none'>
-                                    Добавить таймер
-                                </button>
+                                {/* Логика отображения таймера */}
+                                {step.isTimerVisible ? (
+                                    <div className="flex items-center justify-end gap-3 mt-[17px]">
+                                        <span className="font-montserrat text-[14px] text-[#737373]">Таймер (мин):</span>
+                                        <Input
+                                            placeholder="0"
+                                            type="number"
+                                            className="w-[75px] text-center"
+                                            value={step.timerMinutes}
+                                            onChange={(e: any) => handleStepTimerChange(step.id, e.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleToggleTimer(step.id, false)}
+                                            className="text-[#E0232E] font-montserrat text-[14px] hover:underline ml-2"
+                                        >
+                                            Отменить
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleTimer(step.id, true)}
+                                        className='w-[175px] h-[30px] text-[14px] text-white mt-[17px] ml-auto bg-[#8F94989C] rounded-[5px] hover:bg-[#7ACDFC] transition-colors border-none'
+                                    >
+                                        Добавить таймер
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
