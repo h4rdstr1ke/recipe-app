@@ -150,6 +150,43 @@ export default function PostCreatePage() {
             ));
         }
     };
+    // Стейт для индикации загрузки ответа от ИИ
+    const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+
+    // Функция генерации красивого описания
+    const handleGenerateDescription = async () => {
+        // ИИ нужно хотя бы название, чтобы понимать, о чем писать
+        if (!title.trim()) {
+            alert("Сначала введите название рецепта, чтобы ИИ понял, о чем писать!");
+            return;
+        }
+
+        setIsGeneratingDesc(true);
+        try {
+            // Собираем данные в том формате, который ждет Python (массивы строк)
+            const requestData = {
+                title: title,
+                // Берем только названия ингредиентов
+                ingredients: ingredients.map(ing => ing.name),
+                // Берем только непустые описания шагов
+                steps: steps.map(step => step.description).filter(desc => desc.trim() !== ''),
+                tone: "аппетитно и дружелюбно" // Можно задать тон, бэкенд это поддерживает!
+            };
+
+            // Отправляем запрос через наш прокси /ai
+            const response = await api.post('/ai/api/recipes/generate-description', requestData);
+
+            if (response.data && response.data.description) {
+                // Вставляем сгенерированный текст прямо в инпут описания
+                setDescription(response.data.description);
+            }
+        } catch (error) {
+            console.error("Ошибка при генерации описания:", error);
+            alert("Не удалось сгенерировать описание. Проверьте сервер ИИ.");
+        } finally {
+            setIsGeneratingDesc(false);
+        }
+    };
     const { createRecipe, createRecipeStep, isLoading } = usePostStore();
     const handleSubmit = async () => {
         // Базовая валидация
@@ -310,9 +347,16 @@ export default function PostCreatePage() {
                                 value={description}
                                 onChange={(e: any) => setDescription(e.target.value)}
                             />
-                            <div className="flex items-center gap-[2px] pr-[12px] cursor-pointer hover:opacity-80">
-                                <span className="text-[#737373] font-montserrat text-[14px] tracking-[0.2px] leading-7">ИИ</span>
-                                <AiStar />
+                            <div
+                                onClick={handleGenerateDescription}
+                                className={`flex items-center gap-[2px] pr-[12px] cursor-pointer transition-opacity hover:opacity-80 ${isGeneratingDesc ? 'opacity-50 pointer-events-none' : ''
+                                    }`}
+                                title="Сгенерировать описание с помощью ИИ"
+                            >
+                                <span className="text-[#737373] font-montserrat text-[14px] tracking-[0.2px] leading-7">
+                                    {isGeneratingDesc ? 'Думает...' : 'ИИ'}
+                                </span>
+                                <AiStar className={isGeneratingDesc ? 'animate-spin' : ''} />
                             </div>
                         </div>
                     </div>

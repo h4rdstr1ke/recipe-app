@@ -53,6 +53,13 @@ export default defineConfig({
         target: 'http://localhost:5297',
         changeOrigin: true,
         secure: false,
+      },
+      // Прокси для Python-сервиса
+      '/ai': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        // Эта строчка отрезает /ai, чтобы Python получил чистый /api/chat
+        rewrite: (path) => path.replace(/^\/ai/, '')
       }
     }
   }

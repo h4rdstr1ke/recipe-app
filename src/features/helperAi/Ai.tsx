@@ -1,18 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-
-type Message = {
-    id: number;
-    text: string;
-    sender: 'user' | 'ai';
-};
+import { useChatStore } from '../../stores/chatStore';
 
 export default function Ai({ onClose }: { onClose: () => void }) {
-    // Состояния для хранения сообщений и текста в инпуте
+    const { messages, isLoading, sendMessage } = useChatStore();
+
+    // Стейт только для инпута
     const [inputValue, setInputValue] = useState('');
-    const [messages, setMessages] = useState<Message[]>([
-        { id: 1, text: "Хочу приготовить картошку", sender: "user" },
-        { id: 2, text: "Конечно! Вот несколько вариантов приготовления картошки", sender: "ai" }
-    ]);
 
     // Реф для автоматического скролла вниз при новом сообщении
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -21,7 +14,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // Блокировка скролла
+    // Блокировка скролла основного экрана
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -29,35 +22,27 @@ export default function Ai({ onClose }: { onClose: () => void }) {
         };
     }, []);
 
+    // Скроллим вниз при каждом обновлении сообщений или изменении статуса загрузки
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
     // Функция отправки сообщения
-    const handleSendMessage = () => {
-        if (!inputValue.trim()) return;
+    const handleSendMessage = async () => {
+        // Блокируем отправку, если пусто или ИИ уже думает над прошлым вопросом
+        if (!inputValue.trim() || isLoading) return;
 
-        const newUserMessage: Message = {
-            id: Date.now(),
-            text: inputValue,
-            sender: 'user'
-        };
+        const textToSend = inputValue;
+        setInputValue(''); // Сразу очищаем инпут для лучшего UX
 
-        setMessages(prev => [...prev, newUserMessage]);
-        setInputValue('');
-
-        // Имитация ответа ИИ (для теста UX)
-        setTimeout(() => {
-            setMessages(prev => [...prev, {
-                id: Date.now() + 1,
-                text: "Отличная идея! Могу предложить рецепт запеченной картошки с розмарином или классическое пюре. Что больше нравится?",
-                sender: 'ai'
-            }]);
-        }, 1000);
+        // Отправляем реальный запрос на Python-сервер
+        await sendMessage(textToSend);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
+            // Предотвращаем дефолтное поведение, чтобы не было прыжков
+            e.preventDefault();
             handleSendMessage();
         }
     };
@@ -88,25 +73,41 @@ export default function Ai({ onClose }: { onClose: () => void }) {
 
                 {/* Зона сообщений (чат) */}
                 <div className="flex-1 overflow-y-auto px-[20px] sm:px-[40px] py-[20px] flex flex-col gap-[16px]">
-                    {messages.map((msg) => (
+                    {messages.map((msg, index) => (
                         <div
-                            key={msg.id}
+                            key={index}
                             className={`max-w-[85%] sm:max-w-[70%] px-[20px] py-[14px] bg-white text-black font-montserrat text-[15px] leading-relaxed shadow-sm
-                                ${msg.sender === 'user'
+                                ${msg.role === 'user'
                                     ? 'self-end rounded-[20px] rounded-br-[4px]' // Сообщения пользователя справа
                                     : 'self-start rounded-[20px] rounded-bl-[4px]' // Сообщения ИИ слева
                                 }`}
                         >
-                            {msg.text}
+                            <span className="whitespace-pre-wrap">{msg.content}</span>
                         </div>
                     ))}
+
+                    {/* Индикатор загрузки (ИИ печатает...) */}
+                    {isLoading && (
+                        <div className="self-start max-w-[85%] sm:max-w-[70%] px-[20px] py-[14px] bg-white/70 text-gray-500 font-montserrat text-[15px] leading-relaxed shadow-sm rounded-[20px] rounded-bl-[4px] flex items-center gap-2">
+                            <span className="animate-pulse">печатает</span>
+                            <span className="flex gap-1">
+                                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </span>
+                        </div>
+                    )}
+
                     <div ref={messagesEndRef} /> {/* Невидимый элемент для скролла */}
                 </div>
 
                 {/* Зона ввода (нижняя панель) */}
                 <div className="p-[20px] sm:px-[40px] sm:pb-[30px] flex items-center gap-[12px]">
-                    {/* Кнопка с троеточием */}
-                    <button className="w-[44px] h-[44px] shrink-0 rounded-full bg-white/90 hover:bg-white flex justify-center items-center shadow-sm transition-colors text-gray-500">
+                    {/* Кнопка с троеточием (опционально - можно повесить очистку истории) */}
+                    <button
+                        className="w-[44px] h-[44px] shrink-0 rounded-full bg-white/90 hover:bg-white flex justify-center items-center shadow-sm transition-colors text-gray-500"
+                        title="Дополнительные опции"
+                    >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
                         </svg>
@@ -118,15 +119,19 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Что хотите приготовить сегодня?"
-                        className="flex-1 h-[44px] rounded-[12px] bg-white/90 focus:bg-white px-[20px] font-montserrat text-[16px] md:text-[15px] outline-none placeholder:text-gray-400 shadow-sm transition-all focus:ring-2 focus:ring-white/50"
+                        disabled={isLoading} // Блокируем ввод, пока ИИ отвечает
+                        placeholder={isLoading ? "Подождите, ИИ думает..." : "Что хотите приготовить сегодня?"}
+                        className="flex-1 h-[44px] rounded-[12px] bg-white/90 focus:bg-white px-[20px] font-montserrat text-[16px] md:text-[15px] outline-none placeholder:text-gray-400 shadow-sm transition-all focus:ring-2 focus:ring-white/50 disabled:opacity-70 disabled:cursor-not-allowed"
                     />
 
                     {/* Кнопка отправки */}
                     <button
                         onClick={handleSendMessage}
-                        className={`w-[44px] h-[44px] shrink-0 rounded-full bg-white/90 hover:bg-white flex justify-center items-center shadow-sm transition-colors
-                            ${inputValue.trim() ? 'text-[#3BB5FF]' : 'text-gray-400'}`}
+                        disabled={!inputValue.trim() || isLoading} // Отключаем кнопку
+                        className={`w-[44px] h-[44px] shrink-0 rounded-full flex justify-center items-center shadow-sm transition-colors
+                            ${inputValue.trim() && !isLoading
+                                ? 'bg-white/90 hover:bg-white text-[#3BB5FF] cursor-pointer'
+                                : 'bg-white/50 text-gray-400 cursor-not-allowed'}`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="9 18 15 12 9 6"></polyline>
