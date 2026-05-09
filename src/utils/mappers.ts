@@ -29,10 +29,17 @@ export const mapRecipeDtoToPost = (item: any, overrideAvatar?: string | null, ov
     commentsCount: item.commentsCount || 0,
     favoritesCount: item.favoritesCount || 0,
     date: item.createdAt ? new Date(item.createdAt).toLocaleDateString('ru-RU') : '',
+    nutrition: {
+        calories: item.caloricValue || 0,
+        protein: item.proteins || 0,
+        fat: item.fats || 0,
+        carbs: item.carbohydrates || 0
+    },
     products: (item.ingredients || []).map((ing: any) => ({
         id: ing.ingredientId,
         name: ing.ingredientTitle,
-        weight: ing.weight
+        quantity: ing.weight || 0,
+        unit: ing.alternativeWeight || 'г'
     })),
     steps: (item.steps || []).map((step: any, index: number) => ({
         id: step.id,

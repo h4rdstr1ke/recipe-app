@@ -13,6 +13,8 @@ import { api } from "../api/api"
 const MEAL_TYPES = ['Завтрак', 'Обед', 'Полдник', 'Ужин', 'Перекус'];
 const DISH_TYPES = ['Первые блюда', 'Вторые блюда', 'Салаты', 'Закуски', 'Выпечка', 'Соусы и маринады', 'Заготовки', 'Десерты', 'Напитки', 'Гарниры'];
 
+const UNIT_TYPES = ['г', 'кг', 'мл', 'л', 'шт', 'ст.л', 'ч.л', 'стакан'];
+
 export default function PostCreatePage() {
     // 1. СТЕЙТЫ ДЛЯ БАЗОВОЙ ИНФОРМАЦИИ
     const [title, setTitle] = useState('');
@@ -46,7 +48,7 @@ export default function PostCreatePage() {
     const [ingName, setIngName] = useState('');
     const [ingId, setIngId] = useState(''); // Стейт для хранения ID выбранного ингредиента
     const [ingAmount, setIngAmount] = useState('');
-    const [ingUnit, setIngUnit] = useState('');
+    const [ingUnit, setIngUnit] = useState('г'); // По умолч граммы
 
     // Стейты для базы данных и выпадающего списка
     const [dbIngredients, setDbIngredients] = useState<Array<{ id: string, title: string }>>([]);
@@ -215,15 +217,70 @@ export default function PostCreatePage() {
             Weight: Number(ing.amount) || 0,
             AlternativeWeight: ing.unit
         }));
+        // ========================================================
+        // НОВЫЙ БЛОК: Запрашиваем КБЖУ у ИИ перед отправкой
+        // ========================================================
+        let caloricValue = '0';
+        let proteins = '0';
+        let fats = '0';
+        let carbohydrates = '0';
+
+        try {
+            // Подготавливаем данные в формате, который ждет ИИ (name и grams)
+            const nutritionPayload = {
+                ingredients: ingredients.map(ing => {
+                    let grams = Number(ing.amount) || 0;
+
+                    switch (ing.unit) {
+                        case 'кг': case 'л':
+                            grams *= 1000;
+                            break;
+                        case 'ст.л':
+                            grams *= 15;
+                            break;
+                        case 'ч.л':
+                            grams *= 5;
+                            break;
+                        case 'стакан':
+                            grams *= 200;
+                            break;
+                        case 'шт':
+                            grams *= 100;
+                            break;
+                        default: // для 'г' и 'мл' оставляем как есть
+                            break;
+                    }
+
+                    return { name: ing.name, grams: grams };
+                })
+            };
+
+            // Отправляем запрос к ИИ (через наш прокси /ai)
+            const nutritionRes = await api.post('/ai/api/recipes/nutrition-per-100g', nutritionPayload);
+
+            if (nutritionRes.data && nutritionRes.data.per_100g) {
+                const per100 = nutritionRes.data.per_100g;
+                // Округляем значения до целого, чтобы бэкенд на C# не ругался на дроби
+                caloricValue = Math.round(per100.calories || per100.kcal || 0).toString();
+                proteins = Math.round(per100.proteins || per100.protein || per100.protein_g || 0).toString();
+                fats = Math.round(per100.fats || per100.fat || per100.fat_g || 0).toString();
+                carbohydrates = Math.round(per100.carbohydrates || per100.carbs || per100.carbs_g || 0).toString()
+            }
+        } catch (error) {
+            console.error("Ошибка при расчете КБЖУ через ИИ:", error);
+            // Мы не делаем return! Если ИИ отвалился, просто останутся нули, 
+            // но пользователь все равно сможет опубликовать рецепт.
+        }
+        // ========================================================
 
         // 3. Собираем FormData для основного рецепта
         const recipeFormData = new FormData();
         recipeFormData.append('Title', title);
         recipeFormData.append('Description', description);
-        recipeFormData.append('CaloricValue', '0'); // Пока шлем нули
-        recipeFormData.append('Proteins', '0');
-        recipeFormData.append('Fats', '0');
-        recipeFormData.append('Carbohydrates', '0');
+        recipeFormData.append('CaloricValue', caloricValue);
+        recipeFormData.append('Proteins', proteins);
+        recipeFormData.append('Fats', fats);
+        recipeFormData.append('Carbohydrates', carbohydrates);
         recipeFormData.append('CookingTime', cookingTime);
         recipeFormData.append('PortionsCount', portions);
         if (selectedDish) recipeFormData.append('DishType', selectedDish);
@@ -545,12 +602,24 @@ export default function PostCreatePage() {
                                     value={ingAmount}
                                     onChange={(e: any) => setIngAmount(e.target.value)}
                                 />
-                                <Input
-                                    placeholder="Единица измерения"
-                                    className="w-[100%] px-[23px]"
-                                    value={ingUnit}
-                                    onChange={(e: any) => setIngUnit(e.target.value)}
-                                />
+                                {/* ЖЕСТКИЙ ВЫПАДАЮЩИЙ СПИСОК */}
+                                <div className="relative w-full">
+                                    <select
+                                        value={ingUnit}
+                                        onChange={(e) => setIngUnit(e.target.value)}
+                                        className="w-full h-[50px] bg-[#F9F9F9] border-[1px] border-[#E6E6E6] rounded-[5px] px-[20px] font-montserrat text-[14px] outline-none appearance-none cursor-pointer"
+                                    >
+                                        {UNIT_TYPES.map(unit => (
+                                            <option key={unit} value={unit}>{unit}</option>
+                                        ))}
+                                    </select>
+                                    {/* Иконка стрелочки вниз */}
+                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                        <svg className="w-4 h-4 text-[#737373]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
