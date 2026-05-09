@@ -16,6 +16,7 @@ export const mapRecipeDtoToPost = (item: any, overrideAvatar?: string | null, ov
     title: item.title || 'Без названия',
     description: item.description || '',
     image: (item.images && item.images.length > 0) ? item.images[0].url : '',
+    imageId: (item.images && item.images.length > 0) ? item.images[0].id : undefined,
     timeCooking: item.cookingTime || 'Время не указано',
     portions: item.portionsCount || 0,
     mealType: item.mealType || '',
@@ -34,6 +35,7 @@ export const mapRecipeDtoToPost = (item: any, overrideAvatar?: string | null, ov
         weight: ing.weight
     })),
     steps: (item.steps || []).map((step: any, index: number) => ({
+        id: step.id,
         stepNumber: step.order !== undefined ? step.order + 1 : index + 1,
         description: step.description || '',
         image: step.image?.url || '',

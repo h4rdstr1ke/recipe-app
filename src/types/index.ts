@@ -69,6 +69,7 @@ export interface Post {
     authorAvatar: string | null;
     /** Главное изображение готового блюда */
     image: string;
+    imageId?: string;
     /** Заголовок рецепта */
     title: string;
     /** Краткое описание или история блюда */
@@ -105,6 +106,7 @@ export interface Post {
     portions?: number;
     /** Список необходимых ингредиентов */
     products?: {
+        weight: any;
         id: string;
         /** Название ингредиента */
         name: string;
@@ -115,6 +117,8 @@ export interface Post {
     }[];
     /** Пошаговое руководство по приготовлению */
     steps?: {
+        timer: any;
+        id: string;
         /** Порядковый номер шага */
         stepNumber: number;
         /** Текстовая инструкция к шагу */

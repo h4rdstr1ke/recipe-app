@@ -28,7 +28,7 @@ export default function AppRoutes() {
                 <Route element={<ProtectedRoute />}>
                     <Route path="/profile/:id?" element={<Profile />} />
                     <Route path="/profileEdit" element={<ProfileEdit />} />
-                    <Route path="/PostEdit" element={<PostEditPage />} />
+                    <Route path="/PostEdit/:id" element={<PostEditPage />} />
                     <Route path="/PostCreate" element={<PostCreatePage />} />
                 </Route>
             </Route>

@@ -19,6 +19,9 @@ interface PostStore {
     createRecipe: (formData: FormData) => Promise<string | null>;
     /** Добавляет шаг приготовления к существующему рецепту. */
     createRecipeStep: (recipeId: string, formData: FormData) => Promise<boolean>;
+    updateRecipe: (recipeId: string, formData: FormData) => Promise<boolean>;
+    updateRecipeStep: (recipeId: string, stepId: string, formData: FormData) => Promise<boolean>;
+    deleteRecipeStep: (recipeId: string, stepId: string) => Promise<boolean>;
     /** Устанавливает оценку (рейтинг) рецепту. */
     setRecipeRating: (recipeId: string, value: number) => Promise<void>;
     /** Оптимистично обновляет счетчик лайков в стейте. */
@@ -162,7 +165,42 @@ export const usePostStore = create<PostStore>((set, get) => ({
             return false;
         }
     },
+    updateRecipe: async (recipeId, formData) => {
+        set({ isLoading: true, error: null });
+        try {
+            await api.put(`/api/recipes/${recipeId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            set({ isLoading: false });
+            return true;
+        } catch (error: any) {
+            console.error("Ошибка обновления рецепта:", error);
+            set({ error: 'Не удалось обновить рецепт.', isLoading: false });
+            return false;
+        }
+    },
 
+    updateRecipeStep: async (recipeId, stepId, formData) => {
+        try {
+            await api.put(`/api/recipes/${recipeId}/steps/${stepId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return true;
+        } catch (error) {
+            console.error("Ошибка обновления шага:", error);
+            return false;
+        }
+    },
+
+    deleteRecipeStep: async (recipeId, stepId) => {
+        try {
+            await api.delete(`/api/recipes/${recipeId}/steps/${stepId}`);
+            return true;
+        } catch (error) {
+            console.error("Ошибка удаления шага:", error);
+            return false;
+        }
+    },
     setRecipeRating: async (recipeId, value) => {
         try {
             await api.put(`/api/recipes/${recipeId}/rating`, { value });

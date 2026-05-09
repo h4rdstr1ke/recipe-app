@@ -7,7 +7,7 @@ import AllergenIcon from '../../../assets/icons/allergen.svg?react';
 import UnwnantedIcon from '../../../assets/icons/unwanted.svg?react';
 
 import Button from '../../../components/button/Button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '../../../stores/authStore';
 
@@ -30,6 +30,7 @@ type PublicationHeaderProps = {
     likesCount: number;
     favoritesCount: number;
     commentsCount: number;
+    postId: string;
 
     // Действия
     isLiked: boolean;
@@ -46,6 +47,7 @@ type PublicationHeaderProps = {
 };
 
 export default function PublicationHeader({
+    postId,
     avatar,
     username,
     authorName,
@@ -71,13 +73,14 @@ export default function PublicationHeader({
     // ИСП проверяем реального пользователя 
     const { user } = useAuthStore();
     const isMyPost = username === user?.nickname;
+    const navigate = useNavigate();
     return (
         <div className="w-[100%] flex flex-col">
             {/* Верхний блок - автор */}
             {isMyPost ? (
-                <Link to="/PostEdit" className='flex'>
-                    <Button className='w-[220px] h-[30px] text-[14px] ml-auto'>Редактировать рецепт</Button>
-                </Link>
+
+                <Button onClick={() => navigate(`/PostEdit/${postId}`)} className='w-[220px] h-[30px] text-[14px] ml-auto'>Редактировать рецепт</Button>
+
             ) : (
                 <div className="flex py-[5px] justify-between items-center">
                     <div className='flex gap-4 items-center '>
