@@ -37,8 +37,8 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
     const handleSendReply = () => {
         if (!replyText.trim()) return; // Защита от пустого ответа
 
-        // Отправляем ответ в стор (к любому родителю)
-        addReply(comment.id, replyText);
+        // Отправляем ответ в стор 
+        addReply(comment.postId, comment.id, replyText);
 
         // порядок после отправки:
         setReplyText('');        // Очищаем поле
@@ -205,7 +205,8 @@ export default function Comments({ postId }: CommentsProps) {
 
     // Стейты для текста и картинки
     const [newCommentText, setNewCommentText] = useState('');
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null); // <-- НОВЫЙ СТЕЙТ ДЛЯ ФАЙЛА
 
     useEffect(() => {
         fetchCommentsByPostId(postId);
@@ -215,22 +216,22 @@ export default function Comments({ postId }: CommentsProps) {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Создаем временную ссылку на локальный файл для превью
-            const imageUrl = URL.createObjectURL(file);
-            setSelectedImage(imageUrl);
+            setSelectedImageFile(file); // Сохраняем сам файл для бэкенда
+            setSelectedImagePreview(URL.createObjectURL(file)); // Сохраняем ссылку для превью
         }
     };
 
     const handlePublish = () => {
         // Разрешаем отправку, если есть либо текст, либо картинка
-        if (!newCommentText.trim() && !selectedImage) return;
+        if (!newCommentText.trim() && !selectedImageFile) return;
 
-        // Передаем картинку в стор третьим аргументом
-        addComment(postId, newCommentText, selectedImage || undefined);
+        // Передаем ФАЙЛ картинки в стор
+        addComment(postId, newCommentText, selectedImageFile || undefined);
 
         // Очищаем форму после публикации
         setNewCommentText('');
-        setSelectedImage(null);
+        setSelectedImagePreview(null);
+        setSelectedImageFile(null); // Очищаем файл
     };
 
     // Считаем все комментарии + все ответы (рекурсивно)
@@ -274,11 +275,14 @@ export default function Comments({ postId }: CommentsProps) {
                     </label>
 
                     {/* ПРЕВЬЮ ВЫБРАННОЙ КАРТИНКИ */}
-                    {selectedImage && (
+                    {selectedImagePreview && (
                         <div className="relative w-[150px] h-[100px] mt-2">
-                            <img src={selectedImage} alt="preview" className="w-full h-full object-cover rounded-[5px] border-[1px] border-[#E6E6E6]" />
+                            <img src={selectedImagePreview} alt="preview" className="w-full h-full object-cover rounded-[5px] border-[1px] border-[#E6E6E6]" />
                             <button
-                                onClick={() => setSelectedImage(null)}
+                                onClick={() => {
+                                    setSelectedImagePreview(null);
+                                    setSelectedImageFile(null)
+                                }}
                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                             >
                                 ✕

@@ -1,117 +1,40 @@
 import { create } from 'zustand';
 import type { Comment } from '../types/index';
-import { MOCK_COMMENTS, MOCK_USERS } from '../mocks/mocks';
-import { useAuthStore } from './authStore';
-
+import { api } from '../api/api';
 
 /**
- * Вспомогательная функция для генерации текущей даты и времени (формат: ДД.ММ.ГГГГ, ЧЧ:ММ) (временная)
+ * Вспомогательная функция для преобразования DTO с бэкенда во фронтенд-модель.
  */
-const getCurrentDateTime = () => {
-    const dateStr = new Date().toLocaleString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    // Меняем стандартную запятую на букву "в"
-    return dateStr.replace(',', ' в');
-};
-
-/**
- * Вспомогательная функция для рекурсивного добавления данных автора (аватарок) в комментарии.
- */
-const enrichWithAuthData = (item: any): any => {
-    // Ищем юзера в базе по его никнейму (item.author)
-    const userData = Object.values(MOCK_USERS).find(u => u.username === item.author);
-
-    return {
-        ...item,
-        authorAvatar: userData?.authorAvatar || null,
-        // Если есть ответы, прогоняем их через эту же функцию
-        replies: item.replies ? item.replies.map(enrichWithAuthData) : []
-    };
-};
+const mapCommentDto = (item: any): Comment => ({
+    id: item.id,
+    postId: item.recipeId || '',
+    author: item.commentatorUserName || 'Пользователь',
+    authorAvatar: item.commentatorAvatarUrl || null,
+    text: item.value || '',
+    imageUrl: (item.images && item.images.length > 0) ? item.images[0].url : null,
+    likesCount: item.likesCount || 0,
+    isLiked: item.isLiked || false,
+    createdAt: item.createdAt ? new Date(item.createdAt).toLocaleString('ru-RU', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }).replace(',', ' в') : '',
+    // Рекурсивно мапим ответы, если они есть
+    replies: item.replies ? item.replies.map(mapCommentDto) : []
+});
 
 /**
- * Вспомогательная функция для рекурсивного обновления объекта в дереве комментариев.
- */
-const updateRecursive = (items: any[], id: string, updater: (item: any) => any): any[] => {
-    return items.map(item => {
-        if (item.id === id) return updater(item);
-        if (item.replies && item.replies.length > 0) {
-            return { ...item, replies: updateRecursive(item.replies, id, updater) };
-        }
-        return item;
-    });
-};
-
-/**
- * Вспомогательная функция для рекурсивного удаления объекта из дерева комментариев.
- */
-const filterRecursive = (items: any[], idToRemove: string): any[] => {
-    return items
-        .filter(item => item.id !== idToRemove)
-        .map(item => ({
-            ...item,
-            replies: item.replies ? filterRecursive(item.replies, idToRemove) : []
-        }));
-};
-
-/**
- * Хранилище для управления веткой комментариев конкретного (открытого) поста.
+ * Хранилище для управления веткой комментариев
  */
 interface CommentsStore {
-    /** Массив корневых комментариев (ответы лежат внутри каждого комментария в поле replies) */
     comments: Comment[];
-    /** Индикатор процесса отправки или загрузки данных */
     isLoading: boolean;
-    /** Текст ошибки, если запрос завершился неудачно */
     error: string | null;
 
-    /**
-     * Загружает ветку комментариев для открытого поста.
-     * @param postId - ID поста, комментарии которого нужно загрузить
-     */
     fetchCommentsByPostId: (postId: string) => Promise<void>;
-
-    /**
-     * Отправляет новый корневой комментарий к посту (Оптимистичное обновление).
-     * @param postId - ID поста, под которым оставляют комментарий
-     * @param text - Текст комментария
-     * @param image - (Опционально) URL прикрепленного изображения
-     */
-    addComment: (postId: string, text: string, image?: string) => Promise<void>;
-
-    /**
-     * Оставляет ответ на существующий комментарий (Оптимистичное обновление).
-     * @param commentId - ID корневого комментария, на который отвечаем
-     * @param text - Текст ответа
-     */
-    addReply: (commentId: string, text: string) => Promise<void>;
-
-    /**
-     * Ставит или убирает лайк с корневого комментария (Оптимистичное обновление).
-     * @param commentId - ID комментария
-     */
-    toggleCommentLike: (commentId: string) => Promise<void>;
-
-    /**
-     * Редактирует текст существующего ответа.
-     * @param commentId - ID корневого комментария, в котором находится ответ
-     * @param replyId - Уникальный ID самого ответа
-     * @param newText - Новый текст ответа
-     */
-    editReply: (commentId: string, replyId: string, newText: string) => Promise<void>;
-
-    /** Удаляет корневой комментарий */
+    addComment: (postId: string, text: string, imageFile?: File) => Promise<void>;
+    addReply: (postId: string, parentCommentId: string, text: string) => Promise<void>;
+    editReply: (rootHint: string, commentId: string, newText: string) => Promise<void>;
     deleteComment: (commentId: string) => Promise<void>;
-
-    /** Удаляет конкретный ответ из ветки комментариев */
-    deleteReply: (commentId: string, replyId: string) => Promise<void>;
-
+    toggleCommentLike: (commentId: string) => Promise<void>;
 }
 
 export const useCommentsStore = create<CommentsStore>((set, get) => ({
@@ -122,146 +45,116 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
     fetchCommentsByPostId: async (postId) => {
         set({ isLoading: true, error: null });
         try {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            // Временно фильтруем моки. В будущем: const response = await api.get(`/posts/${postId}/comments`);
-            const postComments = MOCK_COMMENTS
-                .filter(comment => comment.postId === postId)
-                .map(enrichWithAuthData);
-            set({ comments: postComments, isLoading: false });
+
+            const response = await api.get(`/api/recipes/${postId}/comments`);
+            const rawData = response.data;
+            const items = Array.isArray(rawData) ? rawData : (rawData.items || []);
+
+            // вызываем .map у массива items, а не у response.data
+            const mappedComments = items.map(mapCommentDto);
+
+            set({ comments: mappedComments, isLoading: false });
         } catch (error: unknown) {
+            // для дебага
+            console.error("Ошибка при обработке комментариев:", error);
             set({ error: 'Ошибка загрузки комментариев', isLoading: false });
         }
     },
 
-    addComment: async (postId, text, image) => {
-        const { comments } = get(); // Достаем текущие комменты из стейта
-        const { user } = useAuthStore.getState();
-
-        if (!user) {
-            console.error("Пользователь не авторизован");
-            return;
-        }
-
-        // Создаем объект нового комментария
-        const newComment: Comment = enrichWithAuthData({
-            id: Date.now().toString(), // Временный ID для UI
-            postId: postId,
-            author: user.nickname,
-            text: text,
-            imageUrl: image,
-            likesCount: 0,
-            isLiked: false,
-            createdAt: getCurrentDateTime(),
-            replies: []
-        });
-
-        // Оптимистичное обновление UI: добавляем новый коммент в начало массива
-        set({ comments: [newComment, ...comments] });
-
+    addComment: async (postId, text, imageFile) => {
         try {
-            // В будущем: await api.post(`/comments`, newComment);
-            console.log('Комментарий успешно отправлен на сервер');
+            const formData = new FormData();
+            formData.append('Value', text);
+            if (imageFile) {
+                formData.append('Images', imageFile);
+            }
+
+            await api.post(`/api/recipes/${postId}/comments`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // После успешного создания запрашиваем свежее дерево с реальными ID
+            await get().fetchCommentsByPostId(postId);
         } catch (error) {
-            // Если сервер выдал ошибку - откатываем стейт назад
-            set({ comments, error: 'Не удалось отправить комментарий' });
+            console.error('Не удалось отправить комментарий', error);
+            set({ error: 'Не удалось отправить комментарий' });
         }
     },
 
-    addReply: async (commentId, text) => {
-        const { comments } = get();
-        const { user } = useAuthStore.getState();
-
-        if (!user) {
-            console.error("Пользователь не авторизован");
-            return;
-        }
-
-        const newReply = enrichWithAuthData({
-            id: Date.now().toString(),
-            author: user.nickname,
-            text: text,
-            likesCount: 0,
-            isLiked: false,
-            createdAt: getCurrentDateTime(),
-            replies: []
-        });
-
-        // Ищем нужный коммент рекурсивно и обновляем только его массив replies
-        const updatedComments = updateRecursive(comments, commentId, (item) => ({
-            ...item,
-            replies: [...(item.replies || []), newReply]
-        }));
-
-        set({ comments: updatedComments });
-
+    addReply: async (postId, parentCommentId, text) => {
         try {
-            // В будущем: await api.post(`/comments/${commentId}/reply`, newReply))
-            console.log('Ответ успешно отправлен');
+            const formData = new FormData();
+            formData.append('Value', text);
+            formData.append('ParentCommentId', parentCommentId); // Связь с родителем
+
+            await api.post(`/api/recipes/${postId}/comments`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Обновляем ветку
+            await get().fetchCommentsByPostId(postId);
         } catch (error) {
-            set({ comments, error: 'Ошибка отправки ответа' });
+            console.error('Ошибка отправки ответа', error);
+            set({ error: 'Ошибка отправки ответа' });
         }
     },
 
-    editReply: async (_commentId, replyId, newText) => {
-        const { comments } = get();
-
-        // Ищем нужный коммент и внутри него нужный ответ, чтобы заменить текст
-        // Теперь ищет рекурсивно по всем уровням!
-        const updatedComments = updateRecursive(comments, replyId, (item) => ({
-            ...item, text: newText
-        }));
-
-        set({ comments: updatedComments });
-
+    editReply: async (_rootHint, commentId, newText) => {
         try {
-            // В будущем: await api.put(`/comments/${commentId}/reply/${replyId}`, { text: newText });
-            console.log('Ответ успешно отредактирован');
+            const formData = new FormData();
+            formData.append('Value', newText);
+            await api.put(`/api/recipes/comments/${commentId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // оптимистично обновляем текст в стейте, чтобы не делать лишний запрос
+            set(state => {
+                const updateRecursive = (items: any[]): any[] => items.map(item => {
+                    if (item.id === commentId) return { ...item, text: newText };
+                    if (item.replies) return { ...item, replies: updateRecursive(item.replies) };
+                    return item;
+                });
+                return { comments: updateRecursive(state.comments) };
+            });
+
         } catch (error) {
-            set({ comments, error: 'Ошибка редактирования ответа' });
+            console.error('Ошибка редактирования ответа', error);
+            set({ error: 'Ошибка редактирования ответа' });
         }
     },
+
     deleteComment: async (commentId) => {
-        const { comments } = get();
-        // Просто фильтруем массив, убирая удаляемый коммент (теперь рекурсивно на всех уровнях)
-        set({ comments: filterRecursive(comments, commentId) });
-
         try {
-            // В будущем: await api.delete(`/comments/${commentId}`);
-            console.log('Комментарий удален');
-        } catch (error) {
-            set({ comments, error: 'Ошибка при удалении комментария' });
-        }
-    },
+            await api.delete(`/api/recipes/comments/${commentId}`);
 
-    deleteReply: async (_commentId, replyId) => {
-        const { comments } = get();
-        // Ищем нужный коммент и отфильтровываем из него удаляемый ответ (рекурсивно)
-        set({ comments: filterRecursive(comments, replyId) });
+            // Оптимистично вырезаем из дерева
+            set(state => {
+                const filterRecursive = (items: any[]): any[] => items
+                    .filter(item => item.id !== commentId)
+                    .map(item => ({ ...item, replies: filterRecursive(item.replies || []) }));
 
-        try {
-            // В будущем: await api.delete(`/comments/${commentId}/reply/${replyId}`);
-            console.log('Ответ удален');
+                return { comments: filterRecursive(state.comments) };
+            });
         } catch (error) {
-            set({ comments, error: 'Ошибка при удалении ответа' });
+            console.error('Ошибка при удалении', error);
+            set({ error: 'Ошибка при удалении' });
         }
     },
 
     toggleCommentLike: async (commentId) => {
-        const { comments } = get();
+        // TODO: В Swagger пока нет эндпоинта для лайков КОММЕНТАРИЕВ.
+        // /api/recipes/comments/{commentId}/like, вставим сюда вызов api.put()
 
-        // Теперь рекурсивно ищет лайки в том числе у ответов!
-        const updatedComments = updateRecursive(comments, commentId, (item) => ({
-            ...item,
-            isLiked: !item.isLiked,
-            likesCount: item.likesCount + (item.isLiked ? -1 : 1)
-        }));
-
-        set({ comments: updatedComments });
-
-        try {
-            // В будущем: API запрос на лайк/дизлайк
-        } catch (error) {
-            set({ comments });
-        }
+        // Пока оставляем только оптимистичную отрисовку
+        set(state => {
+            const updateRecursive = (items: any[]): any[] => items.map(item => {
+                if (item.id === commentId) {
+                    return { ...item, isLiked: !item.isLiked, likesCount: item.likesCount + (item.isLiked ? -1 : 1) };
+                }
+                if (item.replies) return { ...item, replies: updateRecursive(item.replies) };
+                return item;
+            });
+            return { comments: updateRecursive(state.comments) };
+        });
     }
 }));
