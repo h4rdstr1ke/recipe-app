@@ -12,6 +12,8 @@ import PhotoRecipe from './components/PhotoRecipe';
 import RecipeRating from './components/RecipeRating';
 import Comments from './components/Comments';
 import PublicationHeader from './components/PublicationHeader';
+import RecipeOptimizer from './components/RecipeOptimizer';
+import SimilarRecipes from './components/SimilarRecipes';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -127,9 +129,11 @@ export default function PublicationFull({ post }: PublicationFullProps) {
             <ProductsForCooking
                 products={post.products}
                 portions={post.portions || 0} />
+            <RecipeOptimizer recipeId={post.id} />
             <SwitchDisplay />
             <PhotoRecipe steps={post.steps} />
             <RecipeRating rating={post.rating as any} recipeId={post.id} />
+            <SimilarRecipes recipeId={post.id} />
             <Comments postId={post.id} />
         </div >
     );

@@ -1,14 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
+import { api } from '../../api/api';
 
 export default function Ai({ onClose }: { onClose: () => void }) {
     const { messages, isLoading, sendMessage } = useChatStore();
 
-    // Стейт только для инпута
+    // Стейт для текстового инпута
     const [inputValue, setInputValue] = useState('');
 
-    // Реф для автоматического скролла вниз при новом сообщении
+    // Стейт для индикатора загрузки картинки
+    const [isDetecting, setIsDetecting] = useState(false);
+
+    // Рефы для скролла и для скрытого инпута файла
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,28 +27,65 @@ export default function Ai({ onClose }: { onClose: () => void }) {
         };
     }, []);
 
-    // Скроллим вниз при каждом обновлении сообщений или изменении статуса загрузки
     useEffect(() => {
         scrollToBottom();
     }, [messages, isLoading]);
 
-    // Функция отправки сообщения
+    // Функция отправки сообщения в чат
     const handleSendMessage = async () => {
-        // Блокируем отправку, если пусто или ИИ уже думает над прошлым вопросом
         if (!inputValue.trim() || isLoading) return;
-
         const textToSend = inputValue;
-        setInputValue(''); // Сразу очищаем инпут для лучшего UX
-
-        // Отправляем реальный запрос на Python-сервер
+        setInputValue('');
         await sendMessage(textToSend);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            // Предотвращаем дефолтное поведение, чтобы не было прыжков
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    // ==========================================
+    // ЛОГИКА РАСПОЗНАВАНИЯ ФОТО (КОМПЬЮТЕРНОЕ ЗРЕНИЕ)
+    // ==========================================
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsDetecting(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Отправляем фото на эндпоинт компьютерного зрения
+            const response = await api.post('/ai/api/vision/detect-products', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                params: { conf_threshold: 0.3 } // Отсекаем неуверенные догадки ИИ
+            });
+
+            if (response.data && response.data.items) {
+                // Извлекаем названия продуктов (label) и убираем дубликаты
+                const labels = response.data.items.map((item: any) => item.label);
+                const uniqueProducts = [...new Set(labels)];
+
+                if (uniqueProducts.length > 0) {
+                    // Автоматически вставляем найденные продукты в поле ввода!
+                    const productsText = uniqueProducts.join(', ');
+                    setInputValue(`У меня есть: ${productsText}. Что из этого можно приготовить?`);
+                } else {
+                    alert("ИИ не смог найти знакомые продукты на этом фото.");
+                }
+            }
+        } catch (error) {
+            console.error("Ошибка при распознавании фото:", error);
+            alert("Не удалось распознать продукты. Проверьте сервер ИИ.");
+        } finally {
+            setIsDetecting(false);
+            // Очищаем инпут, чтобы можно было загрузить ту же фотку еще раз, если нужно
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -62,7 +104,6 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         type="button"
                         onClick={onClose}
                         className="absolute left-1 md:left-[30px] w-10 h-10 flex items-center justify-center text-[28px] font-light text-black hover:text-gray-700 rounded-full transition-colors"
-                        aria-label="Закрыть"
                     >
                         ✕
                     </button>
@@ -78,15 +119,14 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                             key={index}
                             className={`max-w-[85%] sm:max-w-[70%] px-[20px] py-[14px] bg-white text-black font-montserrat text-[15px] leading-relaxed shadow-sm
                                 ${msg.role === 'user'
-                                    ? 'self-end rounded-[20px] rounded-br-[4px]' // Сообщения пользователя справа
-                                    : 'self-start rounded-[20px] rounded-bl-[4px]' // Сообщения ИИ слева
+                                    ? 'self-end rounded-[20px] rounded-br-[4px]'
+                                    : 'self-start rounded-[20px] rounded-bl-[4px]'
                                 }`}
                         >
                             <span className="whitespace-pre-wrap">{msg.content}</span>
                         </div>
                     ))}
 
-                    {/* Индикатор загрузки (ИИ печатает...) */}
                     {isLoading && (
                         <div className="self-start max-w-[85%] sm:max-w-[70%] px-[20px] py-[14px] bg-white/70 text-gray-500 font-montserrat text-[15px] leading-relaxed shadow-sm rounded-[20px] rounded-bl-[4px] flex items-center gap-2">
                             <span className="animate-pulse">печатает</span>
@@ -98,19 +138,41 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         </div>
                     )}
 
-                    <div ref={messagesEndRef} /> {/* Невидимый элемент для скролла */}
+                    <div ref={messagesEndRef} />
                 </div>
 
                 {/* Зона ввода (нижняя панель) */}
                 <div className="p-[20px] sm:px-[40px] sm:pb-[30px] flex items-center gap-[12px]">
-                    {/* Кнопка с троеточием (опционально - можно повесить очистку истории) */}
+
+                    {/* Скрытый инпут для фото */}
+                    <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                    />
+
+                    {/* Кнопка загрузки фото (Заменили троеточие на скрепку/камеру) */}
                     <button
-                        className="w-[44px] h-[44px] shrink-0 rounded-full bg-white/90 hover:bg-white flex justify-center items-center shadow-sm transition-colors text-gray-500"
-                        title="Дополнительные опции"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isDetecting || isLoading}
+                        className={`w-[44px] h-[44px] shrink-0 rounded-full flex justify-center items-center shadow-sm transition-colors
+                            ${isDetecting ? 'bg-white/50 text-gray-400 cursor-not-allowed' : 'bg-white/90 hover:bg-white text-gray-500'}`}
+                        title="Распознать продукты по фото"
                     >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
-                        </svg>
+                        {isDetecting ? (
+                            // Иконка загрузки (крутилка), пока фото отправляется на сервер
+                            <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            // Иконка скрепки
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                            </svg>
+                        )}
                     </button>
 
                     {/* Поле ввода */}
@@ -119,17 +181,17 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        disabled={isLoading} // Блокируем ввод, пока ИИ отвечает
-                        placeholder={isLoading ? "Подождите, ИИ думает..." : "Что хотите приготовить сегодня?"}
+                        disabled={isLoading || isDetecting}
+                        placeholder={isDetecting ? "Распознаю фото..." : isLoading ? "Подождите, ИИ думает..." : "Что хотите приготовить сегодня?"}
                         className="flex-1 h-[44px] rounded-[12px] bg-white/90 focus:bg-white px-[20px] font-montserrat text-[16px] md:text-[15px] outline-none placeholder:text-gray-400 shadow-sm transition-all focus:ring-2 focus:ring-white/50 disabled:opacity-70 disabled:cursor-not-allowed"
                     />
 
                     {/* Кнопка отправки */}
                     <button
                         onClick={handleSendMessage}
-                        disabled={!inputValue.trim() || isLoading} // Отключаем кнопку
+                        disabled={!inputValue.trim() || isLoading || isDetecting}
                         className={`w-[44px] h-[44px] shrink-0 rounded-full flex justify-center items-center shadow-sm transition-colors
-                            ${inputValue.trim() && !isLoading
+                            ${inputValue.trim() && !isLoading && !isDetecting
                                 ? 'bg-white/90 hover:bg-white text-[#3BB5FF] cursor-pointer'
                                 : 'bg-white/50 text-gray-400 cursor-not-allowed'}`}
                     >

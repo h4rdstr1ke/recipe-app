@@ -323,9 +323,34 @@ export default function PostCreatePage() {
             await createRecipeStep(createdRecipeId, stepFormData);
         }
 
-        // УСПЕХ! Очищаем форму или перекидываем на страницу рецепта
+        // ==========================================
+        // РЕГИСТРИРУЕМ РЕЦЕПТ В ИИ-ГИДЕ
+        // Это нужно, чтобы потом работал ЗОЖ-оптимизатор по ID
+        // ==========================================
+        try {
+            const publishToAiData = {
+                recipe_id: createdRecipeId, // ID из C# базы
+                title: title,
+                ingredients: ingredients.map(ing => ({
+                    name: ing.name,
+                    grams: Number(ing.amount) || 0
+                })),
+                steps: steps.map(s => s.description),
+                tags: [selectedMeal, selectedDish].filter(Boolean)
+            };
+
+            // Отправляем ИИ-сервису через наш прокси /ai
+            await api.post('/ai/api/recipes/publish', publishToAiData);
+            console.log("Рецепт успешно зарегистрирован в базе ИИ-гида");
+        } catch (err) {
+            console.error("ИИ-гид не смог сохранить рецепт:", err);
+            // Не критично, рецепт в основной базе уже есть, 
+            // просто ИИ-фичи для него временно не будут работать
+        }
+
+        // Очищаем форму или перекидываем на страницу рецепта
         alert("Рецепт успешно опубликован!");
-        // navigate(`/recipes/${createdRecipeId}`); // Раскомментируй, когда будет страница рецепта
+        // navigate(`/recipes/${createdRecipeId}`); 
     };
 
     return (
