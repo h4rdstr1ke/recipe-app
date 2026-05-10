@@ -49,15 +49,6 @@ export default function Feed() {
     return (
         <div className='w-[100%] flex items-center flex-col'>
             {isMobile ?
-                (<div className='flex px-4 w-[100%] mt-2 mb-2'>
-                    <h1 className='font-montserrat text-[30px] text-[#000000] tracking-[0.2px] font-thin leading-relaxed'>Приготовить сегодня</h1>
-                </div>)
-                :
-                (<div className='flex justify-start w-[1185px] mt-[30px] mb-[30px]'>
-                    <h1 className='font-montserrat text-[48px] text-[#000000] tracking-[0.2px] font-thin leading-7'>Приготовить сегодня</h1>
-                </div>)}
-
-            {isMobile ?
                 (<div className='flex flex-col gap-y-6 max-w-[100%]'>
                     {filteredAndSortedPosts.map(post => (
                         <Publication key={post.id} post={post} />

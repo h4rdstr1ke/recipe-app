@@ -17,7 +17,7 @@ export default function PostEditPage() {
     const { id: recipeId } = useParams<{ id: string }>(); // Берем ID рецепта из URL
     const navigate = useNavigate();
 
-    const { fetchPostById, currentPost, updateRecipe, updateRecipeStep, createRecipeStep, deleteRecipeStep, isLoading } = usePostStore();
+    const { fetchPostById, currentPost, updateRecipe, deleteRecipe, updateRecipeStep, createRecipeStep, deleteRecipeStep, isLoading } = usePostStore();
 
     // 1. СТЕЙТЫ БАЗОВОЙ ИНФОРМАЦИИ
     const [title, setTitle] = useState('');
@@ -139,6 +139,24 @@ export default function PostEditPage() {
     // ==========================================
     // ОБРАБОТЧИКИ
     // ==========================================
+
+    const handleDelete = async () => {
+        if (!recipeId) return;
+
+        // Обязательно спрашиваем подтверждение
+        const confirmed = window.confirm("Вы уверены, что хотите полностью удалить этот рецепт? Это действие нельзя отменить.");
+
+        if (confirmed) {
+            const isDeleted = await deleteRecipe(recipeId);
+            if (isDeleted) {
+                alert("Рецепт удален.");
+                navigate('/'); // Уводим пользователя на главную
+            } else {
+                alert("Не удалось удалить рецепт. Попробуйте позже.");
+            }
+        }
+    };
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -277,6 +295,16 @@ export default function PostEditPage() {
                 <ButtonBackRecipes />
             </div>
             <div className="md:max-w-[638px] w-[100%] flex flex-col">
+                <div className="flex w-[100%] mb-[30px] justify-end">
+                    <button
+                        type="button"
+                        className="font-montserrat text-[16px] text-[#E0232E] font-bold hover:underline disabled:opacity-50"
+                        onClick={handleDelete}
+                        disabled={isLoading}
+                    >
+                        Удалить рецепт
+                    </button>
+                </div>
 
                 {/* ---------------- БЛОК: ФОТО ---------------- */}
                 <div className="flex flex-col items-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">

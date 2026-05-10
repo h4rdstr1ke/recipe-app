@@ -149,6 +149,22 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
 
                 try {
                     await api.put(`/api/recipes/${postId}/like`, { isLiked: !isLiked });
+                    if (!isLiked) {
+                        const userId = useAuthStore.getState().user?.id;
+                        if (userId) {
+                            // Используем Fire-and-Forget (отправили и забыли, без await), 
+                            // чтобы не тормозить интерфейс, если питон-сервер долго думает
+                            api.post('/ai/api/recommendations/interactions', {
+                                user_ids: [userId],
+                                recipe_ids: [postId],
+                                interactions: [{
+                                    user_id: userId,
+                                    recipe_id: postId,
+                                    rating: 5.0 // Лайк = максимальная симпатия
+                                }]
+                            }).catch(err => console.log("ИИ пропустил лог лайка:", err));
+                        }
+                    }
                 } catch (error: unknown) {
                     // Умный откат
                     set(state => {
@@ -186,6 +202,20 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
 
                 try {
                     await api.put(`/api/recipes/${postId}/favorite`, { isFavorite: !isFavorited });
+                    if (!isFavorited) {
+                        const userId = useAuthStore.getState().user?.id;
+                        if (userId) {
+                            api.post('/ai/api/recommendations/interactions', {
+                                user_ids: [userId],
+                                recipe_ids: [postId],
+                                interactions: [{
+                                    user_id: userId,
+                                    recipe_id: postId,
+                                    rating: 5.0 // Избранное = тоже сильный позитивный сигнал
+                                }]
+                            }).catch(err => console.log("ИИ пропустил лог закладки:", err));
+                        }
+                    }
                 } catch (error: unknown) {
                     // Умный откат
                     set(state => {

@@ -22,6 +22,7 @@ interface PostStore {
     updateRecipe: (recipeId: string, formData: FormData) => Promise<boolean>;
     updateRecipeStep: (recipeId: string, stepId: string, formData: FormData) => Promise<boolean>;
     deleteRecipeStep: (recipeId: string, stepId: string) => Promise<boolean>;
+    deleteRecipe: (id: string) => Promise<boolean>;
     /** Устанавливает оценку (рейтинг) рецепту. */
     setRecipeRating: (recipeId: string, value: number) => Promise<void>;
     /** Оптимистично обновляет счетчик лайков в стейте. */
@@ -153,7 +154,22 @@ export const usePostStore = create<PostStore>((set, get) => ({
             return null;
         }
     },
-
+    deleteRecipe: async (id: string) => {
+        set({ isLoading: true, error: null });
+        try {
+            await api.delete(`/api/recipes/${id}`);
+            // Убираем удаленный пост из локального списка, чтобы лента обновилась
+            set(state => ({
+                posts: state.posts.filter(p => p.id !== id),
+                isLoading: false
+            }));
+            return true;
+        } catch (error: any) {
+            console.error("Ошибка при удалении рецепта:", error);
+            set({ error: 'Не удалось удалить рецепт', isLoading: false });
+            return false;
+        }
+    },
     createRecipeStep: async (recipeId, formData) => {
         try {
             await api.post(`/api/recipes/${recipeId}/steps`, formData, {
