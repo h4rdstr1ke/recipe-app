@@ -81,7 +81,7 @@ export const MOCK_POSTS: Post[] = [
         id: '1',
         authorId: MOCK_USERS['user1'].id,
         username: MOCK_USERS['user1'].username,
-        firstName: MOCK_USERS['user1'].firstName,
+        name: MOCK_USERS['user1'].firstName,
         authorAvatar: MOCK_USERS['user1'].authorAvatar,
         image: testPostImage,
         title: 'Картошка по-деревенски',
@@ -97,18 +97,15 @@ export const MOCK_POSTS: Post[] = [
         portions: 1,
         nutrition: { calories: 320, protein: 8, fat: 12, carbs: 45 },
         products: [
-            { name: 'Картофель', quantity: 500, unit: 'г' },
-            { name: 'Чеснок', quantity: 3, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Картофель вымыть и почистить', image: '/steps/potato1.png' }
         ]
     },
     {
         id: '2',
         authorId: MOCK_USERS['user2'].id,
         username: MOCK_USERS['user2'].username,
-        firstName: MOCK_USERS['user2'].firstName,
+        name: MOCK_USERS['user2'].firstName,
         authorAvatar: MOCK_USERS['user2'].authorAvatar,
         image: testPastaImage,
         title: 'Классическая паста Карбонара',
@@ -124,19 +121,15 @@ export const MOCK_POSTS: Post[] = [
         portions: 2,
         nutrition: { calories: 550, protein: 22, fat: 30, carbs: 60 },
         products: [
-            { name: 'Спагетти', quantity: 200, unit: 'г' },
-            { name: 'Яичный желток', quantity: 3, unit: 'шт' },
-            { name: 'Пармезан', quantity: 50, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Отварить пасту до состояния аль-денте', image: '/steps/pasta1.png' }
         ]
     },
     {
         id: '3',
         authorId: MOCK_USERS['user3'].id,
         username: MOCK_USERS['user3'].username,
-        firstName: MOCK_USERS['user3'].firstName,
+        name: MOCK_USERS['user3'].firstName,
         authorAvatar: MOCK_USERS['user3'].authorAvatar,
         image: testBowlImage,
         title: 'Зеленый смузи боул',
@@ -152,18 +145,15 @@ export const MOCK_POSTS: Post[] = [
         portions: 1,
         nutrition: { calories: 210, protein: 5, fat: 4, carbs: 38 },
         products: [
-            { name: 'Шпинат', quantity: 100, unit: 'г' },
-            { name: 'Банан', quantity: 1, unit: 'шт' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Взбить все ингредиенты в блендере до однородности', image: '/steps/smoothie1.png' }
         ]
     },
     {
         id: '4',
         authorId: MOCK_USERS['user4'].id,
         username: MOCK_USERS['user4'].username,
-        firstName: MOCK_USERS['user4'].firstName,
+        name: MOCK_USERS['user4'].firstName,
         authorAvatar: MOCK_USERS['user4'].authorAvatar,
         image: testSteikImage,
         title: 'Стейк Рибай с маслом',
@@ -179,18 +169,16 @@ export const MOCK_POSTS: Post[] = [
         portions: 1,
         nutrition: { calories: 600, protein: 45, fat: 48, carbs: 0 },
         products: [
-            { name: 'Говяжий стейк', quantity: 350, unit: 'г' },
-            { name: 'Сливочное масло', quantity: 30, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Обжарить мясо на раскаленной сковороде по 3 минуты с каждой стороны', image: '/steps/steak1.png' }
+
         ]
     },
     {
         id: '5',
         authorId: MOCK_USERS['user5'].id,
         username: MOCK_USERS['user5'].username,
-        firstName: MOCK_USERS['user5'].firstName,
+        name: MOCK_USERS['user5'].firstName,
         authorAvatar: MOCK_USERS['user5'].authorAvatar,
         image: testRamenImage,
         title: 'Домашний Рамен',
@@ -206,18 +194,15 @@ export const MOCK_POSTS: Post[] = [
         portions: 2,
         nutrition: { calories: 480, protein: 28, fat: 18, carbs: 52 },
         products: [
-            { name: 'Пшеничная лапша', quantity: 150, unit: 'г' },
-            { name: 'Свиная грудинка', quantity: 100, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Залить лапшу готовым горячим бульоном и добавить топпинги', image: '/steps/ramen1.png' }
         ]
     },
     {
         id: '6',
         authorId: MOCK_USERS['user6'].id,
         username: MOCK_USERS['user6'].username,
-        firstName: MOCK_USERS['user6'].firstName,
+        name: MOCK_USERS['user6'].firstName,
         authorAvatar: MOCK_USERS['user6'].authorAvatar,
         image: testBurgerImage,
         title: 'Бургер "Черная Мамба"',
@@ -233,18 +218,15 @@ export const MOCK_POSTS: Post[] = [
         portions: 1,
         nutrition: { calories: 850, protein: 35, fat: 55, carbs: 40 },
         products: [
-            { name: 'Булочка бриошь', quantity: 1, unit: 'шт' },
-            { name: 'Фарш говяжий', quantity: 180, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Сформировать котлету и обжарить до Medium Rare', image: '/steps/burger1.png' }
         ]
     },
     {
         id: '7',
         authorId: MOCK_USERS['user7'].id,
         username: MOCK_USERS['user7'].username,
-        firstName: MOCK_USERS['user7'].firstName,
+        name: MOCK_USERS['user7'].firstName,
         authorAvatar: MOCK_USERS['user7'].authorAvatar,
         image: testFoundanImage,
         title: 'Шоколадный Фондан',
@@ -260,11 +242,8 @@ export const MOCK_POSTS: Post[] = [
         portions: 1,
         nutrition: { calories: 420, protein: 6, fat: 28, carbs: 36 },
         products: [
-            { name: 'Темный шоколад', quantity: 100, unit: 'г' },
-            { name: 'Мука', quantity: 40, unit: 'г' }
         ],
         steps: [
-            { stepNumber: 1, description: 'Выпекать при 200°C ровно 8 минут', image: '/steps/fondant1.png' }
         ]
     }
 ];
@@ -272,65 +251,65 @@ export const MOCK_POSTS: Post[] = [
 export const MOCK_TOP_AUTHORS: TopAuthor[] = [
     {
         id: MOCK_USERS['user1'].id,
-        username: MOCK_USERS['user1'].username,
+        nickname: MOCK_USERS['user1'].username,
         avatarUrl: MOCK_USERS['user1'].authorAvatar,
-        postsCount: 2,
+        recipesCount: 2,
         subscribersCount: 16,
         ratingScore: 121,
     },
     {
         id: MOCK_USERS['user2'].id,
-        username: MOCK_USERS['user2'].username,
+        nickname: MOCK_USERS['user2'].username,
         avatarUrl: MOCK_USERS['user2'].authorAvatar,
-        postsCount: 29,
+        recipesCount: 29,
         subscribersCount: 423,
         ratingScore: 4533,
     },
     {
         id: MOCK_USERS['user3'].id,
-        username: MOCK_USERS['user3'].username,
+        nickname: MOCK_USERS['user3'].username,
         avatarUrl: MOCK_USERS['user3'].authorAvatar,
-        postsCount: 14,
+        recipesCount: 14,
         subscribersCount: 254,
         ratingScore: 4100,
     },
     {
         id: MOCK_USERS['user4'].id,
-        username: MOCK_USERS['user4'].username,
+        nickname: MOCK_USERS['user4'].username,
         avatarUrl: MOCK_USERS['user4'].authorAvatar,
-        postsCount: 45,
+        recipesCount: 45,
         subscribersCount: 123,
         ratingScore: 3200,
     },
     {
         id: MOCK_USERS['user5'].id,
-        username: MOCK_USERS['user5'].username,
+        nickname: MOCK_USERS['user5'].username,
         avatarUrl: MOCK_USERS['user5'].authorAvatar,
-        postsCount: 75,
+        recipesCount: 75,
         subscribersCount: 571,
         ratingScore: 3133,
     },
     {
         id: MOCK_USERS['user6'].id,
-        username: MOCK_USERS['user6'].username,
+        nickname: MOCK_USERS['user6'].username,
         avatarUrl: MOCK_USERS['user6'].authorAvatar,
-        postsCount: 5,
+        recipesCount: 5,
         subscribersCount: 23,
         ratingScore: 970,
     },
     {
         id: MOCK_USERS['user7'].id,
-        username: MOCK_USERS['user7'].username,
+        nickname: MOCK_USERS['user7'].username,
         avatarUrl: MOCK_USERS['user7'].authorAvatar,
-        postsCount: 19,
+        recipesCount: 19,
         subscribersCount: 21,
         ratingScore: 653,
     }
 ];
 
 export const MOCK_USER_SETTINGS: UserSettings = {
-    allergens: ['Картофель', 'Орехи'],
-    unwanted: ['Чеснок', 'Мука'],
+    allergens: [],
+    unwanted: [],
     subscriptions: [...MOCK_USERS['user1'].subscriptions], // id авторов, на которых подписан
     likedPosts: ['2', '5', '7'],
     favoritePosts: ['2', '4', '7'],

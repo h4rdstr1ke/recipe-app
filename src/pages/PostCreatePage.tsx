@@ -25,7 +25,7 @@ export default function PostCreatePage() {
 
     const [selectedMeal, setSelectedMeal] = useState<string>('');
     const [selectedDish, setSelectedDish] = useState<string>('');
-
+    const navigate = useNavigate();
     // 2. СТЕЙТЫ И ЛОГИКА ДЛЯ ФОТОГРАФИИ ОБЛОЖКИ
     const [coverImage, setCoverImage] = useState<File | null>(null);
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
@@ -350,7 +350,7 @@ export default function PostCreatePage() {
 
         // Очищаем форму или перекидываем на страницу рецепта
         alert("Рецепт успешно опубликован!");
-        // navigate(`/recipes/${createdRecipeId}`); 
+        navigate(`/publication/${createdRecipeId}`);
     };
 
     return (
@@ -361,14 +361,14 @@ export default function PostCreatePage() {
             <div className="max-w-[638px] w-[100%] flex flex-col">
 
                 {/* ---------------- БЛОК: ФОТО ---------------- */}
-                <div className="flex flex-col items-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">
+                <div className="flex flex-col h-[330px] items-center justify-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">
 
                     {/* Если картинка выбрана - показываем её, если нет - показываем иконки */}
                     {coverImagePreview ? (
                         <img
                             src={coverImagePreview}
                             alt="Обложка рецепта"
-                            className="w-full h-[250px] object-cover rounded-[8px] absolute top-0 left-0 z-0"
+                            className="w-full h-[100%] object-cover rounded-[8px] absolute top-0 left-0 z-0"
                         />
                     ) : (
                         <div className="flex gap-3 z-10">
@@ -682,12 +682,12 @@ export default function PostCreatePage() {
                                 <img
                                     src={step.imagePreview}
                                     alt={`Фото шага ${index + 1}`}
-                                    className="w-full h-[200px] object-cover rounded-[8px] mt-4"
+                                    className="w-full h-[300px] object-cover rounded-[8px] mt-4"
                                 />
                             )}
 
                             {/* Кнопка загрузки фото для конкретного шага */}
-                            <div className="flex justify-between items-end mt-4">
+                            <div className="flex justify-between items-end mt-6">
                                 <input
                                     type="file"
                                     id={`step-img-${step.id}`}
@@ -698,7 +698,7 @@ export default function PostCreatePage() {
                                 <button
                                     type="button"
                                     onClick={() => document.getElementById(`step-img-${step.id}`)?.click()}
-                                    className='w-[175px] h-[30px] text-[14px]'
+                                    className='font-montserrat rounded-[5px] font-bold tracking-[0.2px] text-[#FFFFFF] w-[175px] h-[30px] text-[14px] bg-[#23A6F0] hover:bg-[#7ACDFC]'
                                 >
                                     {step.imagePreview ? 'Изменить фото' : 'Загрузить фото'}
                                 </button>
@@ -740,7 +740,7 @@ export default function PostCreatePage() {
                                     <button
                                         type="button"
                                         onClick={() => handleToggleTimer(step.id, true)}
-                                        className='w-[175px] h-[30px] text-[14px] text-white mt-[17px] ml-auto bg-[#8F94989C] rounded-[5px] hover:bg-[#7ACDFC] transition-colors border-none'
+                                        className='ml-auto mt-[16px] font-montserrat rounded-[5px] font-bold tracking-[0.2px] text-[#FFFFFF] w-[175px] h-[30px] text-[14px] bg-[#23A6F0] hover:bg-[#7ACDFC]'
                                     >
                                         Добавить таймер
                                     </button>
@@ -763,7 +763,7 @@ export default function PostCreatePage() {
                 <div className="flex justify-center mt-[14px] mb-[50px]">
                     <button
                         type="button"
-                        className='w-[350px] h-[55px] text-[20px] rounded-[9px]'
+                        className='font-montserrat font-bold text-[#FFFFFF] w-[350px] h-[55px] text-[20px] rounded-[9px] bg-[#23A6F0] hover:bg-[#7ACDFC]'
                         onClick={handleSubmit}
                         disabled={isLoading}
                     >

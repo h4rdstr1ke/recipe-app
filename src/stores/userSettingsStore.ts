@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { UserSettings } from '../types/index';
 import { useAuthStore } from './authStore';
 import { api } from '../api/api';
-import axios from 'axios';
+//import axios from 'axios';
 
 interface UserSettingsStore {
     settings: UserSettings | null;

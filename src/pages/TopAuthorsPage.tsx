@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useTopAuthorStore } from '../stores/topAuthorStore';
+import { useUserSettingsStore } from '../stores/userSettingsStore'
 
-import Button from "../components/button/Button"
+//import Button from "../components/button/Button"
 import DefaultAvatar from "../assets/defaultAvatar.svg"
 import Medal from "../assets/icons/medal.svg?react"
 import { Link } from 'react-router-dom';
@@ -15,7 +16,7 @@ export default function TopAuthorsPage() {
     // 1. ДАННЫЕ ИЗ СТОРА
     // ---------------------------------------------------------
     const { authors, isLoading, error, fetchTopAuthors } = useTopAuthorStore();
-
+    const { isSubscribed, toggleSubscription } = useUserSettingsStore();
     // Загружаем авторов при первом открытии страницы
     useEffect(() => {
         fetchTopAuthors();
@@ -74,65 +75,78 @@ export default function TopAuthorsPage() {
 
                 {/* Строка с данными - та же сетка */}
                 <div className="flex flex-col gap-[15px] md:gap-[30px]">
-                    {authors.map((author, index) => (
-                        <div
-                            key={author.id}
-                            className="grid grid-cols-[50px_repeat(auto-fit,minmax(60px,1fr))] md:grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[45px] md:h-[65px] md:px-[35px]"
-                        >
-                            {/* Топ и Медаль */}
-                            <div className="flex items-center justify-center md:gap-2">
-                                <span className="font-montserrat font-semibold md:text-[24px]">
-                                    {index + 1} {/* index начинается с 0, поэтому +1 */}
-                                </span>
-                                <Medal className={`w-[20px] md:w-[26px] ${getMedalClass(index)}`} />
-                            </div>
-                            {/* МОБИЛЬНАЯ ВЕРСИЯ: Аватар + Никнейм вместе */}
-                            <Link
-                                to={`/profile/${author.id}`}
-                                className="flex md:hidden items-center gap-2 justify-center w-full px-2 hover:opacity-80 transition-opacity"
+                    {authors.map((author, index) => {
+                        const subscribed = isSubscribed(author.id);
+                        return (
+                            <div
+                                key={author.id}
+                                className="grid grid-cols-[50px_repeat(auto-fit,minmax(60px,1fr))] md:grid-cols-[60px_120px_160px_80px_160px_120px_170px] items-center justify-items-center bg-[#F1F1F1] rounded-[10px] h-[45px] md:h-[65px] md:px-[35px]"
                             >
-                                <img alt="avatar" src={author.avatarUrl || DefaultAvatar} className="w-[25px] h-[25px] object-cover rounded-full select-none" />
-                                <span className="font-montserrat font-semibold text-[12px] text-[#23A6F0] underline truncate max-w-[80px]">
+                                {/* Топ и Медаль */}
+                                <div className="flex items-center justify-center md:gap-2">
+                                    <span className="font-montserrat font-semibold md:text-[24px]">
+                                        {index + 1} {/* index начинается с 0, поэтому +1 */}
+                                    </span>
+                                    <Medal className={`w-[20px] md:w-[26px] ${getMedalClass(index)}`} />
+                                </div>
+                                {/* МОБИЛЬНАЯ ВЕРСИЯ: Аватар + Никнейм вместе */}
+                                <Link
+                                    to={`/profile/${author.id}`}
+                                    className="flex md:hidden items-center gap-2 justify-center w-full px-2 hover:opacity-80 transition-opacity"
+                                >
+                                    <img alt="avatar" src={author.avatarUrl || DefaultAvatar} className="w-[25px] h-[25px] object-cover rounded-full select-none" />
+                                    <span className="font-montserrat font-semibold text-[12px] text-[#23A6F0] underline truncate max-w-[80px]">
+                                        {author.nickname}
+                                    </span>
+                                </Link>
+                                {/* Аватарка (если у автора нет аватарки, ставим дефолтную) */}
+                                <Link to={`/profile/${author.id}`} className="hidden md:block hover:scale-105 transition-transform">
+                                    <img
+                                        alt="avatar"
+                                        src={author.avatarUrl || DefaultAvatar}
+                                        className="md:w-[50px] md:h-[50px] object-cover rounded-full select-none"
+                                    />
+                                </Link>
+
+                                {/* Никнейм */}
+                                {/* ДЕСКТОПНАЯ ВЕРСИЯ: Никнейм отдельно */}
+                                <Link
+                                    to={`/profile/${author.id}`}
+                                    className="hidden md:block font-montserrat font-semibold md:text-[24px] text-[#23A6F0] underline hover:text-[#1a7db8] transition-colors"
+                                >
                                     {author.nickname}
+                                </Link>
+
+                                {/* Посты */}
+                                <span className="font-montserrat font-semibold md:text-[24px]">
+                                    {author.recipesCount}
                                 </span>
-                            </Link>
-                            {/* Аватарка (если у автора нет аватарки, ставим дефолтную) */}
-                            <Link to={`/profile/${author.id}`} className="hidden md:block hover:scale-105 transition-transform">
-                                <img
-                                    alt="avatar"
-                                    src={author.avatarUrl || DefaultAvatar}
-                                    className="md:w-[50px] md:h-[50px] object-cover rounded-full select-none"
-                                />
-                            </Link>
 
-                            {/* Никнейм */}
-                            {/* ДЕСКТОПНАЯ ВЕРСИЯ: Никнейм отдельно */}
-                            <Link
-                                to={`/profile/${author.id}`}
-                                className="hidden md:block font-montserrat font-semibold md:text-[24px] text-[#23A6F0] underline hover:text-[#1a7db8] transition-colors"
-                            >
-                                {author.nickname}
-                            </Link>
+                                {/* Подписчики */}
+                                <span className="font-montserrat font-semibold md:text-[24px]">
+                                    {author.subscribersCount}
+                                </span>
 
-                            {/* Посты */}
-                            <span className="font-montserrat font-semibold md:text-[24px]">
-                                {author.recipesCount}
-                            </span>
+                                {/* Рейтинг */}
+                                <span className="font-montserrat font-semibold md:text-[24px]">
+                                    {author.ratingScore}
+                                </span>
 
-                            {/* Подписчики */}
-                            <span className="font-montserrat font-semibold md:text-[24px]">
-                                {author.subscribersCount}
-                            </span>
-
-                            {/* Рейтинг */}
-                            <span className="font-montserrat font-semibold md:text-[24px]">
-                                {author.ratingScore}
-                            </span>
-
-                            {/* Подписка */}
-                            <Button className="text-[14px] md:w-[134px] md:h-[28px] hidden md:block">Подписаться</Button>
-                        </div>
-                    ))}
+                                {/* Подписка */}
+                                {/*<Button className="text-[14px] md:w-[134px] md:h-[28px] hidden md:block">Подписаться</Button> */}
+                                <button
+                                    onClick={() => toggleSubscription(author.id)}
+                                    className={`w-[130px] h-[32px] rounded-[5px] font-montserrat font-bold text-[14px] tracking-[0.2px] text-white transition-colors 
+                                        ${subscribed
+                                            ? 'bg-[#8F94989C] hover:bg-[#7ACDFC]'
+                                            : 'bg-[#23A6F0] hover:bg-[#7ACDFC]'
+                                        }`}
+                                >
+                                    {subscribed ? 'Вы подписаны' : 'Подписаться'}
+                                </button>
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </div>

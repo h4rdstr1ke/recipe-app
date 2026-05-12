@@ -40,7 +40,7 @@ export default function PublicationPage() {
     // Если юзер залогинен, подтягиваем его настройки (лайки/сохраненки).
     // Без этого иконки лайков на самом рецепте не будут знать, закрашиваться им или нет.
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated()) {
             fetchSettings();
         }
     }, [isAuthenticated, fetchSettings]);

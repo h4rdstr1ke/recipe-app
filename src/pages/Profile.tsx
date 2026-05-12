@@ -181,7 +181,7 @@ export default function Profile() {
                 ) : (
                     <div className='flex gap-4 md:gap-8 mt-[20px] md:mt-[40px]'>
                         <button
-                            onClick={() => isAuthenticated && toggleSubscription(currentProfile.id)}
+                            onClick={() => isAuthenticated() && toggleSubscription(currentProfile.id)}
                             className={`w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
                                 }`}
                         >

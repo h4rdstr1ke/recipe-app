@@ -43,6 +43,7 @@ export const useFilteredPosts = () => {
         }
 
         // --- ИСКЛЮЧЕНИЕ АЛЛЕРГЕНОВ ---
+        /*
         if (excludeAllergens && settings?.allergens?.length) {
             result = result.filter(post => {
                 const hasAllergen = post.products?.some(product =>
@@ -51,7 +52,7 @@ export const useFilteredPosts = () => {
                 return !hasAllergen;
             });
         }
-
+        */
         // --- ФИЛЬТРЫ ИЗ МОДАЛКИ ---
 
         // Фильтр по "Типу приема пищи" (mealType)

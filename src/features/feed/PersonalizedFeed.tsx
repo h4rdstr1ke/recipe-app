@@ -9,7 +9,6 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 export default function PersonalizedFeed() {
     const [recipes, setRecipes] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-
     const user = useAuthStore(state => state.user);
     const isAuthenticated = useAuthStore(state => !!state.token);
 
@@ -73,7 +72,7 @@ export default function PersonalizedFeed() {
     return (
         <div className='w-[100%] flex items-center flex-col mt-4 md:mt-8 mb-8 pb-8 border-b-[2px] border-dashed border-[#E6E6E6]'>
             {/* Заголовок блока */}
-
+            {isLoading && <div className="col-span-2 text-center">Загрузка...</div>}
 
             {/* Сетка рецептов (используем те же классы, что и Feed.tsx) */}
             {isMobile ? (

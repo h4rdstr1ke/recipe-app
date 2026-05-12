@@ -307,9 +307,9 @@ export default function PostEditPage() {
                 </div>
 
                 {/* ---------------- БЛОК: ФОТО ---------------- */}
-                <div className="flex flex-col items-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">
+                <div className="flex flex-col h-[330px] justify-center items-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">
                     {displayCover ? (
-                        <img src={displayCover} alt="Обложка" className="w-full h-[250px] object-cover rounded-[8px] absolute top-0 left-0 z-0" />
+                        <img src={displayCover} alt="Обложка" className="w-full h-[100%] object-cover rounded-[8px] absolute top-0 left-0 z-0" />
                     ) : (
                         <div className="flex gap-3 z-10">
                             <PublicationAdd className="w-[105px] h-[102px] text-[#E6E6E6] rotate-[-10.52deg]" />
@@ -447,11 +447,11 @@ export default function PostEditPage() {
                                     )}
                                 </div>
 
-                                {displayStepImg && <img src={displayStepImg} alt={`Шаг ${index + 1}`} className="w-full h-[200px] object-cover rounded-[8px] mt-4" />}
+                                {displayStepImg && <img src={displayStepImg} alt={`Шаг ${index + 1}`} className="w-full h-[380px] object-cover rounded-[8px] mt-4" />}
 
                                 <div className="flex justify-between items-end mt-4">
                                     <input type="file" id={`step-img-${step.id}`} className="hidden" accept="image/*" onChange={(e) => handleStepImageChange(step.id, e)} />
-                                    <button type="button" onClick={() => document.getElementById(`step-img-${step.id}`)?.click()} className='w-[175px] h-[30px] text-[14px]'>
+                                    <button type="button" onClick={() => document.getElementById(`step-img-${step.id}`)?.click()} className='font-montserrat w-[175px] h-[30px] text-[14px] bg-[#23A6F0] tracking-[0.2px] text-[#FFFFFF] font-bold rounded-[5px]'>
                                         {displayStepImg ? 'Изменить фото' : 'Загрузить фото'}
                                     </button>
                                 </div>
