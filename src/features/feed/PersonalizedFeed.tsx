@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api/api';
+import { aiApi } from '../../api/aiApi';
 import { mapRecipeDtoToPost } from '../../utils/mappers';
 import type { Post } from '../../types/index';
 import Publication from './Publication';
@@ -22,7 +23,7 @@ export default function PersonalizedFeed() {
             setIsLoading(true);
             try {
                 //  Стучимся к ИИ за списком подходящих рецептов
-                const aiResponse = await api.post('/ai/api/recommendations/personalized', {
+                const aiResponse = await aiApi.post('/api/recommendations/personalized', {
                     user_id: user.id,
                     top_k: 4 // Покажем 4 самых подходящих рецепта временно
                 });

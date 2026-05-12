@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../../../api/api'; // Проверь правильность пути до твоего api.ts
+import { aiApi } from '../../../api/aiApi';
 
 // Типы, которые возвращает ИИ согласно Swagger
 type Suggestion = {
@@ -30,7 +30,7 @@ export default function RecipeOptimizer({ recipeId }: RecipeOptimizerProps) {
         setIsLoading(true);
         try {
             // Запрашиваем замены у ИИ через наш прокси
-            const response = await api.post('/ai/api/recipes/optimize-substitutions', {
+            const response = await aiApi.post('/api/recipes/optimize-substitutions', {
                 recipe_id: recipeId,
                 goal: targetGoal,
                 max_replacements: 3

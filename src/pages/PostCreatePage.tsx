@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react" // Добавили useRef
 import { usePostStore } from "../stores/postStore"
 import { useNavigate } from 'react-router-dom';
 import { api } from "../api/api"
+import { aiApi } from "../api/aiApi"
 
 const MEAL_TYPES = ['Завтрак', 'Обед', 'Полдник', 'Ужин', 'Перекус'];
 const DISH_TYPES = ['Первые блюда', 'Вторые блюда', 'Салаты', 'Закуски', 'Выпечка', 'Соусы и маринады', 'Заготовки', 'Десерты', 'Напитки', 'Гарниры'];
@@ -176,7 +177,7 @@ export default function PostCreatePage() {
             };
 
             // Отправляем запрос через наш прокси /ai
-            const response = await api.post('/ai/api/recipes/generate-description', requestData);
+            const response = await aiApi.post('/api/recipes/generate-description', requestData);
 
             if (response.data && response.data.description) {
                 // Вставляем сгенерированный текст прямо в инпут описания
@@ -256,7 +257,7 @@ export default function PostCreatePage() {
             };
 
             // Отправляем запрос к ИИ (через наш прокси /ai)
-            const nutritionRes = await api.post('/ai/api/recipes/nutrition-per-100g', nutritionPayload);
+            const nutritionRes = await aiApi.post('/api/recipes/nutrition-per-100g', nutritionPayload);
 
             if (nutritionRes.data && nutritionRes.data.per_100g) {
                 const per100 = nutritionRes.data.per_100g;
@@ -340,7 +341,7 @@ export default function PostCreatePage() {
             };
 
             // Отправляем ИИ-сервису через наш прокси /ai
-            await api.post('/ai/api/recipes/publish', publishToAiData);
+            await aiApi.post('/api/recipes/publish', publishToAiData);
             console.log("Рецепт успешно зарегистрирован в базе ИИ-гида");
         } catch (err) {
             console.error("ИИ-гид не смог сохранить рецепт:", err);

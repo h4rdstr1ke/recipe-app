@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../../api/api';
+import { aiApi } from '../../../api/aiApi';
 import type { Post } from '../../../types/index';
 import { mapRecipeDtoToPost } from '../../../utils/mappers';
 // Временно ищет по по похожим ингридиентам, так как рецепт холодный, similar-recipes (Умный поиск по смыслу и поведению), останется только это
@@ -20,7 +21,7 @@ export default function SimilarRecipes({ recipeId }: SimilarRecipesProps) {
 
                 // ПОПЫТКА 1: Умные рекомендации по поведению
                 try {
-                    const response = await api.post(`/ai/api/recommendations/similar-recipes`, {
+                    const response = await aiApi.post(`/api/recommendations/similar-recipes`, {
                         recipe_id: recipeId,
                         top_k: 3
                     });
@@ -30,7 +31,7 @@ export default function SimilarRecipes({ recipeId }: SimilarRecipesProps) {
                 } catch (error: any) {
                     // ПОПЫТКА 2: Если рецепта нет в матрице, ищем похожие по ингредиентам
                     console.log("Рецепт новый, ищем похожие по составу...");
-                    const fallbackResponse = await api.post(`/ai/api/recommendations/similar-by-ingredients`, {
+                    const fallbackResponse = await aiApi.post(`/api/recommendations/similar-by-ingredients`, {
                         recipe_id: recipeId,
                         top_k: 3
                     });

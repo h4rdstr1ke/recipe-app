@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '../api/api';
+import { aiApi } from '../api/aiApi';
 
 // Типы, взятые из openapi.json
 export type ChatRole = 'user' | 'assistant';
@@ -39,7 +39,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         try {
             //  мы пишем /ai/api/chat, чтобы сработал наш Vite-прокси
-            const response = await api.post('/ai/api/chat', {
+            const response = await aiApi.post('/api/chat', {
                 messages: get().messages, // Отправляем историю, чтобы ИИ помнил контекст
                 recipe_id: recipeId || null
             });

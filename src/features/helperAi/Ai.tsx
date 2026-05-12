@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
-import { api } from '../../api/api';
+import { aiApi } from '../../api/aiApi';
 
 export default function Ai({ onClose }: { onClose: () => void }) {
     const { messages, isLoading, sendMessage } = useChatStore();
@@ -59,7 +59,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
             formData.append('image', file);
 
             // Отправляем фото на эндпоинт компьютерного зрения
-            const response = await api.post('/ai/api/vision/detect-products', formData, {
+            const response = await aiApi.post('/api/vision/detect-products', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 params: { conf_threshold: 0.3 } // Отсекаем неуверенные догадки ИИ
             });
