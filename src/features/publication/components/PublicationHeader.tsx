@@ -46,6 +46,37 @@ type PublicationHeaderProps = {
     hasUnwanted: boolean | null;
 };
 
+// Вспомогательная функция для правильного склонения русских слов
+const getPlural = (number: number, one: string, two: string, five: string) => {
+    let n = Math.abs(number) % 100;
+    let n1 = n % 10;
+    if (n > 10 && n < 20) return five;
+    if (n1 > 1 && n1 < 5) return two;
+    if (n1 === 1) return one;
+    return five;
+};
+
+// Функция превращения "01:30:00" в "1 час 30 минут"
+const formatCookingTime = (timeStr?: string) => {
+    if (!timeStr) return '';
+
+    // Разбиваем строку по двоеточию
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+
+    const hText = hours > 0 ? `${hours} ${getPlural(hours, 'час', 'часа', 'часов')}` : '';
+    const mText = minutes > 0 ? `${minutes} ${getPlural(minutes, 'минута', 'минуты', 'минут')}` : '';
+
+    if (hText && mText) return `${hText} ${mText}`;
+    if (hText) return hText;
+    if (mText) return mText;
+
+    return '0 минут'; // На случай "00:00:00"
+};
+
 export default function PublicationHeader({
     postId,
     avatar,
@@ -92,7 +123,7 @@ export default function PublicationHeader({
                     </div>
                     {!isMyPost && (
                         <button
-                            className={`w-[140px] h-[30px] md:w-[150px] md:h-[30px] rounded-[10px] md:rounded-[5px] transition-colors ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
+                            className={`w-[140px] h-[30px] md:w-[150px] md:h-[30px] rounded-[10px] md:rounded-[5px] active:scale-95 transition-all ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
                                 }`}
                             onClick={onSubscribe}
                         >
@@ -108,7 +139,7 @@ export default function PublicationHeader({
             <div className="relative mt-2">
                 <img src={image} className='md:h-[344px] object-cover w-[100%] border-[2px] border-[#E6E6E6] rounded-[10px]' alt="post" />
                 <div className='absolute bottom-4 right-2'>
-                    <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>{time}</span>
+                    <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] tracking-[0.2px] leading-7 font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>{formatCookingTime(time)}</span>
                 </div>
             </div>
 
@@ -118,19 +149,31 @@ export default function PublicationHeader({
                     <div className='flex items-center gap-2 md:gap-1'>
                         <LikeIcon
                             isLiked={isLiked}
-                            className={`cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
+                            className={`cursor-pointer 
+                                transition-transform duration-200 ease-out 
+                                hover:scale-105 
+                                active:scale-90 
+                                ${isLiked ? 'text-[#FF0000] drop-shadow-md' : 'text-black'}`}
                             onClick={onLike}
                         />
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
                     </div>
                     <div className='flex items-center gap-2 md:gap-1'>
-                        <CommentIcon className='w-[25px] cursor-pointer' onClick={onComment} />
+                        <CommentIcon className='
+                        transition-transform duration-200 ease-out 
+                                hover:scale-105 
+                                active:scale-90 
+                        w-[25px] cursor-pointer' onClick={onComment} />
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{commentsCount}</span>
                     </div>
                     <div className='flex items-center gap-2 md:gap-1'>
                         <FavoritesIcon
                             isFavorited={isFavorited}
-                            className={`cursor-pointer ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
+                            className={`cursor-pointer 
+                                transition-transform duration-200 ease-out 
+                                hover:scale-105 
+                                active:scale-90 
+                                ${isFavorited ? 'text-[#FFFF56] drop-shadow-md' : 'text-black'}`}
                             onClick={onFavorite}
                         />
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>

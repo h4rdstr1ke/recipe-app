@@ -169,9 +169,14 @@ export default function Publication({ post }: { post: Post }) {
                     >
                         <img src={displayAvatar} className='w-[35px] h-[35px] object-cover rounded-full select-none' alt="avatar" />
                     </Link>
-                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
-                        {post?.username}
-                    </span>
+                    <Link
+                        to={`/profile/${post.authorId}`}
+                        onClick={(e) => e.stopPropagation()} // Чтобы клик по аве не триггерил переход к посту
+                    >
+                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
+                            {post?.username}
+                        </span>
+                    </Link>
                 </div>
                 {/* Условие: если это мой пост, выводим текст, иначе — кнопку */}
                 {isMyPost ? (
@@ -212,21 +217,34 @@ export default function Publication({ post }: { post: Post }) {
             {/* Панель взаимодействия (Лайки, комменты, избранное) */}
             <div className='flex border-t-[2px] items-center justify-between'>
                 <div className='flex -mt-[2px] pb-[6px] pt-[7px] gap-4 md:gap-2 px-[7px] border-b-[2px] border-t-[2px] border-r-[2px] border-[#E6E6E6] rounded-r-[10px]'>
-                    <div className='flex items-center gap-2 md:gap-1' onClick={handleLike}>
+                    <div className='flex items-center gap-2 md:gap-1 cursor-pointer' onClick={handleLike}>
                         <LikeIcon
                             isLiked={isLiked}
-                            className={`w-[22px] h-[22px] md:w-[26px] md:h-[26px] ${isLiked ? 'text-[#FF0000]' : 'text-black'}`}
+                            className={`w-[22px] h-[22px] md:w-[26px] md:h-[26px] 
+                                transition-transform duration-200 ease-out 
+                                hover:scale-105 
+                                active:scale-90 
+                                ${isLiked ? 'text-[#FF0000] drop-shadow-md' : 'text-black'}`}
                         />
-                        <span className='font-montserrat md:text-[20px] font-medium'>{post.likesCount}</span>
+                        <span className='font-montserrat md:text-[20px] font-medium text-black'>
+                            {post.likesCount}
+                        </span>
                     </div>
                     <div className='flex items-center gap-2 md:gap-1' onClick={handleCommentClick}>
-                        <CommentIcon className='w-[22px] h-[22px] md:w-[25px] md:h-[25px]' />
+                        <CommentIcon className='w-[22px] h-[22px] md:w-[25px] md:h-[25px] 
+                        transition-transform duration-200 ease-out 
+                                hover:scale-105
+                        ' />
                         <span className='font-montserrat md:text-[20px] font-medium'>{post.commentsCount}</span>
                     </div>
                     <div className='flex items-center gap-2 md:gap-1' onClick={handleFavorite}>
                         <FavoritesIcon
                             isFavorited={isFavorited}
-                            className={`w-[22px] h-[22px] md:w-[25px] md:h-[25px] ${isFavorited ? 'text-[#FFFF56]' : 'text-black'}`}
+                            className={`w-[22px] h-[22px] md:w-[25px] md:h-[25px]
+                                transition-transform duration-200 ease-out 
+                                hover:scale-105 
+                                active:scale-90
+                                ${isFavorited ? 'text-[#FFFF56] drop-shadow-md' : 'text-black'}`}
                         />
                         <span className='font-montserrat md:text-[20px] font-medium'>{post.favoritesCount}</span>
                     </div>
@@ -239,8 +257,18 @@ export default function Publication({ post }: { post: Post }) {
                 {/* Предупреждения об аллергенах */}
                 {showWarnings && (
                     <div className='flex gap-2 mr-1'>
-                        {hasAllergen && <AllergenIcon className='w-[30px] h-[30px]' />}
-                        {hasUnwanted && <UnwnantedIcon className='w-[30px] h-[30px]' />}
+                        {hasAllergen && (<div className="relative group">
+                            <AllergenIcon className='w-[30px] h-[30px] cursor-help' />
+                            <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#DF1E1E] bg-[#FFDEDE] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E0232E] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                Содержит аллергены
+                            </div>
+                        </div>)}
+                        {hasUnwanted && (<div className="relative group">
+                            <UnwnantedIcon className='w-[30px] h-[30px] cursor-help' />
+                            <div className="absolute bottom-full mb-2 right-0 px-2 py-1 border-[1px] border-[#E77C40] bg-[#FFF6EF] font-montserrat font-medium text-[16px] tracking-[0.2px] leading-6 text-[#E77C40] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                Содержит нежелательные ингредиенты
+                            </div>
+                        </div>)}
                     </div>
                 )}
             </div>
