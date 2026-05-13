@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserSettings } from '../types/index';
 import { useAuthStore } from './authStore';
+import { useProfileStore } from './profileStore';
 import { api } from '../api/api';
 //import axios from 'axios';
 
@@ -94,7 +95,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                 if (!settings || !authorId) return;
 
                 const isSubbed = settings.subscriptions.includes(authorId);
-
+                const amount = isSubbed ? -1 : 1;
                 // Оптимистичное обновление
                 set({
                     settings: {
@@ -104,6 +105,22 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                             : [...settings.subscriptions, authorId]
                     }
                 });
+
+                //Оптимистичное обновление профиля
+                const profileStore = useProfileStore.getState();
+                const currentProfile = profileStore.currentProfile;
+                const myId = useAuthStore.getState().user?.id;
+
+                if (currentProfile) {
+                    // Сценарий А: Мы находимся на странице ЭТОГО автора (меняется число ЕГО подписчиков)
+                    if (currentProfile.id === authorId) {
+                        profileStore.updateCounters(amount, 'subscribers');
+                    }
+                    // Сценарий Б: Мы находимся в СВОЕМ профиле и отписываемся через модалку (меняется число НАШИХ подписок)
+                    else if (currentProfile.id === myId) {
+                        profileStore.updateCounters(amount, 'subscriptions');
+                    }
+                }
 
                 try {
                     await api.put(`/api/users/${authorId}/subscription`, { isSubscribed: !isSubbed });
@@ -123,6 +140,14 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                             error: 'Ошибка изменения подписки'
                         };
                     });
+                    // Откат счетчиков
+                    if (currentProfile) {
+                        if (currentProfile.id === authorId) {
+                            profileStore.updateCounters(-amount, 'subscribers');
+                        } else if (currentProfile.id === myId) {
+                            profileStore.updateCounters(-amount, 'subscriptions');
+                        }
+                    }
                 }
             },
 

@@ -23,6 +23,8 @@ interface ProfileStore {
     fetchSubscribersList: (userId: string) => Promise<void>;
     /** Загружает список подписок (на КОГО подписан userId). */
     fetchSubscriptionsList: (userId: string) => Promise<void>;
+    /** Оптимистично обновляет счетчики профиля (подписки/подписчики). */
+    updateCounters: (amount: number, type: 'subscribers' | 'subscriptions') => void;
     /** Очищает данные профиля при размонтировании компонента. */
     clearProfileData: () => void;
 }
@@ -138,7 +140,22 @@ export const useProfileStore = create<ProfileStore>((set) => ({
             set({ subscriptionsList: [] });
         }
     },
+    updateCounters: (amount, type) => set(state => {
+        if (!state.currentProfile) return state;
 
+        // Достаем текущее значение
+        const currentVal = type === 'subscribers'
+            ? state.currentProfile.subscribersCount
+            : state.currentProfile.subscriptionsCount;
+
+        return {
+            currentProfile: {
+                ...state.currentProfile,
+                // Обновляем значение, но не даем ему уйти в минус (Math.max)
+                [type === 'subscribers' ? 'subscribersCount' : 'subscriptionsCount']: Math.max(0, currentVal + amount)
+            }
+        };
+    }),
     clearProfileData: () => set({
         currentProfile: null,
         userPosts: [],
