@@ -10,6 +10,24 @@ export const api = axios.create({
     withCredentials: true
 });
 
+// ==========================================
+// НОВАЯ ЛОГИКА ОЧЕРЕДИ (Блокировка гонки)
+// ==========================================
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (value?: unknown) => void, reject: (reason?: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+// ==========================================
+
 // Интерцептор ЗАПРОСОВ (добавляем токен)
 api.interceptors.request.use(
     (config) => {
@@ -29,9 +47,26 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+
+            // ЕСЛИ ТОКЕН УЖЕ ОБНОВЛЯЕТСЯ ДРУГИМ ЗАПРОСОМ:
+            // Ставим текущий запрос в очередь ожидания
+            if (isRefreshing) {
+                return new Promise(function (resolve, reject) {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return api(originalRequest); // Повторяем запрос после получения токена
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            // ЕСЛИ МЫ ПЕРВЫЕ:
             originalRequest._retry = true;
+            isRefreshing = true; // Поднимаем флаг "Я пошел обновлять токен, всем ждать!"
 
             try {
+                // Обрати внимание: тут нужен обычный axios, а не api, чтобы не зациклить перехватчик
                 const refreshResponse = await axios.post('/auth/refresh', {}, {
                     baseURL: api.defaults.baseURL,
                     withCredentials: true
@@ -42,13 +77,22 @@ api.interceptors.response.use(
                 if (newToken) {
                     useAuthStore.getState().refreshTokenSuccess(newToken);
 
+                    // Освобождаем очередь — говорим всем ждущим запросам "Продолжайте с новым токеном!"
+                    processQueue(null, newToken);
+
+                    // Повторяем наш оригинальный запрос
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     return api(originalRequest);
                 }
             } catch (refreshError) {
+                // Если refresh-токен реально протух (например, прошел месяц)
+                processQueue(refreshError, null); // Убиваем ждущие запросы
                 console.error("Критическая ошибка авторизации. Сессия истекла.");
                 useAuthStore.getState().logout();
                 return Promise.reject(refreshError);
+            } finally {
+                // В любом случае опускаем флаг
+                isRefreshing = false;
             }
         }
 

@@ -220,9 +220,19 @@ export const usePostStore = create<PostStore>((set, get) => ({
     setRecipeRating: async (recipeId, value) => {
         try {
             await api.put(`/api/recipes/${recipeId}/rating`, { value });
-            await get().fetchPostById(recipeId);
+
+            const response = await api.get(`/api/recipes/${recipeId}`);
+            const updatedPost = mapRecipeDtoToPost(response.data);
+
+            // Точечно обновляем стей
+            set(state => ({
+                posts: state.posts.map(p => p.id === recipeId ? updatedPost : p),
+                currentPost: state.currentPost?.id === recipeId ? updatedPost : state.currentPost
+            }));
+
         } catch (error) {
             console.error("Ошибка при установке рейтинга:", error);
+            throw error;
         }
     },
 

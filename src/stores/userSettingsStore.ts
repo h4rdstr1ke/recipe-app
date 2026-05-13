@@ -25,6 +25,8 @@ interface UserSettingsStore {
     updateAllergens: (items: { id: string, title: string }[]) => Promise<void>;
     /** Сохраняет новый список нежелательных продуктов на сервере и обновляет стейт. */
     updateUnwanted: (items: { id: string, title: string }[]) => Promise<void>;
+    /** Полная очистка настроек при выходе. */
+    clearSettings: () => void;
     /** Очищает текст ошибки. */
     clearError: () => void;
 }
@@ -277,6 +279,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                     set({ error: 'Ошибка обновления нежелательных продуктов' });
                 }
             },
+            clearSettings: () => set({ settings: null, error: null, isLoading: false }),
 
             clearError: () => set({ error: null })
         }),

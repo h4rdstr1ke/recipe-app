@@ -5,7 +5,7 @@ import { usePostStore } from '../../../stores/postStore';
 import { useAuthStore } from '../../../stores/authStore';
 
 type RecipeRatingProps = {
-    recipeId: string; // Добавили ID рецепта
+    recipeId: string;
     rating?: {
         rating: number;
         quantity: number;
@@ -16,21 +16,30 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
     const { setRecipeRating } = usePostStore();
     const { isAuthenticated } = useAuthStore();
 
-    // Стейт для визуального эффекта наведения
     const [hoverValue, setHoverValue] = useState<number | null>(null);
-    // Локальный стейт оценки (чтобы юзер сразу видел свой выбор)
+    // Локальный стейт только для звездочек
     const [userRating, setUserRating] = useState<number | null>(null);
 
-    const handleRatingClick = async (value: number) => {
+    const handleRatingClick = async (e: React.MouseEvent, value: number) => {
+        // Блокируем всплытие клика, чтобы страница не прыгала наверх
+        e.preventDefault();
+        e.stopPropagation();
+
         if (!isAuthenticated) {
-            // Если юзер не авторизован - не даем голосовать
-            // Сюда можно добавить вызов всплывающего уведомления (toast)
-            console.log("Только авторизованные пользователи могут ставить оценки");
+            alert("Только авторизованные пользователи могут ставить оценки!");
             return;
         }
 
-        setUserRating(value); // Мгновенно красим звездочки для пользователя
-        await setRecipeRating(recipeId, value); // Отправляем запрос на бэкенд
+        // Мгновенно красим звездочки для юзера
+        setUserRating(value);
+
+        try {
+            await setRecipeRating(recipeId, value);
+        } catch (error) {
+            setUserRating(null);
+            alert("Ошибка");
+            console.error("Ошибка оценки:", error);
+        }
     };
 
     return (
@@ -40,7 +49,6 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
             </span>
             <div className='flex items-center w-[100%] h-[120px] md:h-[160px] gap-[14px] px-[25px] border-[2px] border-[#23A6F0] rounded-[10px]'>
 
-                {/* Блок со звездочками */}
                 <div className='flex gap-[10px]'>
                     {[1, 2, 3, 4, 5].map((starValue) => (
                         <div
@@ -48,9 +56,8 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
                             className="cursor-pointer transition-transform hover:scale-110"
                             onMouseEnter={() => setHoverValue(starValue)}
                             onMouseLeave={() => setHoverValue(null)}
-                            onClick={() => handleRatingClick(starValue)}
+                            onClick={(e) => handleRatingClick(e, starValue)}
                         >
-                            {/* Логика закрашивания: закрашиваем все звезды до выбранной/наведенной */}
                             {(hoverValue || userRating || 0) >= starValue ? (
                                 <StarIcon className='w-[32px] h-[32px]' />
                             ) : (
@@ -63,6 +70,7 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
                 <div className='flex flex-col border-l-[1px] pl-2 border-[#D1D1D1]'>
                     <div className='w-[56px] h-[30px] flex justify-start items-center gap-1'>
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] font-bold leading-5'>
+                            {/* Оставляем данные с сервера как есть */}
                             {rating?.rating ? Number(rating.rating).toFixed(1) : '0'}
                         </span>
                         <StarIcon className='w-[20px] h-[20px]' />

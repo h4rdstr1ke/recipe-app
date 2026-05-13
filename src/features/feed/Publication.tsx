@@ -124,6 +124,37 @@ export default function Publication({ post }: { post: Post }) {
         ? (user?.avatarUrl || AvatarDefault)
         : (post.authorAvatar || AvatarDefault);
 
+    // Вспомогательная функция для правильного склонения русских слов
+    const getPlural = (number: number, one: string, two: string, five: string) => {
+        let n = Math.abs(number) % 100;
+        let n1 = n % 10;
+        if (n > 10 && n < 20) return five;
+        if (n1 > 1 && n1 < 5) return two;
+        if (n1 === 1) return one;
+        return five;
+    };
+
+    // Функция превращения "01:30:00" в "1 час 30 минут"
+    const formatCookingTime = (timeStr?: string) => {
+        if (!timeStr) return '';
+
+        // Разбиваем строку по двоеточию
+        const parts = timeStr.split(':');
+        if (parts.length < 2) return timeStr;
+
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+
+        const hText = hours > 0 ? `${hours} ${getPlural(hours, 'час', 'часа', 'часов')}` : '';
+        const mText = minutes > 0 ? `${minutes} ${getPlural(minutes, 'минута', 'минуты', 'минут')}` : '';
+
+        if (hText && mText) return `${hText} ${mText}`;
+        if (hText) return hText;
+        if (mText) return mText;
+
+        return '0 минут'; // На случай "00:00:00"
+    };
+
     return (
         <div
             onClick={handleCardClick}
@@ -164,16 +195,16 @@ export default function Publication({ post }: { post: Post }) {
 
             {/* Изображение поста */}
             <div className="relative">
-                <img src={post.image} className={`${isMobile ? 'h-[250px] w-[100%]' : 'h-[344px] w-[100%]'} object-cover`} alt="post" />
+                <img src={post.image} loading="lazy" className={`${isMobile ? 'h-[250px] w-[100%]' : 'h-[344px] w-[100%]'} object-cover`} alt="post" /> {/* loading:lazy временно пока нету пагинации */}
                 <div className='absolute top-0 right-0 flex flex-col mx-1 mt-1'>
-                    <div className='w-[56px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
+                    <div className='w-[70px] h-[30px] flex items-center justify-center gap-1 border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
                         <span className='font-montserrat text-[20px] text-[#000000] font-bold'>{post?.rating?.rating || 0}</span>
                         <StarIcon className='w-[20px] h-[20px]' />
                     </div>
                 </div>
                 <div className='absolute bottom-0 right-0 mx-1 mb-2'>
                     <span className='px-[12px] py-[3px] font-montserrat text-[16px] text-[#000000] font-bold border-[2px] border-[#E6E6E6] bg-[#FFFFFF] rounded-[10px]'>
-                        {post.timeCooking}
+                        {formatCookingTime(post.timeCooking)}
                     </span>
                 </div>
             </div>

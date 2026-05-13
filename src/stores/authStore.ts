@@ -5,6 +5,8 @@ import type { User } from '../types/index';
 import { api } from '../api/api';
 import axios from 'axios';
 
+import { useUserSettingsStore } from './userSettingsStore';
+
 // Структукра JWT токена
 interface TokenPayload {
     sub?: string;
@@ -114,6 +116,8 @@ export const useAuthStore = create<AuthStore>()(
                     const name = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken.name || email.split('@')[0];
 
                     set({ user: { id, email, nickname: name, name }, token, isLoading: false });
+
+                    get().fetchAuthUser();
                     return true;
                 } catch (error: unknown) {
                     set({ error: 'Неверный логин или пароль', isLoading: false });
@@ -142,7 +146,17 @@ export const useAuthStore = create<AuthStore>()(
                 }
             },
 
-            logout: () => set({ user: null, token: null, error: null, tempData: null }),
+            logout: async () => {
+                try {
+                    await api.post('/auth/logout');
+                } catch (error) {
+                    console.error("Ошибка при логауте на сервере:", error);
+                } finally {
+                    useUserSettingsStore.getState().clearSettings();
+                    set({ user: null, token: null, error: null, tempData: null })
+                    window.location.href = '/login';
+                }
+            },
 
             clearError: () => set({ error: null }),
 
@@ -184,6 +198,10 @@ export const useAuthStore = create<AuthStore>()(
                         token: newToken,
                         user: { id, email, nickname: name, name }
                     });
+
+                    // После обновления токена освежаем профиль, чтобы аватарка не пропала
+                    get().fetchAuthUser();
+
                 } catch (error) {
                     console.error("Ошибка расшифровки токена при обновлении", error);
                 }
