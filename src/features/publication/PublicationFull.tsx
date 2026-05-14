@@ -131,7 +131,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 portions={post.portions || 0} />
             <RecipeOptimizer recipeId={post.id} />
             <SwitchDisplay />
-            <PhotoRecipe steps={post.steps} />
+            <PhotoRecipe steps={post.steps} recipeId={post.id} />
             <RecipeRating rating={post.rating as any} recipeId={post.id} />
             <SimilarRecipes recipeId={post.id} />
             <Comments postId={post.id} />
