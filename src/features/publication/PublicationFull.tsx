@@ -123,6 +123,7 @@ export default function PublicationFull({ post }: PublicationFullProps) {
                 onBan={() => { }}
                 hasAllergen={hasAllergen}
                 hasUnwanted={hasUnwanted}
+                isMyPost={isMyPost}
             />
 
             <NutritionalValue nutrition={post.nutrition} />

@@ -9,7 +9,7 @@ import UnwnantedIcon from '../../../assets/icons/unwanted.svg?react';
 import Button from '../../../components/button/Button';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuthStore } from '../../../stores/authStore';
+//import { useAuthStore } from '../../../stores/authStore';
 
 type PublicationHeaderProps = {
     // Данные автора
@@ -44,6 +44,8 @@ type PublicationHeaderProps = {
     // Предупреждения
     hasAllergen: boolean | null;
     hasUnwanted: boolean | null;
+
+    isMyPost: boolean;
 };
 
 // Вспомогательная функция для правильного склонения русских слов
@@ -100,10 +102,11 @@ export default function PublicationHeader({
     onBan,
     hasAllergen,
     hasUnwanted,
+    isMyPost,
 }: PublicationHeaderProps) {
     // ИСП проверяем реального пользователя 
-    const { user } = useAuthStore();
-    const isMyPost = username === user?.nickname;
+    // const { user } = useAuthStore();
+    // const isMyPost = username === user?.nickname;
     const navigate = useNavigate();
     return (
         <div className="w-[100%] flex flex-col">
