@@ -2,6 +2,36 @@ import { create } from 'zustand';
 
 // Сохраняем ссылку на проигрыватель вне стейта
 let activeAudio: HTMLAudioElement | null = null;
+let popAudio: HTMLAudioElement | null = null;
+
+// "Прогрев" динамиков для iOS
+export const unlockAudio = () => {
+    if (!activeAudio) {
+        activeAudio = new Audio('/sounds/kitchen-timer.mp3');
+        activeAudio.load(); // ВАЖНО: Принудительно загружаем для Safari
+        activeAudio.volume = 0;
+        activeAudio.play().then(() => {
+            activeAudio?.pause();
+            if (activeAudio) {
+                activeAudio.currentTime = 0;
+                activeAudio.volume = 1;
+            }
+        }).catch(() => { });
+    }
+    // Прогреваем звук 30-секундного предупреждения
+    if (!popAudio) {
+        popAudio = new Audio('/sounds/pop.mp3');
+        popAudio.load(); // ВАЖНО для Safari
+        popAudio.volume = 0;
+        popAudio.play().then(() => {
+            popAudio?.pause();
+            if (popAudio) {
+                popAudio.currentTime = 0;
+                popAudio.volume = 1;
+            }
+        }).catch(() => { });
+    }
+};
 
 interface TimerState {
     timeLeft: number;
@@ -93,7 +123,10 @@ export const useTimerStore = create<TimerStore>((set) => ({
                 if (newTimers[id].timeLeft === 30) {
                     newTimers[id].isWarning = true;
 
-                    new Audio('/sounds/pop.mp3').play().catch(() => { });
+                    if (!popAudio) {
+                        popAudio = new Audio('/sounds/pop.mp3');
+                    }
+                    popAudio.play().catch(() => { });
                 }
 
                 // ВРЕМЯ ВЫШЛО
@@ -104,9 +137,9 @@ export const useTimerStore = create<TimerStore>((set) => ({
 
                     if (!activeAudio) {
                         activeAudio = new Audio('/sounds/kitchen-timer.mp3');
-                        activeAudio.loop = true;
-                        activeAudio.play().catch(err => console.warn("Звук заблокирован", err));
                     }
+                    activeAudio.loop = true;
+                    activeAudio.play().catch(err => console.warn("Звук заблокирован", err));
                 }
             }
         });

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5297',
+    baseURL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5297`,
     headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true'

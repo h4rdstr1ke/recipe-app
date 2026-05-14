@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useTimerStore } from '../../../stores/timerStore';
+import { useTimerStore, unlockAudio } from '../../../stores/timerStore';
 
 type PhotoRecipe = {
     recipeId: string;
@@ -62,6 +62,8 @@ const StepTimer = ({ recipeId, stepIndex, timeString, originalText }: {
         const savedRecipesRaw = localStorage.getItem('sound_warning_recipes');
         const savedRecipes: string[] = savedRecipesRaw ? JSON.parse(savedRecipesRaw) : [];
 
+        // Разблокируем аудио прямо во время клика пользователя
+        unlockAudio();
         // Проверяем, есть ли ID текущего рецепта в этом массиве
         if (!savedRecipes.includes(recipeId)) {
             setShowSoundWarning(true); // Для этого рецепта еще не подтверждали - показываем окно
@@ -77,6 +79,8 @@ const StepTimer = ({ recipeId, stepIndex, timeString, originalText }: {
 
     // Обработчик согласия в модальном окне
     const confirmWarning = () => {
+        unlockAudio();
+
         // Снова достаем актуальный массив
         const savedRecipesRaw = localStorage.getItem('sound_warning_recipes');
         const savedRecipes: string[] = savedRecipesRaw ? JSON.parse(savedRecipesRaw) : [];
