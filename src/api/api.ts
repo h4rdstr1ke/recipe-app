@@ -61,12 +61,12 @@ api.interceptors.response.use(
                 });
             }
 
+
             // ЕСЛИ МЫ ПЕРВЫЕ:
             originalRequest._retry = true;
-            isRefreshing = true; // Поднимаем флаг "Я пошел обновлять токен, всем ждать!"
+            isRefreshing = true;
 
             try {
-                // Обрати внимание: тут нужен обычный axios, а не api, чтобы не зациклить перехватчик
                 const refreshResponse = await axios.post('/auth/refresh', {}, {
                     baseURL: api.defaults.baseURL,
                     withCredentials: true
@@ -77,7 +77,6 @@ api.interceptors.response.use(
                 if (newToken) {
                     useAuthStore.getState().refreshTokenSuccess(newToken);
 
-                    // Освобождаем очередь — говорим всем ждущим запросам "Продолжайте с новым токеном!"
                     processQueue(null, newToken);
 
                     // Повторяем наш оригинальный запрос
