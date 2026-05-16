@@ -7,12 +7,13 @@ import AllergenIcon from '../../../assets/icons/allergen.svg?react';
 import UnwnantedIcon from '../../../assets/icons/unwanted.svg?react';
 
 import Button from '../../../components/button/Button';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 //import { useAuthStore } from '../../../stores/authStore';
 
 type PublicationHeaderProps = {
     // Данные автора
+    authorId: string;
     avatar: string;
     username: string;
     authorName: string;
@@ -80,6 +81,7 @@ const formatCookingTime = (timeStr?: string) => {
 };
 
 export default function PublicationHeader({
+    authorId,
     postId,
     avatar,
     username,
@@ -117,13 +119,13 @@ export default function PublicationHeader({
 
             ) : (
                 <div className="flex py-[5px] justify-between items-center">
-                    <div className='flex gap-4 items-center '>
+                    <Link to={`/profile/${authorId}`} className='flex gap-4 items-center hover:opacity-80 transition-opacity'>
                         <img src={avatar} className='w-[50px] h-[50px] object-cover rounded-full select-none' alt="avatar" />
                         <div className='flex flex-col items-start'>
                             <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{username}</span>
                             <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>{authorName}</span>
                         </div>
-                    </div>
+                    </Link>
                     {!isMyPost && (
                         <button
                             className={`w-[140px] h-[30px] md:w-[150px] md:h-[30px] rounded-[10px] md:rounded-[5px] active:scale-95 transition-all ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'

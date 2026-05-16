@@ -162,22 +162,20 @@ export default function Publication({ post }: { post: Post }) {
         >
             {/* Шапка карточки */}
             <div className="flex py-[5px] justify-between items-center border-b-[2px] border-[#E6E6E6]">
-                <div className='flex ml-[22px] gap-2 items-center'>
-                    <Link
-                        to={`/profile/${post.authorId}`}
-                        onClick={(e) => e.stopPropagation()} // Чтобы клик по аве не триггерил переход к посту
-                    >
-                        <img src={displayAvatar} className='w-[35px] h-[35px] object-cover rounded-full select-none' alt="avatar" />
-                    </Link>
-                    <Link
-                        to={`/profile/${post.authorId}`}
-                        onClick={(e) => e.stopPropagation()} // Чтобы клик по аве не триггерил переход к посту
-                    >
-                        <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
-                            {post?.username}
-                        </span>
-                    </Link>
-                </div>
+                <Link
+                    to={`/profile/${post.authorId}`}
+                    onClick={(e) => e.stopPropagation()} // Чтобы клик не триггерил переход к посту
+                    className='flex ml-[22px] gap-2 items-center hover:opacity-80 transition-opacity'
+                >
+                    <img
+                        src={displayAvatar}
+                        className='w-[35px] h-[35px] object-cover rounded-full select-none'
+                        alt="avatar"
+                    />
+                    <span className='font-montserrat text-[14px] text-[#000000] tracking-[0.2px] font-semibold leading-6'>
+                        {post?.username}
+                    </span>
+                </Link>
                 {/* Условие: если это мой пост, выводим текст, иначе — кнопку */}
                 {isMyPost ? (
                     <span className='mr-[22px] font-montserrat text-[14px] tracking-[0.2px] text-[#737373] font-light '>
