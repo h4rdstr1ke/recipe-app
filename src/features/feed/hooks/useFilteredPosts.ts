@@ -3,32 +3,33 @@ import { usePostStore } from '../../../stores/postStore';
 import { useSearchStore } from '../../../stores/searchStore';
 import { useUserSettingsStore } from '../../../stores/userSettingsStore';
 
-// Вспомогательная функция 
 const parseTimeToMinutes = (timeStr: string): number => {
-    if (!timeStr) return 0;
+    if (!timeStr || timeStr.includes('Время не указано')) return 0;
 
+    // Если бэкенд возвращает строку вида "01:15:00" (TimeSpan из C#)
+    if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) {
+            const hours = parseInt(parts[0], 10) || 0;
+            const minutes = parseInt(parts[1], 10) || 0;
+            return hours * 60 + minutes; // Переводим всё в чистые минуты
+        }
+    }
+
+    // Текстовый парсер на случай строк вида "30 мин"
     const lowerStr = timeStr.toLowerCase();
     const match = lowerStr.match(/\d+/);
     if (!match) return 0;
-
     const amount = parseInt(match[0], 10);
-
     if (lowerStr.includes('мин')) return amount;
     if (lowerStr.includes('час')) return amount * 60;
-    if (lowerStr.includes('дн') || lowerStr.includes('день')) return amount * 24 * 60;
-
     return amount;
 };
 
-/**
- * Кастомный хук для получения уже отфильтрованного и отсортированного списка постов.
- */
 export const useFilteredPosts = () => {
-    // Собираем данные из всех трех сторов в одном месте
     const { posts } = usePostStore();
-    const { query, sortBy, filters, excludeAllergens } = useSearchStore();
+    const { query, sortBy, filters, excludeAllergens, includedIngredients, excludedIngredients } = useSearchStore();
     const { settings } = useUserSettingsStore();
-
 
     const filteredAndSortedPosts = useMemo(() => {
         let result = [...posts];
@@ -43,25 +44,39 @@ export const useFilteredPosts = () => {
         }
 
         // --- ИСКЛЮЧЕНИЕ АЛЛЕРГЕНОВ ---
-        /*
         if (excludeAllergens && settings?.allergens?.length) {
             result = result.filter(post => {
                 const hasAllergen = post.products?.some(product =>
-                    settings.allergens.includes(product.name)
+                    settings.allergens.some(allergen => allergen.id === product.id)
                 );
                 return !hasAllergen;
             });
         }
-        */
-        // --- ФИЛЬТРЫ ИЗ МОДАЛКИ ---
 
-        // Фильтр по "Типу приема пищи" (mealType)
+        // --- ИСКАТЬ ТОЛЬКО С ЭТИМИ ПРОДУКТАМИ ---
+        if (includedIngredients?.length > 0) {
+            result = result.filter(post =>
+                includedIngredients.every(incItem =>
+                    post.products?.some(product => product.id === incItem.id)
+                )
+            );
+        }
+
+        // --- ИСКЛЮЧИТЬ ЭТИ ПРОДУКТЫ ---
+        if (excludedIngredients?.length > 0) {
+            result = result.filter(post =>
+                !excludedIngredients.some(excItem =>
+                    post.products?.some(product => product.id === excItem.id)
+                )
+            );
+        }
+
+        // --- ФИЛЬТРЫ ИЗ МОДАЛКИ ---
         const mealFilters = filters['Тип приема пищи'];
         if (mealFilters && mealFilters.length > 0) {
             result = result.filter(post => mealFilters.includes(post.mealType));
         }
 
-        // Фильтр по "Типу блюда" (dishType)
         const dishFilters = filters['Тип блюда'];
         if (dishFilters && dishFilters.length > 0) {
             result = result.filter(post => dishFilters.includes(post.dishType));
@@ -109,8 +124,7 @@ export const useFilteredPosts = () => {
         }
 
         return result;
-    }, [posts, query, sortBy, filters, excludeAllergens, settings]);
+    }, [posts, query, sortBy, filters, excludeAllergens, settings, includedIngredients, excludedIngredients]);
 
-    // Хук просто возвращает готовый массив
     return filteredAndSortedPosts;
 };

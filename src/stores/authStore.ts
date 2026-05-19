@@ -88,7 +88,9 @@ export const useAuthStore = create<AuthStore>()(
                     formData.append('ConfirmPassword', tempData.password || '');
                     formData.append('EmailVerificationCode', code);
 
-                    await api.post('/auth/register', formData);
+                    await api.post('/auth/register', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
 
                     // Сразу логиним юзера после успешной регистрации
                     return await login(tempData.email, tempData.password || '');

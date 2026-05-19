@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Post } from '../types/index';
 import { api } from '../api/api';
 import { mapRecipeDtoToPost } from '../utils/mappers';
+import { useSearchStore } from './searchStore';
 
 interface PostStore {
     posts: Post[];
@@ -51,13 +52,56 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
         try {
             const currentPage = reset ? 1 : get().page;
-            const response = await api.get('/api/recipes', {
-                params: { page: currentPage, limit: LIMIT }
+            const LIMIT = 10; // Твоя константа лимита страниц
+
+            // 1. Достаем актуальное состояние фильтров из стора поиска
+            const searchState = useSearchStore.getState();
+
+            // Проверяем, включен ли хотя бы один фильтр или введен текст
+            const hasActiveFilters =
+                !!searchState.query ||
+                !!searchState.sortBy ||
+                searchState.excludeAllergens ||
+                searchState.includedIngredients.length > 0 ||
+                searchState.excludedIngredients.length > 0 ||
+                Object.values(searchState.filters).some(arr => arr.length > 0);
+
+            // Динамически выбираем роут: если фильтры пусты — обычная лента, если активны — поиск
+            const url = hasActiveFilters ? '/api/recipes/search' : '/api/recipes';
+
+            // Формируем базовые параметры пагинации
+            const params: Record<string, any> = {
+                page: currentPage,
+                limit: LIMIT
+            };
+
+            // Если есть фильтры — упаковываем их для бэкенда
+            if (hasActiveFilters) {
+                if (searchState.query) params.query = searchState.query;
+                if (searchState.sortBy) params.sortBy = searchState.sortBy;
+
+                if (searchState.filters['Тип приема пищи']?.length) params.mealTypes = searchState.filters['Тип приема пищи'];
+                if (searchState.filters['Тип блюда']?.length) params.dishTypes = searchState.filters['Тип блюда'];
+                if (searchState.filters['Время приготовления']?.length) params.cookingTimes = searchState.filters['Время приготовления'];
+                if (searchState.filters['Калорийность на 100г.']?.length) params.calories = searchState.filters['Калорийность на 100г.'];
+
+                // Аллергены и строго UUID ингредиентов из нашей новой умной модалки
+                if (searchState.excludeAllergens) params.excludeAllergens = true;
+                if (searchState.includedIngredients.length) params.includedIngredientIds = searchState.includedIngredients.map(i => i.id);
+                if (searchState.excludedIngredients.length) params.excludedIngredientIds = searchState.excludedIngredients.map(i => i.id);
+            }
+
+
+            const response = await api.get(url, {
+                params,
+                paramsSerializer: { indexes: null }
             });
 
             const items = Array.isArray(response.data) ? response.data : (response.data?.items || []);
 
-            // TODO: Убрать этот блок, когда бэкенд начнет отдавать аватарки и никнеймы вместе с постами
+            // ----------------------------------------------------------------------------------
+            // TODO БЛОК: собирает аватарки/username авторов по их ID
+            // ----------------------------------------------------------------------------------
             const uniqueAuthorIds = [...new Set(items.map((item: any) => item.creatorId).filter(Boolean))] as string[];
             const authorDataMap: Record<string, { avatar: string | null; username: string }> = {};
 
@@ -70,9 +114,10 @@ export const usePostStore = create<PostStore>((set, get) => ({
                     };
                 })
             );
+            // ----------------------------------------------------------------------------------
             // Конец TODO блока
 
-            // Используем маппер
+            // Используем маппер, подсовывая ему собранные асинхронно данные профилей
             const mappedPosts = items.map((item: any) =>
                 mapRecipeDtoToPost(
                     item,
@@ -84,7 +129,6 @@ export const usePostStore = create<PostStore>((set, get) => ({
             set(state => ({
                 posts: reset ? mappedPosts : [...state.posts, ...mappedPosts],
                 page: currentPage + 1,
-                // Исправленная логика: если пришло меньше, чем лимит — это конец списка
                 hasMore: items.length === LIMIT,
                 isLoading: false
             }));

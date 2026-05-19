@@ -183,7 +183,7 @@ export default function Publication({ post }: { post: Post }) {
                     </span>
                 ) : (
                     <button
-                        className={`${isMobile ? 'w-[140px] h-[30px]' : 'w-[150px] h-[30px]'} flex items-center justify-center mr-[9px] rounded-[10px] md:rounded-[5px] active:scale-95 transition-all ${subscribed
+                        className={`${isMobile ? 'w-[140px] h-[30px]' : 'w-[150px] h-[30px]'} drop-shadow-md flex items-center justify-center mr-[9px] rounded-[10px] md:rounded-[5px] active:scale-95 transition-all ${subscribed
                             ? `bg-[#8F94989C]`
                             : `bg-[#23A6F0]`
                             }`}

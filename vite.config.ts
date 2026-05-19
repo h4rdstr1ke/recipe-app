@@ -45,14 +45,12 @@ export default defineConfig({
     ,
     proxy: {
       '/api': {
-        target: 'http://localhost:5297',
+        target: 'http://158.160.6.41',
         changeOrigin: true,
-        secure: false,
       },
       '/auth': {
-        target: 'http://localhost:5297',
+        target: 'http://158.160.6.41',
         changeOrigin: true,
-        secure: false,
       },
       // Прокси для Python-сервиса
       '/ai': {
