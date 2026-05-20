@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StarIcon from '../../../assets/icons/starRating.svg?react';
 import Star from '../../../assets/icons/star.svg?react';
 import { usePostStore } from '../../../stores/postStore';
@@ -9,6 +9,7 @@ type RecipeRatingProps = {
     rating?: {
         rating: number;
         quantity: number;
+        userRating?: number;
     };
 }
 
@@ -17,11 +18,19 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
     const { isAuthenticated } = useAuthStore();
 
     const [hoverValue, setHoverValue] = useState<number | null>(null);
-    // Локальный стейт только для звездочек
-    const [userRating, setUserRating] = useState<number | null>(null);
+
+    // Инициализируем стейт сразу тем значением, которое пришло с сервера
+    const [userRating, setUserRating] = useState<number | null>(rating?.userRating || null);
+
+    // Если данные с сервера подгрузились чуть позже или мы перешли на другой рецепт, 
+    // синхронизируем закрашенные звездочки
+    useEffect(() => {
+        if (rating?.userRating !== undefined) {
+            setUserRating(rating.userRating);
+        }
+    }, [rating?.userRating]);
 
     const handleRatingClick = async (e: React.MouseEvent, value: number) => {
-        // Блокируем всплытие клика, чтобы страница не прыгала наверх
         e.preventDefault();
         e.stopPropagation();
 
@@ -36,7 +45,8 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
         try {
             await setRecipeRating(recipeId, value);
         } catch (error) {
-            setUserRating(null);
+            // Если запрос упал, возвращаем ту оценку, которая была сохранена на сервере
+            setUserRating(rating?.userRating || null);
             alert("Ошибка");
             console.error("Ошибка оценки:", error);
         }
@@ -70,7 +80,6 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
                 <div className='flex flex-col border-l-[1px] pl-2 border-[#D1D1D1]'>
                     <div className='w-[56px] h-[30px] flex justify-start items-center gap-1'>
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] font-bold leading-5'>
-                            {/* Оставляем данные с сервера как есть */}
                             {rating?.rating ? Number(rating.rating).toFixed(1) : '0'}
                         </span>
                         <StarIcon className='w-[20px] h-[20px]' />

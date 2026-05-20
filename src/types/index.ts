@@ -82,6 +82,7 @@ export interface Post {
         rating: number;
         /** Количество проголосовавших пользователей */
         quantity: number;
+        userRating: number;
     };
     /** Время приготовления */
     timeCooking: string;

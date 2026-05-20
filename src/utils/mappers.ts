@@ -23,7 +23,8 @@ export const mapRecipeDtoToPost = (item: any, overrideAvatar?: string | null, ov
     dishType: item.dishType || '',
     rating: {
         rating: item.averageRating || 0,
-        quantity: item.ratingsCount || 0
+        quantity: item.ratingsCount || 0,
+        userRating: item.currentUserRating || 0
     },
     likesCount: item.likesCount || 0,
     commentsCount: item.commentsCount || 0,
