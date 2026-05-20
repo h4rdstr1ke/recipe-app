@@ -36,8 +36,6 @@ interface PostStore {
     clearError: () => void;
 }
 
-const LIMIT = 10; // константа пагинации
-
 export const usePostStore = create<PostStore>((set, get) => ({
     posts: [],
     currentPost: null,
@@ -52,7 +50,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
         try {
             const currentPage = reset ? 1 : get().page;
-            const LIMIT = 10; // Твоя константа лимита страниц
+            const LIMIT = 10; // константа лимита страниц
 
             // 1. Достаем актуальное состояние фильтров из стора поиска
             const searchState = useSearchStore.getState();
@@ -71,27 +69,58 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
             // Формируем базовые параметры пагинации
             const params: Record<string, any> = {
-                page: currentPage,
-                limit: LIMIT
+                Page: currentPage,
+                PageSize: LIMIT
             };
 
-            // Если есть фильтры — упаковываем их для бэкенда
+            // Упаковываем фильтры 
             if (hasActiveFilters) {
-                if (searchState.query) params.query = searchState.query;
-                if (searchState.sortBy) params.sortBy = searchState.sortBy;
+                // 1. Поиск по тексту
+                if (searchState.query) params.Title = searchState.query;
 
-                if (searchState.filters['Тип приема пищи']?.length) params.mealTypes = searchState.filters['Тип приема пищи'];
-                if (searchState.filters['Тип блюда']?.length) params.dishTypes = searchState.filters['Тип блюда'];
-                if (searchState.filters['Время приготовления']?.length) params.cookingTimes = searchState.filters['Время приготовления'];
-                if (searchState.filters['Калорийность на 100г.']?.length) params.calories = searchState.filters['Калорийность на 100г.'];
+                // 2. Ингредиенты
+                if (searchState.includedIngredients.length) params.ContainsIngredientIds = searchState.includedIngredients.map(i => i.id);
+                if (searchState.excludedIngredients.length) params.ExcludedIngredientIds = searchState.excludedIngredients.map(i => i.id);
 
-                // Аллергены и строго UUID ингредиентов из нашей новой умной модалки
-                if (searchState.excludeAllergens) params.excludeAllergens = true;
-                if (searchState.includedIngredients.length) params.includedIngredientIds = searchState.includedIngredients.map(i => i.id);
-                if (searchState.excludedIngredients.length) params.excludedIngredientIds = searchState.excludedIngredients.map(i => i.id);
+                // 3. Аллергены
+                if (searchState.excludeAllergens) params.ExcludeUserAllergens = true;
+
+                // 4. Категории
+                if (searchState.filters['Тип приема пищи']?.length) params.MealType = searchState.filters['Тип приема пищи'];
+                if (searchState.filters['Тип блюда']?.length) params.DishType = searchState.filters['Тип блюда'];
+
+                // 5. Перевод времени в формат (00:00:00)
+                if (searchState.filters['Время приготовления']?.length) {
+                    const times = searchState.filters['Время приготовления'];
+                    let maxMin = 0;
+                    if (times.includes('Более часа')) maxMin = 120;
+                    else if (times.includes('До 60 минут')) maxMin = 60;
+                    else if (times.includes('До 45 минут')) maxMin = 45;
+                    else if (times.includes('До 30 минут')) maxMin = 30;
+                    else if (times.includes('До 15 минут')) maxMin = 15;
+
+                    if (maxMin > 0) {
+                        const hh = String(Math.floor(maxMin / 60)).padStart(2, '0');
+                        const mm = String(maxMin % 60).padStart(2, '0');
+                        params.MaxCookingTime = `${hh}:${mm}:00`;
+                    }
+                }
+
+                // 6. Перевод калорий в числа
+                if (searchState.filters['Калорийность на 100г.']?.length) {
+                    const cals = searchState.filters['Калорийность на 100г.'];
+                    let max = 0;
+                    if (cals.includes('Более 800 кКал')) max = 5000;
+                    else if (cals.includes('600 - 800 кКал')) max = 800;
+                    else if (cals.includes('400 - 600 кКал')) max = 600;
+                    else if (cals.includes('200 - 400 кКал')) max = 400;
+                    else if (cals.includes('До 200 кКал')) max = 200;
+
+                    if (max > 0) params.MaxCalories = max;
+                }
             }
 
-
+            // Запрос
             const response = await api.get(url, {
                 params,
                 paramsSerializer: { indexes: null }

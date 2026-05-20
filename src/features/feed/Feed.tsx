@@ -3,26 +3,16 @@ import { usePostStore } from '../../stores/postStore';
 import Publication from './Publication';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import { useAuthStore } from '../../stores/authStore';
-
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useFilteredPosts } from './hooks/useFilteredPosts';
 
 export default function Feed() {
-    // Булево значение наличия валидного токена для контроля доступа к персонализированным данным
     const isAuthenticated = useAuthStore((state) => !!state.token);
-
-    // Метод загрузки глобальных списков (избранное, аллергены)
     const { fetchSettings } = useUserSettingsStore();
-    // Состояние процесса загрузки, метод пагинации и флаг наличия следующих страниц
-    const { isLoading, fetchPosts } = usePostStore();
 
-    // Флаг мобильного разрешения экрана 
+    const { posts, isLoading, fetchPosts, hasMore } = usePostStore();
+
     const isMobile = useMediaQuery('(max-width: 768px)');
 
-    // Итоговый массив публикаций после применения активных фильтров и сортировки
-    const filteredAndSortedPosts = useFilteredPosts();
-
-    // Первичная инициализация: получение первой страницы постов и профиля пользователя
     useEffect(() => {
         fetchPosts(true);
         if (isAuthenticated) {
@@ -30,42 +20,47 @@ export default function Feed() {
         }
     }, [isAuthenticated, fetchPosts, fetchSettings]);
 
-    // Механизм бесконечного скролла: отслеживание позиции окна и вызов метода пагинации
+    // слушает тег main, а не window
     useEffect(() => {
-        const handleScroll = () => {
-            const state = usePostStore.getState();
-
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500) {
-                if (!state.isLoading && state.hasMore) {
+        const handleScroll = (e: Event) => {
+            const target = e.target as HTMLElement;
+            // Если до конца списка осталось 500px — грузим следующую страницу
+            if (target.scrollHeight - target.scrollTop - target.clientHeight < 500) {
+                if (!isLoading && hasMore) {
                     fetchPosts();
                 }
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [fetchPosts]);
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+            mainElement.addEventListener('scroll', handleScroll);
+            return () => mainElement.removeEventListener('scroll', handleScroll);
+        }
+    }, [isLoading, hasMore, fetchPosts]);
 
     return (
         <div className='w-[100%] flex items-center flex-col'>
-            {isMobile ?
-                (<div className='flex flex-col gap-y-6 max-w-[100%]'>
-                    {filteredAndSortedPosts.map(post => (
+            {isMobile ? (
+                <div className='flex flex-col gap-y-6 max-w-[100%]'>
+                    {posts.map(post => (
                         <Publication key={post.id} post={post} />
                     ))}
                     {isLoading && <div className="col-span-2 text-center">Загрузка...</div>}
-                </div>) :
-                (<div className='grid grid-cols-2 gap-x-[85px] gap-y-6 max-w-[1200px]'>
-                    {filteredAndSortedPosts.map(post => (
+                </div>
+            ) : (
+                <div className='grid grid-cols-2 gap-x-[85px] gap-y-6 max-w-[1200px]'>
+                    {posts.map(post => (
                         <Publication key={post.id} post={post} />
                     ))}
                     {isLoading && <div className="col-span-2 text-center">Загрузка...</div>}
-                </div>)}
-            {!isLoading && filteredAndSortedPosts.length === 0 && (
+                </div>
+            )}
+            {!isLoading && posts.length === 0 && (
                 <div className="mt-10 font-montserrat text-gray-400 text-[20px]">
                     По вашему запросу ничего не найдено :(
                 </div>
             )}
-        </div >
+        </div>
     );
 }

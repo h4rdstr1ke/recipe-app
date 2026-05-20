@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchStore, type IngredientItem } from "../../../stores/searchStore";
 import { api } from "../../../api/api";
+import { usePostStore } from "../../../stores/postStore";
 
 const FILTERS_DATA = [
     { title: 'Тип приема пищи', items: ['Завтрак', 'Обед', 'Полдник', 'Ужин', 'Перекус'] },
@@ -11,7 +12,7 @@ const FILTERS_DATA = [
 
 export default function SearchModal({ onClose }: { onClose: () => void }) {
     const store = useSearchStore();
-
+    const { fetchPosts } = usePostStore();
     const [localFilters, setLocalFilters] = useState<Record<string, string[]>>({ ...store.filters });
     const [localExcludeAllergens, setLocalExcludeAllergens] = useState(store.excludeAllergens);
     const [localIncluded, setLocalIncluded] = useState<IngredientItem[]>([...store.includedIngredients]);
@@ -50,14 +51,19 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
         setLocalFilters({ ...localFilters, [category]: updated });
     };
 
-    // Все в стор
-    const handleApply = () => {
+    const handleApply = async () => {
+        // Сохраняем все настройки из модалки в глобальный стор
         store.setAllFilters({
             filters: localFilters,
             excludeAllergens: localExcludeAllergens,
             includedIngredients: localIncluded,
             excludedIngredients: localExcluded
         });
+
+        // ПРИНУДИТЕЛЬНО ЗАПРАШИВАЕМ ДАННЫЕ С БЭКЕНДА С ПЕРВОЙ СТРАНИЦЫ
+        await fetchPosts(true);
+
+        // Закрываем окно
         onClose();
     };
 
@@ -200,8 +206,4 @@ export default function SearchModal({ onClose }: { onClose: () => void }) {
             </div>
         </div>
     );
-}
-
-function fetchPosts(arg0: boolean) {
-    throw new Error("Function not implemented.");
 }

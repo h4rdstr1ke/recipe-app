@@ -8,6 +8,7 @@ import SearchModal from './components/SearchModal';
 import SortingModal from './components/SortingModal';
 
 import { useSearchStore } from '../../stores/searchStore';
+import { usePostStore } from '../../stores/postStore';
 
 export default function SearchBar() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function SearchBar() {
         sortBy,
         excludeAllergens
     } = useSearchStore();
-
+    const { fetchPosts } = usePostStore();
     // Проверяем, активен ли хотя бы один фильтр
     const isFilterActive = Object.values(filters).some(arr => arr.length > 0) || excludeAllergens;
 
@@ -67,6 +68,11 @@ export default function SearchBar() {
         setIsSortingOpen(false);
     };
 
+    // Функция отправки поиска
+    const handleSearchSubmit = async (e: React.FormEvent) => {
+        e.preventDefault(); // Предотвращаем перезагрузку страницы
+        await fetchPosts(true); // Запрашиваем первую страницу с новыми параметрами
+    };
 
 
     return (
@@ -74,7 +80,7 @@ export default function SearchBar() {
         <div ref={searchContainerRef}>
             <form
                 className='flex justify-center items-center h-[50px] gap-5'
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={handleSearchSubmit}
             >
                 <div className='w-[340px] h-[50px] gap-8 flex justify-center items-center bg-[#F9F9F9] border border-[#DADADA] rounded-[5px]'>
                     <input
