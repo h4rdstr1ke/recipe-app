@@ -6,7 +6,7 @@ import { api } from "../../api/api";
 
 type ScreenType = 'reasons' | 'customInput' | 'success';
 
-export default function Complaint({ recipeId, onClose }: { recipeId: string; onClose: () => void }) {
+export default function CommentComplaint({ commentId, onClose }: { commentId: string; onClose: () => void }) {
     const [screen, setScreen] = useState<ScreenType>('reasons');
     const [customReason, setCustomReason] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -22,12 +22,12 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
                 reason: reasonEnum
             };
 
-            // Если выбрали "Свой вариант" (Other), добавляем текст пользователя
             if (reasonEnum === 'Other' && customReason) {
                 payload.customReason = customReason;
             }
 
-            await api.post(`/api/reports/recipes/${recipeId}`, payload);
+            // Отправляем жалобу на КОММЕНТАРИЙ
+            await api.post(`/api/reports/comments/${commentId}`, payload);
             setScreen('success');
 
         } catch (error: any) {
@@ -39,7 +39,6 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
         }
     };
 
-    // Экран 1: Выбор причины жалобы
     if (screen === 'reasons') {
         return (
             <div
@@ -61,25 +60,28 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
                     </div>
                     <div className="flex flex-col mt-[30px]">
                         <span className="px-[75px] mb-[13px] font-montserrat text-[20px] font-semibold tracking-[0.2px] leading-7">
-                            Почему вы хотите пожаловаться на этот рецепт?
+                            Почему вы хотите пожаловаться на этот комментарий?
                         </span>
                         <div>
+                            {/* InappropriatePhoto */}
                             <div
-                                onClick={() => handleSendComplaint("PhotoDoesNotMatchRecipe")}
+                                onClick={() => handleSendComplaint("InappropriatePhoto")}
                                 className="flex justify-between items-center pl-[75px] pr-[160px] py-[14px] border-t-[1px] border-b-[1px] cursor-pointer hover:bg-gray-50 transition-colors">
                                 <span className="font-montserrat text-[20px] font-medium tracking-[0.2px] leading-7">
-                                    Фото не соответствует рецепту
+                                    Содержит фото непристойного характера
                                 </span>
                                 <Arrow className="w-[20px] text-[#000000]" />
                             </div>
+                            {/* OffensiveContent */}
                             <div
-                                onClick={() => handleSendComplaint("DescriptionDoesNotMatchRecipe")}
+                                onClick={() => handleSendComplaint("OffensiveContent")}
                                 className="flex justify-between items-center pl-[75px] pr-[160px] py-[14px] border-t-[1px] border-b-[1px] cursor-pointer hover:bg-gray-50 transition-colors">
                                 <span className="font-montserrat text-[20px] font-medium tracking-[0.2px] leading-7">
-                                    Описание не соответствует рецепту
+                                    Оскорбляет чувства других пользователей
                                 </span>
                                 <Arrow className="w-[20px] text-[#000000]" />
                             </div>
+                            {/* Other */}
                             <div
                                 onClick={handleCustomOption}
                                 className="flex justify-between items-center pl-[75px] pr-[160px] py-[14px] border-t-[1px] border-b-[1px] cursor-pointer hover:bg-gray-50 transition-colors"
@@ -96,7 +98,6 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
         );
     }
 
-    // Экран 2: Свой вариант (поле ввода)
     if (screen === 'customInput') {
         return (
             <div
@@ -118,7 +119,7 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
                     </div>
                     <div className="flex flex-col mt-[30px]">
                         <span className="mb-[13px] px-[75px] font-montserrat text-[20px] font-semibold tracking-[0.2px] leading-7">
-                            Почему вы хотите пожаловаться на этот рецепт?
+                            Почему вы хотите пожаловаться на этот комментарий?
                         </span>
                         <Input
                             value={customReason}
@@ -128,7 +129,6 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
                         />
                     </div>
                     <button
-                        // передаем "Other" как основную причину
                         onClick={() => handleSendComplaint('Other')}
                         disabled={isLoading || customReason.trim().length === 0}
                         className={`text-[14px] w-[200px] h-[50px] mx-auto mt-[15px] ${isLoading || customReason.trim().length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -140,7 +140,6 @@ export default function Complaint({ recipeId, onClose }: { recipeId: string; onC
         );
     }
 
-    // Экран 3: Успешная отправка
     return (
         <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"

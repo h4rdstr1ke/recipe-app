@@ -9,6 +9,8 @@ import { useUserSettingsStore } from '../stores/userSettingsStore';
 import { useProfileStore } from '../stores/profileStore';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
+//import { api } from '../api/api';
+import ProfileComplaint from '../features/complaint/ProfileComplaint';
 
 // Импорты модалок
 import SubscribersModal from '../features/profile/components/SubscribesModal';
@@ -56,6 +58,11 @@ export default function Profile() {
     // ---------------------------------------------------------
     // 3. ЛОКАЛЬНЫЕ СОСТОЯНИЯ КОМПОНЕНТА
     // ---------------------------------------------------------
+    // Проверяем, является ли текущий пользователь модератором
+    //const isModerator = (authUser as any)?.role === 'Moderator' || (authUser as any)?.role === 'Admin';
+
+    // Стейт для лоадера кнопки бана
+    //const [isBanning, setIsBanning] = useState(false);
 
     // Управляет переключением вкладок "Публикации" / "Сохраненное".
     const [activeTab, setActiveTab] = useState<'publications' | 'saved'>('publications');
@@ -66,7 +73,7 @@ export default function Profile() {
     // Состояния для обеих модалок
     const [isSubscribersOpen, setIsSubscribersOpen] = useState(false);
     const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState(false);
-
+    const [isComplaintOpen, setIsComplaintOpen] = useState(false);
     // ---------------------------------------------------------
     // 4. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ (Бизнес-логика)
     // ---------------------------------------------------------
@@ -189,7 +196,18 @@ export default function Profile() {
                                 {subscribed ? 'Вы подписаны' : 'Подписаться'}
                             </span>
                         </button>
-                        <button className='bg-[#FF0000] w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px]'><span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>Пожаловаться</span></button>
+                        <button
+                            onClick={() => {
+                                if (!isAuthenticated()) {
+                                    alert("Только авторизованные пользователи могут оставлять жалобы!");
+                                    return;
+                                }
+                                setIsComplaintOpen(true);
+                            }}
+                            className='bg-[#FF0000] w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] active:scale-95 transition-transform'
+                        >
+                            <span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>Пожаловаться</span>
+                        </button>
                     </div>
                 )}
             </div>
@@ -228,6 +246,10 @@ export default function Profile() {
             )}
             {isSubscriptionsOpen && (
                 <SubscriptionsModal onClose={() => setIsSubscriptionsOpen(false)}
+                    userId={currentProfile.id} />
+            )}
+            {isComplaintOpen && (
+                <ProfileComplaint onClose={() => setIsComplaintOpen(false)}
                     userId={currentProfile.id} />
             )}
         </div>

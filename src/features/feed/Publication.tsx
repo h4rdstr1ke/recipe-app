@@ -280,7 +280,7 @@ export default function Publication({ post }: { post: Post }) {
                 <span className='font-montserrat text-[16px] text-[#737373] font-medium'>{post?.date}</span>
             </div>
 
-            {isComplaintOpen && <Complaint onClose={() => setIsComplaintOpen(false)} />}
+            {isComplaintOpen && <Complaint recipeId={post.id} onClose={() => setIsComplaintOpen(false)} />}
             {/* Модальное окно предупреждения об авторизации */}
             {showAuthWarning && (
                 <div

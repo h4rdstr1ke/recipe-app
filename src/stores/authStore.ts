@@ -15,6 +15,8 @@ interface TokenPayload {
     'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
     'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
     'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+
+    'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string;
 }
 
 interface AuthStore {
@@ -117,7 +119,9 @@ export const useAuthStore = create<AuthStore>()(
                     const id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || decodedToken.sub || decodedToken.id || '';
                     const name = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken.name || email.split('@')[0];
 
-                    set({ user: { id, email, nickname: name, name }, token, isLoading: false });
+                    const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User';
+
+                    set({ user: { id, email, nickname: name, name, role }, token, isLoading: false });
 
                     get().fetchAuthUser();
                     return true;
@@ -195,10 +199,12 @@ export const useAuthStore = create<AuthStore>()(
                     const name = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken.name || '';
                     const email = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '';
 
+                    const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'User';
+
                     // Обновляем и токен, и юзера централизованно!
                     set({
                         token: newToken,
-                        user: { id, email, nickname: name, name }
+                        user: { id, email, nickname: name, name, role }
                     });
 
                     // После обновления токена освежаем профиль, чтобы аватарка не пропала

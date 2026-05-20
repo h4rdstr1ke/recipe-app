@@ -11,6 +11,7 @@ import TopAuthorsPage from '../pages/TopAuthorsPage';
 
 import PostEditPage from '../pages/PostEditPage';
 import PostCreatePage from '../pages/PostCreatePage';
+import ModeratorPage from '../pages/ModeratorPage';
 
 export default function AppRoutes() {
     return (
@@ -24,12 +25,18 @@ export default function AppRoutes() {
                 <Route path="/" element={<Home />} />
                 <Route path="/publication/:id" element={<PublicationPage />} />
                 <Route path="/topAuthors" element={<TopAuthorsPage />} />
-                {/* Защищенные страницы (только для авторизованных) */}
+
+                {/* Обычные защищенные страницы (любой авторизованный) */}
                 <Route element={<ProtectedRoute />}>
                     <Route path="/profile/:id?" element={<Profile />} />
                     <Route path="/profileEdit" element={<ProfileEdit />} />
                     <Route path="/PostEdit/:id" element={<PostEditPage />} />
                     <Route path="/PostCreate" element={<PostCreatePage />} />
+                </Route>
+
+                {/* Роуты модерации (Только для админов/модераторов) */}
+                <Route element={<ProtectedRoute allowedRoles={['Moderator', 'Admin']} />}>
+                    <Route path="/moderator" element={<ModeratorPage />} />
                 </Route>
             </Route>
         </Routes>

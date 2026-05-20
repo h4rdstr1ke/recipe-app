@@ -16,6 +16,7 @@ export interface User {
     bio?: string;
     /** Массив ID пользователей, на которых подписан этот человек */
     subscriptions?: string[];
+    role: string
 }
 
 /**

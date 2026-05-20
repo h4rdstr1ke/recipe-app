@@ -29,6 +29,8 @@ export default function ProfileMenu() {
         setIsOpen(false);
     };
 
+    const isModerator = (user as any)?.role === 'Moderator' || (user as any)?.role === 'Admin';
+
     return (
         <div className="relative">
             <div className='flex gap-3 translate-y-1 items-center cursor-pointer' onClick={toggleDropdown}>
@@ -55,6 +57,17 @@ export default function ProfileMenu() {
                         <li onClick={() => handleNavigation('/profile')} className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors">
                             Профиль
                         </li>
+                        {isModerator && (
+                            <>
+                                <hr className="my-1" />
+                                <li
+                                    onClick={() => handleNavigation('/moderator')}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
+                                >
+                                    Панель модератора
+                                </li>
+                            </>
+                        )}
                         <hr className="my-1" />
                         <li onClick={handleLogout} className="px-4 py-2 hover:bg-red-50 text-red-600 cursor-pointer transition-colors">
                             Выйти

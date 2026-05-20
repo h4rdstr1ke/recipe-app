@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCommentsStore } from '../../../stores/commentStore';
 import { useAuthStore } from '../../../stores/authStore';
-
+import CommentComplaint from '../../../features/complaint/CommentComplaint';
 
 import DefaultAvatar from '../../../assets/defaultAvatar.svg';
 import ImageAdd from '../../../assets/icons/imageAdd.svg?react';
@@ -25,6 +25,8 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
     // Стейты для редактирования ответа (теперь работают локально и для корневых, и для ответов)
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.text);
+
+    const [isComplaintOpen, setIsComplaintOpen] = useState(false);
 
     // Функция для сохранения изменения ответа
     const handleSaveEdit = () => {
@@ -101,7 +103,16 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                         </div>
                     ) : (
                         <div className='flex items-center gap-2'>
-                            <BanIcon className={`${isReply ? 'w-[15px]' : 'w-[25px]'} cursor-pointer hover:opacity-70`} />
+                            <BanIcon
+                                className={`${isReply ? 'w-[15px]' : 'w-[25px]'} cursor-pointer hover:opacity-70`}
+                                onClick={() => {
+                                    if (!user) {
+                                        alert("Только авторизованные пользователи могут оставлять жалобы!");
+                                        return;
+                                    }
+                                    setIsComplaintOpen(true);
+                                }}
+                            />
                         </div>
                     )}
                 </div>
@@ -188,6 +199,13 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                         <CommentItem key={reply.id} comment={reply} isReply={true} />
                     ))}
                 </div>
+            )}
+            {/* МОДАЛКА ЖАЛОБЫ */}
+            {isComplaintOpen && (
+                <CommentComplaint
+                    commentId={comment.id}
+                    onClose={() => setIsComplaintOpen(false)}
+                />
             )}
         </div>
     );

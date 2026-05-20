@@ -54,6 +54,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
                     bio: userData.description || 'Описание профиля отсутствует.',
                     subscribersCount: userData.subscribersCount || userData.followersCount || 0,
                     subscriptionsCount: userData.subscriptionsCount || userData.followingCount || 0,
+                    role: userData.role || 'User',
                 },
                 isLoading: false
             });
