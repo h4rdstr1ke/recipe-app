@@ -15,6 +15,7 @@ import ProfileComplaint from '../features/complaint/ProfileComplaint';
 // Импорты модалок
 import SubscribersModal from '../features/profile/components/SubscribesModal';
 import SubscriptionsModal from '../features/profile/components/SubscriptionsModal';
+import AuthWarningModal from '../components/modals/AuthWarningModal';
 
 /**
  * Компонент страницы профиля пользователя.
@@ -74,6 +75,8 @@ export default function Profile() {
     const [isSubscribersOpen, setIsSubscribersOpen] = useState(false);
     const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState(false);
     const [isComplaintOpen, setIsComplaintOpen] = useState(false);
+
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
     // ---------------------------------------------------------
     // 4. ВЫЧИСЛЯЕМЫЕ КОНСТАНТЫ (Бизнес-логика)
     // ---------------------------------------------------------
@@ -188,9 +191,14 @@ export default function Profile() {
                 ) : (
                     <div className='flex gap-4 md:gap-8 mt-[20px] md:mt-[40px]'>
                         <button
-                            onClick={() => isAuthenticated() && toggleSubscription(currentProfile.id)}
-                            className={`w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
-                                }`}
+                            onClick={() => {
+                                if (!isAuthenticated()) {
+                                    setShowAuthWarning(true);
+                                } else {
+                                    toggleSubscription(currentProfile.id);
+                                }
+                            }}
+                            className={`w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] transition-colors ${subscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'}`}
                         >
                             <span className='font-montserrat text-[14px] text-white font-bold leading-7 tracking-[0.2px]'>
                                 {subscribed ? 'Вы подписаны' : 'Подписаться'}
@@ -199,10 +207,10 @@ export default function Profile() {
                         <button
                             onClick={() => {
                                 if (!isAuthenticated()) {
-                                    alert("Только авторизованные пользователи могут оставлять жалобы!");
-                                    return;
+                                    setShowAuthWarning(true);
+                                } else {
+                                    setIsComplaintOpen(true);
                                 }
-                                setIsComplaintOpen(true);
                             }}
                             className='bg-[#FF0000] w-[150px] h-[30px] md:w-[177px] md:h-[35px] rounded-[5px] active:scale-95 transition-transform'
                         >
@@ -252,6 +260,7 @@ export default function Profile() {
                 <ProfileComplaint onClose={() => setIsComplaintOpen(false)}
                     userId={currentProfile.id} />
             )}
+            <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
         </div>
     );
 }

@@ -25,10 +25,9 @@ export default function AppRoutes() {
                 <Route path="/" element={<Home />} />
                 <Route path="/publication/:id" element={<PublicationPage />} />
                 <Route path="/topAuthors" element={<TopAuthorsPage />} />
-
+                <Route path="/profile/:id?" element={<Profile />} />
                 {/* Обычные защищенные страницы (любой авторизованный) */}
                 <Route element={<ProtectedRoute />}>
-                    <Route path="/profile/:id?" element={<Profile />} />
                     <Route path="/profileEdit" element={<ProfileEdit />} />
                     <Route path="/PostEdit/:id" element={<PostEditPage />} />
                     <Route path="/PostCreate" element={<PostCreatePage />} />
