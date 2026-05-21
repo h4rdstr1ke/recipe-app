@@ -116,7 +116,7 @@ export default function Register() {
 
         const success = await verifyCode(code);
         if (success) {
-            navigate('/');
+            navigate('/onboarding');
         }
     };
 
