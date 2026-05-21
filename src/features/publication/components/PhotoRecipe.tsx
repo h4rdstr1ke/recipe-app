@@ -213,7 +213,7 @@ export default function PhotoRecipe({ steps, recipeId }: PhotoRecipe) {
     return (
         <div className='flex flex-col w-[100%] mt-7 md:mt-0 relative'>
             <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
-                <h3 className='font-montserrat text-[24px] md:text-[28px] font-bold tracking-[0.2px] leading-7'>
+                <h3 className='md:w-[50%] font-montserrat text-[24px] md:text-[28px] font-bold tracking-[0.2px] leading-7'>
                     ПОШАГОВЫЙ ФОТОРЕЦЕПТ
                 </h3>
                 <button
@@ -221,7 +221,7 @@ export default function PhotoRecipe({ steps, recipeId }: PhotoRecipe) {
                     className='w-full md:w-auto px-6 h-[45px] flex items-center justify-center rounded-[10px] bg-[#23A6F0] text-white hover:bg-[#7ACDFC] transition-transform active:scale-95 shadow-md'
                 >
                     <span className='font-montserrat text-[16px] font-bold tracking-[0.2px]'>
-                        👨‍🍳 Начать готовить
+                        Начать готовить
                     </span>
                 </button>
             </div>

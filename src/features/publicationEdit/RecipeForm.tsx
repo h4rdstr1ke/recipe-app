@@ -14,11 +14,12 @@ const UNIT_TYPES = ['г', 'кг', 'мл', 'л', 'шт', 'ст.л', 'ч.л', 'с�
 interface RecipeFormProps {
     initialData?: any;
     onSubmit: (data: { recipeFormData: FormData; steps: any[]; deletedStepIds: string[] }) => Promise<void>;
+    onDelete?: () => void;
     isLoading: boolean;
     isEdit?: boolean;
 }
 
-export default function RecipeForm({ initialData, onSubmit, isLoading, isEdit }: RecipeFormProps) {
+export default function RecipeForm({ initialData, onSubmit, onDelete, isLoading, isEdit }: RecipeFormProps) {
     // 1. СТЕЙТЫ БАЗОВОЙ ИНФОРМАЦИИ
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -196,7 +197,19 @@ export default function RecipeForm({ initialData, onSubmit, isLoading, isEdit }:
 
     return (
         <div className="max-w-[638px] w-[100%] flex flex-col">
-
+            {/* Показываем кнопку удаления только в режиме редактирования и если передана функция */}
+            {isEdit && onDelete && (
+                <div className="w-[100%] flex justify-end mb-[30px]">
+                    <button
+                        type="button"
+                        onClick={onDelete}
+                        disabled={isLoading}
+                        className='font-montserrat font-bold text-[#FF0000] border-[2px] border-[#FF0000] w-[180px] h-[35px] text-[16px] rounded-[9px] hover:bg-red-50 disabled:opacity-50 transition-colors'
+                    >
+                        Удалить рецепт
+                    </button>
+                </div>
+            )}
             {/* ---------------- БЛОК: ФОТО ---------------- */}
             <div className="flex flex-col h-[330px] items-center justify-center w-[100%] border-[2px] border-dashed border-[#E6E6E6] rounded-[10px] py-[25px] overflow-hidden relative">
                 {displayCover ? (
