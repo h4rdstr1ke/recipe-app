@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import DefaultAvatar from "../../assets/defaultAvatar.svg";
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
@@ -8,6 +8,9 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
     const { notifications, fetchNotifications, markAllAsRead, isLoading } = useNotificationStore();
     const { toggleSubscription, isSubscribed } = useUserSettingsStore();
 
+    // ссылка (ref) на главный контейнер модалки
+    const modalRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         fetchNotifications();
 
@@ -15,9 +18,29 @@ export default function Notifications({ onClose }: { onClose: () => void }) {
         return () => markAllAsRead();
     }, [fetchNotifications, markAllAsRead]);
 
+    // слушатель клика вне области
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            // Если клик произошел, модалка существует и клик был НЕ внутри модалки
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+
+        // Вешаем слушатель при монтировании компонента
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // Убираем слушатель при размонтировании
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [onClose]);
+
     return (
-        // overflow-y-auto, чтобы список скроллился, если уведомлений много
-        <div className="fixed md:absolute h-[100%] md:h-auto md:top-[110px] w-[100%] md:right-[100px] bg-[#FFFFFF] bottom-0 flex flex-col z-50 border border-[#E6E6E6] rounded-[5px] md:w-[500px] p-5 overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+            ref={modalRef}
+            className="fixed md:absolute h-[100%] md:h-auto md:top-[110px] w-[100%] md:right-[100px] bg-[#FFFFFF] bottom-0 flex flex-col z-50 border border-[#E6E6E6] rounded-[5px] md:w-[500px] p-5 overflow-y-auto shadow-xl"
+        >
             <div className="flex justify-between items-center mb-5">
                 <h3 className="font-montserrat text-[32px] tracking-[0.2px] font-bold leading-7">Уведомления</h3>
                 <button onClick={onClose} className="text-black hover:text-gray-500 transition-colors text-2xl">✕</button>
