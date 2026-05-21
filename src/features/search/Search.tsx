@@ -86,11 +86,17 @@ export default function SearchBar() {
                     <input
                         type="text"
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)} // Записываем в стор при вводе
+                        onChange={(e) => setQuery(e.target.value)}
                         placeholder="Поиск"
                         className='w-[75%] h-[100%] border-none focus:outline-none focus:border-none placeholder:text-[#737373] font-montserrat text-[14px] tracking-[0.2px] bg-transparent'
                     />
-                    <LoupeIcon className='w-[16px] h-[16px]' />
+                    <button
+                        type="submit"
+                        className="flex items-center justify-center hover:opacity-70 transition-opacity"
+                        aria-label="Искать"
+                    >
+                        <LoupeIcon className='w-[16px] h-[16px]' />
+                    </button>
                 </div>
                 <div className='flex gap-3 items-center'>
                     <SettingsIcon
