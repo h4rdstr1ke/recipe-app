@@ -10,23 +10,35 @@ import StarTopAuthor from '../../assets/icons/starTopAuthor.svg?react'
 import ProfileMenu from './ProfileMenu';
 import SearchBar from '../../features/search/Search'
 import Notifications from '../../features/notifications/Notifications';
+import AuthWarningModal from '../../components/modals/AuthWarningModal';
 
 import HeaderMobile from './HeaderMobile'
 
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 export default function Header() {
-    //Для адаптива
-    // Эта константа будет true, если экран меньше 768px
     const isMobile = useMediaQuery('(max-width: 768px)');
     const isAuthenticated = useAuthStore(state => !!state.token);
 
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
+
     const handleNotificationClick = () => { setIsNotificationOpen(true) };
     const handleCloseModal = () => { setIsNotificationOpen(false) };
+
+    // Обработчик клика по плюсику (добавление поста)
+    const handleAddClick = (e: React.MouseEvent) => {
+        if (!isAuthenticated) {
+            e.preventDefault(); // Останавливаем переход на /PostCreate
+            setShowAuthWarning(true); // Показываем плашку
+        }
+    };
+
     if (isMobile) {
         return <HeaderMobile />;
     }
+
     return (
         <header>
             <div className='flex items-center justify-between pr-[40px] pl-[102px] border-b-4 border-[#D9D9D9] h-[100px]'>
@@ -48,18 +60,21 @@ export default function Header() {
                         <Link to="/topAuthors">
                             <StarTopAuthor className='w-[40px] hover:opacity-70 transition-opacity' />
                         </Link>
-                        <Link to="/PostCreate">
+
+                        {/* Защита ссылки на добавление рецепта */}
+                        <Link to="/PostCreate" onClick={handleAddClick}>
                             <Add className='w-[40px] hover:opacity-70 transition-opacity' />
                         </Link>
 
-                        {/* SVG в button для доступности (a11y) */}
-                        <button
-                            type="button"
-                            onClick={handleNotificationClick}
-                            className="hover:opacity-70 transition-opacity"
-                        >
-                            <Notification className='w-[40px]' />
-                        </button>
+                        {isAuthenticated && (
+                            <button
+                                type="button"
+                                onClick={handleNotificationClick}
+                                className="hover:opacity-70 transition-opacity"
+                            >
+                                <Notification className='w-[40px]' />
+                            </button>
+                        )}
                     </div>
 
                     {isAuthenticated ? (
@@ -77,6 +92,9 @@ export default function Header() {
             </div>
 
             {isNotificationOpen && (<Notifications onClose={handleCloseModal} />)}
+
+            {/* 6. Добавили модалку в корень хедера */}
+            <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
         </header>
     );
 }

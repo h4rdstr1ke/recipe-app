@@ -4,6 +4,7 @@ import type { UserSettings } from '../types/index';
 import { useAuthStore } from './authStore';
 import { useProfileStore } from './profileStore';
 import { api } from '../api/api';
+import { usePostStore } from './postStore';
 //import axios from 'axios';
 
 interface UserSettingsStore {
@@ -164,7 +165,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
 
                 const isLiked = settings.likedPosts.includes(postId);
 
-                // Оптимистичное обновление
+                // 1. Оптимистичное обновление массива лайков
                 set({
                     settings: {
                         ...settings,
@@ -174,26 +175,23 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                     }
                 });
 
+                // 2. СРАЗУ синхронно обновляем счетчик в ленте
+                usePostStore.getState().updateLikeCount(postId, !isLiked);
+
                 try {
                     await api.put(`/api/recipes/${postId}/like`, { isLiked: !isLiked });
                     if (!isLiked) {
                         const userId = useAuthStore.getState().user?.id;
                         if (userId) {
-                            // Используем Fire-and-Forget (отправили и забыли, без await), 
-                            // чтобы не тормозить интерфейс, если питон-сервер долго думает
                             api.post('/ai/api/recommendations/interactions', {
                                 user_ids: [userId],
                                 recipe_ids: [postId],
-                                interactions: [{
-                                    user_id: userId,
-                                    recipe_id: postId,
-                                    rating: 5.0 // Лайк = максимальная симпатия
-                                }]
+                                interactions: [{ user_id: userId, recipe_id: postId, rating: 5.0 }]
                             }).catch(err => console.log("ИИ пропустил лог лайка:", err));
                         }
                     }
                 } catch (error: unknown) {
-                    // Умный откат
+                    // Умный откат (если сервер ответил ошибкой)
                     set(state => {
                         if (!state.settings) return state;
                         const currentLikes = state.settings.likedPosts;
@@ -208,6 +206,8 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                             error: 'Ошибка при постановке лайка'
                         };
                     });
+                    // Откатываем счетчик обратно
+                    usePostStore.getState().updateLikeCount(postId, isLiked);
                 }
             },
 
@@ -217,7 +217,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
 
                 const isFavorited = settings.favoritePosts.includes(postId);
 
-                // Оптимистичное обновление
+                // 1. Оптимистичное обновление массива избранного
                 set({
                     settings: {
                         ...settings,
@@ -227,6 +227,9 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                     }
                 });
 
+                // 2. СРАЗУ синхронно обновляем счетчик избранного
+                usePostStore.getState().updateFavoriteCount(postId, !isFavorited);
+
                 try {
                     await api.put(`/api/recipes/${postId}/favorite`, { isFavorite: !isFavorited });
                     if (!isFavorited) {
@@ -235,11 +238,7 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                             api.post('/ai/api/recommendations/interactions', {
                                 user_ids: [userId],
                                 recipe_ids: [postId],
-                                interactions: [{
-                                    user_id: userId,
-                                    recipe_id: postId,
-                                    rating: 5.0 // Избранное = тоже сильный позитивный сигнал
-                                }]
+                                interactions: [{ user_id: userId, recipe_id: postId, rating: 5.0 }]
                             }).catch(err => console.log("ИИ пропустил лог закладки:", err));
                         }
                     }
@@ -259,6 +258,8 @@ export const useUserSettingsStore = create<UserSettingsStore>()(
                             error: 'Ошибка при добавлении в избранное'
                         };
                     });
+                    // Откатываем счетчик избранного обратно
+                    usePostStore.getState().updateFavoriteCount(postId, isFavorited);
                 }
             },
 

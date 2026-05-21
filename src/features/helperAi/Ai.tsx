@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
 import { aiApi } from '../../api/aiApi';
+import { useAuthStore } from '../../stores/authStore';
+import AuthWarningModal from '../../components/modals/AuthWarningModal';
 
 export default function Ai({ onClose }: { onClose: () => void }) {
     const { messages, isLoading, sendMessage } = useChatStore();
+
+    const isAuthenticated = useAuthStore(state => !!state.token);
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
 
     // Стейт для текстового инпута
     const [inputValue, setInputValue] = useState('');
@@ -31,9 +36,15 @@ export default function Ai({ onClose }: { onClose: () => void }) {
         scrollToBottom();
     }, [messages, isLoading]);
 
-    // Функция отправки сообщения в чат
+    // Защита отправки сообщенит (сработает и по клику, и по Enter)
     const handleSendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
+
+        if (!isAuthenticated) {
+            setShowAuthWarning(true);
+            return;
+        }
+
         const textToSend = inputValue;
         setInputValue('');
         await sendMessage(textToSend);
@@ -153,22 +164,27 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         className="hidden"
                     />
 
-                    {/* Кнопка загрузки фото (Заменили троеточие на скрепку/камеру) */}
+                    {/* Кнопка прикрепления фото с защитой */}
                     <button
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={(e) => {
+                            if (!isAuthenticated) {
+                                e.preventDefault();
+                                setShowAuthWarning(true);
+                            } else {
+                                fileInputRef.current?.click();
+                            }
+                        }}
                         disabled={isDetecting || isLoading}
                         className={`w-[44px] h-[44px] shrink-0 rounded-full flex justify-center items-center shadow-sm transition-colors
-                            ${isDetecting ? 'bg-white/50 text-gray-400 cursor-not-allowed' : 'bg-white/90 hover:bg-white text-gray-500'}`}
+                            ${isDetecting ? 'bg-white/50 text-gray-400 cursor-not-allowed' : 'bg-white/90 hover:bg-white text-gray-500 cursor-pointer'}`}
                         title="Распознать продукты по фото"
                     >
                         {isDetecting ? (
-                            // Иконка загрузки (крутилка), пока фото отправляется на сервер
                             <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         ) : (
-                            // Иконка скрепки
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
                             </svg>
@@ -200,6 +216,7 @@ export default function Ai({ onClose }: { onClose: () => void }) {
                         </svg>
                     </button>
                 </div>
+                <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
             </div>
         </div>
     );

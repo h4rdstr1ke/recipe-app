@@ -1,7 +1,7 @@
 import type { Post } from '../../types/index';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
-import { usePostStore } from '../../stores/postStore';
+//import { usePostStore } from '../../stores/postStore';
 
 import DefaultAvatar from '../../assets/defaultAvatar.svg';
 import { useProfileStore } from '../../stores/profileStore';
@@ -22,12 +22,10 @@ type PublicationFullProps = {
 };
 
 export default function PublicationFull({ post }: PublicationFullProps) {
-    // Достаем новые тогглы из postStore
-    const { updateLikeCount, updateFavoriteCount } = usePostStore();
-    const { isAuthenticated, user } = useAuthStore(); // Добавили user
-    const { currentProfile } = useProfileStore(); // Добавили currentProfile
 
-    // Достаем тоггл подписки из userSettingsStore
+    const { isAuthenticated, user } = useAuthStore();
+    const { currentProfile } = useProfileStore();
+
     const {
         settings,
         toggleSubscription,
@@ -55,13 +53,11 @@ export default function PublicationFull({ post }: PublicationFullProps) {
     const handleLike = () => {
         if (!isAuthenticated) return;
         toggleLike(post.id);
-        updateLikeCount(post.id, !isLiked);
     };
 
     const handleFavorite = () => {
         if (!isAuthenticated) return;
         toggleFavorite(post.id);
-        updateFavoriteCount(post.id, !isFavorited);
     };
 
     const handleSubscribe = () => {

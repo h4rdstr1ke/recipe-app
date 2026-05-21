@@ -10,8 +10,9 @@ import UnwnantedIcon from '../../assets/icons/unwanted.svg?react';
 import AllergenIcon from '../../assets/icons/allergen.svg?react';
 
 import Complaint from '../complaint/Сomplaint';
+import AuthWarningModal from '../../components/modals/AuthWarningModal';
 
-import { usePostStore } from '../../stores/postStore';
+//import { usePostStore } from '../../stores/postStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserSettingsStore } from '../../stores/userSettingsStore';
 import type { Post } from '../../types';
@@ -31,7 +32,7 @@ export default function Publication({ post }: { post: Post }) {
     // Данные настроек пользователя (лайки, избранное, подписки)
     const { settings, toggleSubscription, isSubscribed, toggleLike, toggleFavorite } = useUserSettingsStore();
     // Методы для обновления счетчиков в ленте
-    const { updateLikeCount, updateFavoriteCount } = usePostStore();
+    //const { updateLikeCount, updateFavoriteCount } = usePostStore();
 
     // Проверяем статус подписки на автора
     const subscribed = isSubscribed(post.authorId);
@@ -72,15 +73,11 @@ export default function Publication({ post }: { post: Post }) {
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            {
-                setShowAuthWarning(true);
-                return;
-            }
+            setShowAuthWarning(true);
+            return;
         }
 
         toggleLike(post.id);
-        // Оптимистично обновляем счетчик: если сейчас лайка нет, прибавляем 1
-        updateLikeCount(post.id, !isLiked);
     };
 
     const handleFavorite = (e: React.MouseEvent) => {
@@ -88,14 +85,11 @@ export default function Publication({ post }: { post: Post }) {
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            {
-                setShowAuthWarning(true);
-                return;
-            }
+            setShowAuthWarning(true);
+            return;
         }
 
         toggleFavorite(post.id);
-        updateFavoriteCount(post.id, !isFavorited);
     };
 
     const handleCommentClick = (e: React.MouseEvent) => {
@@ -248,7 +242,14 @@ export default function Publication({ post }: { post: Post }) {
                     </div>
                     <BanIcon
                         className="cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); setIsComplaintOpen(true); }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isAuthenticated) {
+                                setShowAuthWarning(true);
+                            } else {
+                                setIsComplaintOpen(true);
+                            }
+                        }}
                     />
                 </div>
 
@@ -282,45 +283,10 @@ export default function Publication({ post }: { post: Post }) {
 
             {isComplaintOpen && <Complaint recipeId={post.id} onClose={() => setIsComplaintOpen(false)} />}
             {/* Модальное окно предупреждения об авторизации */}
-            {showAuthWarning && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                    onClick={(e) => {
-                        e.stopPropagation(); // Не даем клику уйти в карточку
-                        setShowAuthWarning(false); // Закрываем при клике на фон
-                    }}
-                >
-                    <div
-                        className="bg-white p-6 rounded-[10px] w-[90%] max-w-[400px] flex flex-col items-center shadow-lg"
-                        onClick={(e) => e.stopPropagation()} // Блокируем закрытие при клике на само окно
-                    >
-                        <h3 className="font-montserrat text-[20px] tracking-[0.2px] font-bold text-center mb-5">
-                            Требуется авторизация
-                        </h3>
-                        <div className="flex gap-5 w-full">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAuthWarning(false);
-                                }}
-                                className="flex-1 py-2 rounded-[5px] border-[2px] border-[#23A6F0] text-[#23A6F0] tracking-[0.2px] font-montserrat font-bold transition-all hover:bg-[#F0F9FF]"
-                            >
-                                Отмена
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate('/login');
-                                    setShowAuthWarning(false);
-                                }}
-                                className="flex-1 py-2 rounded-[5px] bg-[#23A6F0] text-white font-montserrat tracking-[0.2px] font-bold transition-all hover:bg-[#7ACDFC]"
-                            >
-                                Войти
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <AuthWarningModal
+                isOpen={showAuthWarning}
+                onClose={() => setShowAuthWarning(false)}
+            />
         </div>
     );
 }

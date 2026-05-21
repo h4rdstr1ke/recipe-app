@@ -3,6 +3,7 @@ import StarIcon from '../../../assets/icons/starRating.svg?react';
 import Star from '../../../assets/icons/star.svg?react';
 import { usePostStore } from '../../../stores/postStore';
 import { useAuthStore } from '../../../stores/authStore';
+import AuthWarningModal from '../../../components/modals/AuthWarningModal';
 
 type RecipeRatingProps = {
     recipeId: string;
@@ -15,7 +16,8 @@ type RecipeRatingProps = {
 
 export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
     const { setRecipeRating } = usePostStore();
-    const { isAuthenticated } = useAuthStore();
+    const isAuthenticated = useAuthStore((state) => !!state.token);
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
 
     const [hoverValue, setHoverValue] = useState<number | null>(null);
 
@@ -35,19 +37,16 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
         e.stopPropagation();
 
         if (!isAuthenticated) {
-            alert("Только авторизованные пользователи могут ставить оценки!");
+            setShowAuthWarning(true);
             return;
         }
 
-        // Мгновенно красим звездочки для юзера
         setUserRating(value);
 
         try {
             await setRecipeRating(recipeId, value);
         } catch (error) {
-            // Если запрос упал, возвращаем ту оценку, которая была сохранена на сервере
             setUserRating(rating?.userRating || null);
-            alert("Ошибка");
             console.error("Ошибка оценки:", error);
         }
     };
@@ -89,6 +88,7 @@ export default function RecipeRating({ rating, recipeId }: RecipeRatingProps) {
                     </span>
                 </div>
             </div>
+            <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
         </div>
     )
 }

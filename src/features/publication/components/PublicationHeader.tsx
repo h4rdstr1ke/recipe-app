@@ -9,7 +9,9 @@ import UnwnantedIcon from '../../../assets/icons/unwanted.svg?react';
 import Button from '../../../components/button/Button';
 import { Link, useNavigate } from 'react-router-dom';
 
-//import { useAuthStore } from '../../../stores/authStore';
+import { useAuthStore } from '../../../stores/authStore';
+import { useState } from 'react';
+import AuthWarningModal from '../../../components/modals/AuthWarningModal';
 
 type PublicationHeaderProps = {
     // Данные автора
@@ -110,6 +112,21 @@ export default function PublicationHeader({
     // const { user } = useAuthStore();
     // const isMyPost = username === user?.nickname;
     const navigate = useNavigate();
+
+    const isAuthenticated = useAuthStore((state) => !!state.token);
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
+    // Функция-защитник: проверяет авторизацию перед действием
+    const withAuth = (action: () => void) => {
+        return (e?: React.MouseEvent) => {
+            if (e) e.stopPropagation();
+            if (!isAuthenticated) {
+                setShowAuthWarning(true);
+            } else {
+                action();
+            }
+        };
+    };
+
     return (
         <div className="w-[100%] flex flex-col">
             {/* Верхний блок - автор */}
@@ -130,7 +147,7 @@ export default function PublicationHeader({
                         <button
                             className={`w-[140px] h-[30px] md:w-[150px] md:h-[30px] rounded-[10px] md:rounded-[5px] active:scale-95 transition-all ${isSubscribed ? 'bg-[#8F94989C]' : 'bg-[#23A6F0]'
                                 }`}
-                            onClick={onSubscribe}
+                            onClick={withAuth(onSubscribe)}
                         >
                             <span className='font-montserrat text-[14px] text-[#FFFFFF] font-bold leading-7'>
                                 {isSubscribed ? 'Вы подписаны' : 'Подписаться'}
@@ -159,7 +176,7 @@ export default function PublicationHeader({
                                 hover:scale-105 
                                 active:scale-90 
                                 ${isLiked ? 'text-[#FF0000] drop-shadow-md' : 'text-black'}`}
-                            onClick={onLike}
+                            onClick={withAuth(onLike)}
                         />
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{likesCount}</span>
                     </div>
@@ -179,11 +196,11 @@ export default function PublicationHeader({
                                 hover:scale-105 
                                 active:scale-90 
                                 ${isFavorited ? 'text-[#FFFF56] drop-shadow-md' : 'text-black'}`}
-                            onClick={onFavorite}
+                            onClick={withAuth(onFavorite)}
                         />
                         <span className='font-montserrat text-[16px] md:text-[20px] text-[#000000] tracking-[0.2px] leading-7 font-medium'>{favoritesCount}</span>
                     </div>
-                    <BanIcon className='w-[25px]' onClick={onBan} />
+                    <BanIcon className='w-[25px] cursor-pointer' onClick={withAuth(onBan)} />
                 </div>
 
                 {/* Предупреждения */}
@@ -221,6 +238,8 @@ export default function PublicationHeader({
                 </div>
                 <span className='font-montserrat text-[16px] md:text-[22px] text-[#737373] tracking-[0.2px] leading-6'>{description}</span>
             </div>
+            {/* Вызов модалки авторизации */}
+            <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
         </div >
     );
 }

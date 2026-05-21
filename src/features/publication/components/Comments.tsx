@@ -11,12 +11,14 @@ import Pencil from '../../../assets/icons/pencil.svg?react';
 import BanIcon from '../../../assets/icons/ban.svg?react'
 import DeleteIcon from '../../../assets/icons/delete.svg?react'
 
+import AuthWarningModal from '../../../components/modals/AuthWarningModal';
+
 // 
 // 1. ПОДКОМПОНЕНТ: Отрисовка ОДНОГО комментария (рекурсивная)
 // 
-const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boolean }) => {
-    const { addReply, toggleCommentLike, editReply, deleteComment } = useCommentsStore(); //  Достаем функцию из стора
-    const { user } = useAuthStore(); // Достаем текущего пользователя
+const CommentItem = ({ comment, isReply = false, onRequiresAuth }: { comment: any, isReply?: boolean, onRequiresAuth: () => void }) => {
+    const { addReply, toggleCommentLike, editReply, deleteComment } = useCommentsStore();
+    const { user } = useAuthStore();
 
     const [showReplies, setShowReplies] = useState(false); // Показать/скрыть ветку
     const [isReplying, setIsReplying] = useState(false);   // Открыто ли окно ответа
@@ -75,7 +77,10 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                         <LikeIcon
                             isLiked={comment.isLiked}
                             className={`cursor-pointer ${isReply ? 'w-[16px]' : ''} ${comment.isLiked ? 'text-[#FF0000]' : 'text-black'}`}
-                            onClick={() => toggleCommentLike(comment.id)}
+                            onClick={() => {
+                                if (!user) return onRequiresAuth();
+                                toggleCommentLike(comment.id);
+                            }}
                         />
                         <span className={`font-montserrat tracking-[0.2px] font-medium ${isReply ? 'text-[15px] leading-relaxed' : 'text-[20px] leading-7'}`}>
                             {comment.likesCount}
@@ -83,7 +88,10 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                     </div>
                     <Reply
                         className={`${isReply ? 'w-[15px]' : ''} cursor-pointer hover:opacity-70`}
-                        onClick={() => isReply ? handleReplyToReply(comment.author) : setIsReplying(!isReplying)}
+                        onClick={() => {
+                            if (!user) return onRequiresAuth();
+                            isReply ? handleReplyToReply(comment.author) : setIsReplying(!isReplying);
+                        }}
                     />
                     {/* Карандаш и удалить видно только если ответ/коммент написал пользователь */}
                     {comment.author === user?.nickname ? (
@@ -106,10 +114,7 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                             <BanIcon
                                 className={`${isReply ? 'w-[15px]' : 'w-[25px]'} cursor-pointer hover:opacity-70`}
                                 onClick={() => {
-                                    if (!user) {
-                                        alert("Только авторизованные пользователи могут оставлять жалобы!");
-                                        return;
-                                    }
+                                    if (!user) return onRequiresAuth();
                                     setIsComplaintOpen(true);
                                 }}
                             />
@@ -196,7 +201,7 @@ const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boo
                     </span>
 
                     {showReplies && comment.replies.map((reply: any) => (
-                        <CommentItem key={reply.id} comment={reply} isReply={true} />
+                        <CommentItem key={reply.id} comment={reply} isReply={true} onRequiresAuth={onRequiresAuth} />
                     ))}
                 </div>
             )}
@@ -220,6 +225,8 @@ type CommentsProps = {
 
 export default function Comments({ postId }: CommentsProps) {
     const { comments, fetchCommentsByPostId, addComment } = useCommentsStore();
+    const isAuthenticated = useAuthStore((state) => !!state.token);
+    const [showAuthWarning, setShowAuthWarning] = useState(false);
 
     // Стейты для текста и картинки
     const [newCommentText, setNewCommentText] = useState('');
@@ -240,6 +247,11 @@ export default function Comments({ postId }: CommentsProps) {
     };
 
     const handlePublish = () => {
+        // Блокируем публикацию анонимам
+        if (!isAuthenticated) {
+            setShowAuthWarning(true);
+            return;
+        }
         // Разрешаем отправку, если есть либо текст, либо картинка
         if (!newCommentText.trim() && !selectedImageFile) return;
 
@@ -329,10 +341,15 @@ export default function Comments({ postId }: CommentsProps) {
                     </span>
                 ) : (
                     comments.map(comment => (
-                        <CommentItem key={comment.id} comment={comment} />
+                        <CommentItem
+                            key={comment.id}
+                            comment={comment}
+                            onRequiresAuth={() => setShowAuthWarning(true)} // триггер открытия
+                        />
                     ))
                 )}
             </div>
+            <AuthWarningModal isOpen={showAuthWarning} onClose={() => setShowAuthWarning(false)} />
         </div>
     )
 }
