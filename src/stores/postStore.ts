@@ -171,13 +171,32 @@ export const usePostStore = create<PostStore>((set, get) => ({
         set({ isLoading: true, error: null });
 
         try {
-            // Ищем в загруженных постах
+            // Ищем в уже загруженных постах
             let post = get().posts.find(p => p.id === id) || null;
 
-            // Если не нашли — качаем с сервера
+            // Если страница перезагружена и в ленте пусто — качаем с сервера
             if (!post) {
                 const response = await api.get(`/api/recipes/${id}`);
-                post = mapRecipeDtoToPost(response.data);
+                const recipeData = response.data;
+
+                // Переменные для хранения дефолтных или подгруженных значений автора
+                let authorAvatar = null;
+                let authorUsername = 'Пользователь';
+
+                // Подтягиваем аватарку и никнейм чужого автора по его creatorId
+                const creatorId = recipeData.creatorId;
+                if (creatorId) {
+                    try {
+                        const userRes = await api.get(`/api/users/${creatorId}`);
+                        authorAvatar = userRes.data.avatarUrl || null;
+                        authorUsername = userRes.data.userName || userRes.data.name || 'Пользователь';
+                    } catch (userErr) {
+                        console.error("Не удалось подгрузить профиль автора для этого рецепта:", userErr);
+                    }
+                }
+
+                // Передаем собранные данные автора в маппер
+                post = mapRecipeDtoToPost(recipeData, authorAvatar, authorUsername);
             }
 
             set({ currentPost: post, isLoading: false });
