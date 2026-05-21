@@ -1,7 +1,49 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useModerationStore } from '../stores/moderationStore';
+import { api } from '../api/api';
 import DefaultAvatar from '../assets/defaultAvatar.svg';
+
+import BanIcon from '../assets/icons/ban.svg?react';
+
+// мини-кэш вне компонентов
+const avatarCache: Record<string, string | null> = {};
+
+// Компонент для ленивой загрузки аватарки по ID пользователя
+function UserAvatar({ userId }: { userId: string }) {
+    // При создании сразу проверяем, есть ли аватарка в кэше
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(avatarCache[userId] || null);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        // Если мы уже делали запрос для этого юзера, просто отменяем новый запрос
+        if (avatarCache[userId] !== undefined) {
+            return;
+        }
+
+        // Если в кэше пусто, идем на сервер
+        api.get(`/api/users/${userId}`)
+            .then((res) => {
+                const url = res.data?.avatarUrl || null;
+                avatarCache[userId] = url; // Запоминаем результат
+                setAvatarUrl(url);
+            })
+            .catch((err) => {
+                console.error(`Не удалось загрузить аватарку для ${userId}`, err);
+                avatarCache[userId] = null; // Запоминаем ошибку, чтобы не спамить сервер
+                setAvatarUrl(null);
+            });
+    }, [userId]);
+
+    return (
+        <img
+            src={avatarUrl || DefaultAvatar}
+            alt="avatar"
+            className="w-8 h-8 rounded-full object-cover shadow-sm border border-transparent group-hover:border-[#23A6F0]"
+        />
+    );
+}
 
 export default function ModeratorPage() {
     const [activeTab, setActiveTab] = useState<'users' | 'reports'>('users');
@@ -37,26 +79,36 @@ export default function ModeratorPage() {
         return report.reason || 'Жалоба';
     };
 
+    // Вспомогательная функция для определения типа жалобы
+    const getTargetTypeText = (type: string) => {
+        const t = type?.toLowerCase();
+        if (t === 'recipe') return 'Жалоба на рецепт';
+        if (t === 'user' || t === 'userprofile' || t === 'profile') return 'Жалоба на профиль';
+        if (t === 'comment') return 'Жалоба на комментарий';
+        return 'Неизвестная жалоба';
+    };
+
+
     return (
         <div className="w-full min-h-screen bg-[#F9F9F9] flex justify-center pb-20">
             <div className="w-full max-w-[800px] mt-8 bg-white rounded-[15px] shadow-sm border border-gray-100 p-8 min-h-[600px]">
 
                 {/* Навигация */}
-                <div className="flex justify-center gap-12 border-b border-gray-200 pb-4 mb-8">
+                <div className="flex justify-center gap-12 border-b-[2px] border-[#E6E6E6] mb-8 mt-2">
                     <button
                         onClick={() => setActiveTab('users')}
-                        className={`text-[22px] font-montserrat transition-colors ${activeTab === 'users'
-                            ? 'text-black border-b-[2px] border-black pb-1 -mb-[17px]'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`text-[22px] font-montserrat transition-colors pb-4 -mb-[2px] border-b-[2px] ${activeTab === 'users'
+                            ? 'text-black border-black font-medium'
+                            : 'text-gray-400 border-transparent hover:text-gray-600'
                             }`}
                     >
                         Пользователи
                     </button>
                     <button
                         onClick={() => setActiveTab('reports')}
-                        className={`text-[22px] font-montserrat transition-colors ${activeTab === 'reports'
-                            ? 'text-black border-b-[2px] border-black pb-1 -mb-[17px]'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`text-[22px] font-montserrat transition-colors pb-4 -mb-[2px] border-b-[2px] ${activeTab === 'reports'
+                            ? 'text-black border-black font-medium'
+                            : 'text-gray-400 border-transparent hover:text-gray-600'
                             }`}
                     >
                         Жалобы
@@ -89,10 +141,7 @@ export default function ModeratorPage() {
                                     onClick={() => handleBanUser(user.id)}
                                     className="text-red-500 hover:text-red-700 transition-colors"
                                 >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="2" />
-                                        <path d="M5.5 5.5L18.5 18.5" stroke="currentColor" strokeWidth="2" />
-                                    </svg>
+                                    <BanIcon />
                                 </button>
                             </div>
                         ))}
@@ -102,64 +151,94 @@ export default function ModeratorPage() {
                 {/* КОНТЕНТ: ЖАЛОБЫ */}
                 {activeTab === 'reports' && (
                     <div className="flex flex-col gap-4">
-                        {isLoading && <p className="text-center text-gray-500">Загрузка жалоб...</p>}
+                        {/* Показываем надпись только если это самая первая загрузка и список пуст */}
+                        {isLoading && reports.length === 0 && (
+                            <p className="text-center text-gray-500">Загрузка жалоб...</p>
+                        )}
+
                         {!isLoading && reports.length === 0 && (
                             <p className="text-center text-gray-500">Нет активных жалоб.</p>
                         )}
 
                         {reports.map((report: any) => (
-                            <div key={report.id} className="flex justify-between items-center bg-[#F4F4F4] rounded-[10px] p-4">
-                                <div className="flex items-center gap-4">
-                                    <img src={DefaultAvatar} alt="avatar" className="w-10 h-10 rounded-full object-cover" />
-                                    <div className="flex flex-col">
-                                        {/* Реальное имя заявителя */}
-                                        <span className="font-montserrat font-bold text-[16px]">
-                                            {report.reporterUserName || 'Пользователь'}
-                                        </span>
-                                        {/* Переведенная причина */}
-                                        <span className="font-montserrat text-[14px] text-gray-600">
-                                            {getReasonText(report)}
-                                        </span>
-                                        {/* Ссылка на рецепт */}
-                                        {report.targetType === 'Recipe' && (
+                            <div key={report.id} className="flex justify-between items-center bg-[#F4F4F4] rounded-[10px] p-5">
+                                <div className="flex flex-col gap-1.5">
+
+                                    {/* Аватар и никнейм*/}
+                                    {report.reporterId ? (
+                                        <Link
+                                            to={`/profile/${report.reporterId}`}
+                                            target="_blank"
+                                            className="flex items-center gap-3 mb-2 hover:opacity-80 transition-all group w-fit"
+                                            title="Перейти в профиль заявителя"
+                                        >
+                                            <UserAvatar userId={report.reporterId} />
+                                            <span className="font-montserrat font-bold text-[16px] text-black group-hover:text-[#23A6F0] transition-colors">
+                                                {report.reporterUserName || 'Пользователь'}
+                                            </span>
+                                        </Link>
+                                    ) : (
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <img src={DefaultAvatar} alt="avatar" className="w-8 h-8 rounded-full object-cover shadow-sm" />
+                                            <span className="font-montserrat font-bold text-[16px] text-black">
+                                                {report.reporterUserName || 'Пользователь'}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Тип жалобы */}
+                                    <span className="font-montserrat text-[18px] font-semibold text-[#23A6F0] tracking-[0.2px] uppercase">
+                                        {getTargetTypeText(report.targetType)}
+                                    </span>
+
+                                    {/* Текст жалобы */}
+                                    <span className="font-montserrat text-[14px] text-gray-700">
+                                        {getReasonText(report)}
+                                    </span>
+
+                                    {/* НАВИГАЦИЯ */}
+
+                                    {/* Ссылка на рецепт */}
+                                    {report.targetType?.toLowerCase() === 'recipe' && (
+                                        <Link
+                                            to={`/publication/${report.targetId}`}
+                                            target="_blank"
+                                            className="text-[#23A6F0] hover:underline text-[12px] font-montserrat mt-1"
+                                        >
+                                            Посмотреть рецепт →
+                                        </Link>
+                                    )}
+
+                                    {/* Ссылка на профиль пользователя */}
+                                    {(report.targetType?.toLowerCase() === 'userprofile' ||
+                                        report.targetType?.toLowerCase() === 'user' ||
+                                        report.targetType?.toLowerCase() === 'profile') && (
                                             <Link
-                                                to={`/publication/${report.targetId}`}
+                                                to={`/profile/${report.targetId}`}
                                                 target="_blank"
                                                 className="text-[#23A6F0] hover:underline text-[12px] font-montserrat mt-1"
                                             >
-                                                Посмотреть рецепт →
+                                                Посмотреть профиль →
                                             </Link>
                                         )}
-                                        {/* Ссылка на профиль пользователя */}
-                                        {(report.targetType?.toLowerCase() === 'userprofile' ||
-                                            report.targetType?.toLowerCase() === 'user' ||
-                                            report.targetType?.toLowerCase() === 'profile') && (
-                                                <Link
-                                                    to={`/profile/${report.targetId}`}
-                                                    target="_blank"
-                                                    className="text-[#23A6F0] hover:underline text-[12px] font-montserrat mt-1"
-                                                >
-                                                    Посмотреть профиль →
-                                                </Link>
-                                            )}
-                                        {/* Ссылка на комментарий */}
-                                        {report.targetType?.toLowerCase() === 'comment' && (
-                                            <Link
-                                                // Пытаемся взять recipeId или postId из ответа. Если нет, временно упадет на targetId
-                                                to={`/publication/${report.recipeId || report.postId || report.targetId}#comments-section`}
-                                                target="_blank"
-                                                className="text-[#23A6F0] hover:underline text-[12px] font-montserrat mt-1"
-                                            >
-                                                Посмотреть комментарий →
-                                            </Link>
-                                        )}
-                                    </div>
+
+                                    {/* Ссылка на комментарий */}
+                                    {report.targetType?.toLowerCase() === 'comment' && (
+                                        <Link
+                                            to={`/publication/${report.recipeId || report.postId || report.targetId}#comments-section`}
+                                            target="_blank"
+                                            className="text-[#23A6F0] hover:underline text-[12px] font-montserrat mt-1"
+                                        >
+                                            Посмотреть комментарий →
+                                        </Link>
+                                    )}
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {/* Кнопка "Принять меры" (галочка) */}
+
+                                {/* Кнопки модерации */}
+                                <div className="flex items-center gap-3 ml-4">
                                     <button
                                         onClick={() => takeAction(report.id, "Жалоба подтверждена, контент удален")}
-                                        className="text-green-500 hover:text-green-700 transition-colors bg-white rounded-full p-1"
+                                        className="text-green-500 hover:bg-green-50 transition-colors bg-white rounded-full p-2 shadow-sm border border-gray-100"
                                         title="Подтвердить жалобу (принять меры)"
                                     >
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -167,11 +246,10 @@ export default function ModeratorPage() {
                                         </svg>
                                     </button>
 
-                                    {/* Кнопка "Отклонить" (крестик) */}
                                     <button
                                         onClick={() => dismissReport(report.id, "Нарушений не обнаружено")}
-                                        className="text-red-500 hover:text-red-700 transition-colors bg-white rounded-full p-1"
-                                        title="Отклонить жалобу (ложный вызов)"
+                                        className="text-red-500 hover:bg-red-50 transition-colors bg-white rounded-full p-2 shadow-sm border border-gray-100"
+                                        title="Отклонить жалобу"
                                     >
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
